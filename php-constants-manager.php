@@ -216,12 +216,15 @@ class PHP_Constants_Manager {
             return;
         }
         
-        // Check if editing
+        // Check if editing or adding
         $action = isset($_GET['action']) ? $_GET['action'] : '';
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
         
         if ($action === 'edit' && $id) {
             $this->render_edit_page($id);
+            return;
+        } elseif ($action === 'add') {
+            $this->render_add_page();
             return;
         }
         
