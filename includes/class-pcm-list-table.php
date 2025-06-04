@@ -215,6 +215,13 @@ class PCM_List_Table extends WP_List_Table {
         $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';
         $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
         $search = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
+        $type_filter = isset($_REQUEST['type_filter']) ? $_REQUEST['type_filter'] : 'all';
+        
+        // Reset to page 1 if we have a search term or type filter
+        if (!empty($search) || $type_filter != 'all') {
+            $_REQUEST['paged'] = 1;
+            $current_page = 1;
+        }
         
         // Get items
         $args = array(
@@ -225,10 +232,19 @@ class PCM_List_Table extends WP_List_Table {
             'offset' => ($current_page - 1) * $per_page
         );
         
+        // Add type filter if specified
+        if ($type_filter != 'all') {
+            $args['type'] = $type_filter;
+        }
+        
         $this->items = $this->db->get_constants($args);
         
         // Get total items
-        $total_items = $this->db->count_constants(array('search' => $search));
+        $count_args = array('search' => $search);
+        if ($type_filter != 'all') {
+            $count_args['type'] = $type_filter;
+        }
+        $total_items = $this->db->count_constants($count_args);
         
         // Set pagination
         $this->set_pagination_args(array(
@@ -239,35 +255,68 @@ class PCM_List_Table extends WP_List_Table {
     }
     
     /**
+     * Get views for type filtering
+     */
+    public function get_views() {
+        $current_filter = isset($_REQUEST['type_filter']) ? $_REQUEST['type_filter'] : 'all';
+        $base_url = admin_url('admin.php?page=php-constants-manager');
+        
+        // Get type counts
+        $type_counts = array(
+            'string' => $this->db->count_constants(array('type' => 'string')),
+            'integer' => $this->db->count_constants(array('type' => 'integer')),
+            'float' => $this->db->count_constants(array('type' => 'float')),
+            'boolean' => $this->db->count_constants(array('type' => 'boolean')),
+            'null' => $this->db->count_constants(array('type' => 'null'))
+        );
+        
+        $total_count = array_sum($type_counts);
+        
+        // Start with All link
+        $views = array();
+        $class = ($current_filter == 'all') ? ' class="current"' : '';
+        $views['all'] = sprintf(
+            '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
+            $base_url,
+            $class,
+            __('All', 'php-constants-manager'),
+            number_format_i18n($total_count)
+        );
+        
+        // Add type filters
+        $type_labels = array(
+            'string' => __('String', 'php-constants-manager'),
+            'integer' => __('Integer', 'php-constants-manager'),
+            'float' => __('Float', 'php-constants-manager'),
+            'boolean' => __('Boolean', 'php-constants-manager'),
+            'null' => __('Null', 'php-constants-manager')
+        );
+        
+        foreach ($type_labels as $type => $label) {
+            $count = $type_counts[$type];
+            if ($count > 0) {
+                $class = ($current_filter == $type) ? ' class="current"' : '';
+                $views[$type] = sprintf(
+                    '<a href="%s&type_filter=%s"%s>%s <span class="count">(%s)</span></a>',
+                    $base_url,
+                    urlencode($type),
+                    $class,
+                    esc_html($label),
+                    number_format_i18n($count)
+                );
+            }
+        }
+        
+        return $views;
+    }
+    
+    /**
      * Extra table navigation
      */
     public function extra_tablenav($which) {
         if ($which === 'top') {
-            ?>
-            <div class="alignleft actions">
-                <?php
-                $active_count = $this->db->count_constants(array('is_active' => true));
-                $inactive_count = $this->db->count_constants(array('is_active' => false));
-                $total_count = $active_count + $inactive_count;
-                
-                printf(
-                    '<span class="displaying-num">%s</span>',
-                    sprintf(
-                        _n('%s constant', '%s constants', $total_count, 'php-constants-manager'),
-                        number_format_i18n($total_count)
-                    )
-                );
-                
-                if ($active_count > 0) {
-                    printf(
-                        ' <span class="pcm-status-count">(%s %s)</span>',
-                        number_format_i18n($active_count),
-                        __('active', 'php-constants-manager')
-                    );
-                }
-                ?>
-            </div>
-            <?php
+            // Type filters are now handled by get_views()
+            return;
         }
     }
     

@@ -47,6 +47,21 @@ if (!defined('ABSPATH')) {
         <?php endif; ?>
     <?php endif; ?>
     
+    <?php
+    // Display type filter links
+    $views = $list_table->get_views();
+    if (!empty($views)) {
+        echo '<ul class="subsubsub">';
+        $view_links = array();
+        foreach ($views as $class => $view) {
+            $view_links[] = "<li class='$class'>$view</li>";
+        }
+        echo implode('', $view_links);
+        echo '</ul>';
+        echo '<div class="clear"></div>';
+    }
+    ?>
+    
     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
         <input type="hidden" name="action" value="pcm_bulk_action" />
         <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>

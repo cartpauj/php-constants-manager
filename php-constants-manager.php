@@ -172,20 +172,11 @@ class PHP_Constants_Manager {
         
         add_submenu_page(
             'php-constants-manager',
-            __('All Constants', 'php-constants-manager'),
-            __('All Constants', 'php-constants-manager'),
+            __('My Constants', 'php-constants-manager'),
+            __('My Constants', 'php-constants-manager'),
             'manage_options',
             'php-constants-manager',
             array($this, 'render_admin_page')
-        );
-        
-        add_submenu_page(
-            'php-constants-manager',
-            __('Add New Constant', 'php-constants-manager'),
-            __('Add New', 'php-constants-manager'),
-            'manage_options',
-            'php-constants-manager-add',
-            array($this, 'render_add_page')
         );
         
         add_submenu_page(
