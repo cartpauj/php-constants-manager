@@ -152,10 +152,7 @@ class PCM_List_Table extends WP_List_Table {
         $nonce = wp_create_nonce('pcm_toggle_constant');
         
         return sprintf(
-            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s">
-                <input type="checkbox" %s>
-                <span class="pcm-toggle-slider"></span>
-            </label>',
+            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s"><input type="checkbox" %s><span class="pcm-toggle-slider"></span></label>',
             $item->id,
             $nonce,
             checked($item->is_active, true, false)
