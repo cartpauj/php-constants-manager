@@ -41,7 +41,6 @@ class PCM_List_Table extends WP_List_Table {
             'cb' => '<input type="checkbox" />',
             'name' => __('Name', 'php-constants-manager'),
             'value' => __('Value', 'php-constants-manager'),
-            'type' => __('Type', 'php-constants-manager'),
             'is_active' => __('Status', 'php-constants-manager'),
             'predefined' => __('Predefined', 'php-constants-manager'),
             'description' => __('Description', 'php-constants-manager'),
@@ -55,7 +54,6 @@ class PCM_List_Table extends WP_List_Table {
     public function get_sortable_columns() {
         return array(
             'name' => array('name', false),
-            'type' => array('type', false),
             'is_active' => array('is_active', false),
             'predefined' => array('predefined', false),
             'created_at' => array('created_at', false)
@@ -83,10 +81,8 @@ class PCM_List_Table extends WP_List_Table {
                 if (strlen($value) > 50) {
                     $value = substr($value, 0, 50) . '...';
                 }
-                return '<code>' . $value . '</code>';
-                
-            case 'type':
-                return esc_html(ucfirst($item->type));
+                $type = esc_html(ucfirst($item->type));
+                return '<div><strong>' . $type . '</strong><br><code>' . $value . '</code></div>';
                 
             case 'description':
                 $desc = esc_html($item->description);

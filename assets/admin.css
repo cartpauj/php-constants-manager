@@ -99,11 +99,7 @@
 }
 
 .wp-list-table .column-value {
-    width: 25%;
-}
-
-.wp-list-table .column-type {
-    width: 10%;
+    width: 35%;
 }
 
 .wp-list-table .column-is_active {
