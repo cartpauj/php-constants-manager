@@ -134,6 +134,28 @@
     font-size: 13px;
 }
 
+/* Category styles for All Defines */
+.pcm-category-core {
+    color: #0073aa;
+    font-weight: 600;
+}
+
+.pcm-category-user {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+.pcm-category-extensions,
+.pcm-category-standard {
+    color: #996800;
+    font-weight: 600;
+}
+
+/* All Defines table column widths */
+.wp-list-table .column-category {
+    width: 15%;
+}
+
 /* Responsive styles */
 @media screen and (max-width: 782px) {
     .pcm-form .form-table th {

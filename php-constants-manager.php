@@ -25,6 +25,7 @@ define('PCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Include required files
 require_once PCM_PLUGIN_DIR . 'includes/class-pcm-list-table.php';
+require_once PCM_PLUGIN_DIR . 'includes/class-pcm-all-defines-table.php';
 require_once PCM_PLUGIN_DIR . 'includes/class-pcm-db.php';
 
 /**
@@ -185,6 +186,15 @@ class PHP_Constants_Manager {
             'manage_options',
             'php-constants-manager-add',
             array($this, 'render_add_page')
+        );
+        
+        add_submenu_page(
+            'php-constants-manager',
+            __('All Defines', 'php-constants-manager'),
+            __('All Defines', 'php-constants-manager'),
+            'manage_options',
+            'php-constants-manager-all-defines',
+            array($this, 'render_all_defines_page')
         );
     }
     
@@ -503,6 +513,23 @@ class PHP_Constants_Manager {
         wp_send_json_success(array(
             'new_status' => $new_status,
             'message' => $new_status ? __('Constant activated', 'php-constants-manager') : __('Constant deactivated', 'php-constants-manager')
+        ));
+    }
+    
+    /**
+     * Render all defines page
+     */
+    public function render_all_defines_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Create list table instance
+        $list_table = new PCM_All_Defines_Table();
+        $list_table->prepare_items();
+        
+        $this->load_view('admin/all-defines', array(
+            'list_table' => $list_table
         ));
     }
     
