@@ -609,12 +609,6 @@ class PHP_Constants_Manager {
             'option' => 'constants_per_page'
         ));
         
-        // Add column management
-        add_screen_option('layout_columns', array(
-            'max' => 1,
-            'default' => 1
-        ));
-        
         // Create temporary list table to get columns
         $list_table = new PCM_List_Table();
         $columns = $list_table->get_columns();
@@ -641,12 +635,6 @@ class PHP_Constants_Manager {
             'label' => __('Constants per page', 'php-constants-manager'),
             'default' => 50,
             'option' => 'all_defines_per_page'
-        ));
-        
-        // Add column management
-        add_screen_option('layout_columns', array(
-            'max' => 1,
-            'default' => 1
         ));
         
         // Create temporary list table to get columns
