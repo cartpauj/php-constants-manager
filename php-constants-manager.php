@@ -312,17 +312,34 @@ class PHP_Constants_Manager {
             wp_die(__('Invalid constant name', 'php-constants-manager'));
         }
         
-        // Check if constant is already defined (only for new constants)
-        if (!$id && defined($name)) {
-            // Check if this constant is already managed by us
-            $existing_constant = $this->db->get_constant_by_name($name);
+        // Check if constant is already defined and warn if it's predefined elsewhere
+        if (defined($name)) {
+            $existing_value = constant($name);
+            $our_value = $value;
             
-            if (!$existing_constant) {
-                // It's defined elsewhere, not by our plugin
-                $existing_value = constant($name);
+            // Type-cast our value to match what it would be when defined
+            switch ($type) {
+                case 'boolean':
+                    $our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
+                    break;
+                case 'integer':
+                    $our_value = intval($our_value);
+                    break;
+                case 'float':
+                    $our_value = floatval($our_value);
+                    break;
+                case 'null':
+                    $our_value = null;
+                    break;
+            }
+            
+            // Show warning if it's not our definition (inactive or different value)
+            if (!$is_active || $existing_value !== $our_value) {
+                $action_text = $id ? __('updated', 'php-constants-manager') : __('added', 'php-constants-manager');
                 $message = sprintf(
-                    __('The constant "%s" is already defined with value: %s. You can still add it to manage it when it\'s not predefined.', 'php-constants-manager'),
+                    __('The constant "%s" has been %s, but it is already defined elsewhere with value: %s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
                     $name,
+                    $action_text,
                     var_export($existing_value, true)
                 );
                 
