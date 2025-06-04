@@ -43,6 +43,11 @@ class PHP_Constants_Manager {
     private $db;
     
     /**
+     * Views directory path
+     */
+    private $views_path;
+    
+    /**
      * Get instance of the class
      */
     public static function get_instance() {
@@ -57,6 +62,7 @@ class PHP_Constants_Manager {
      */
     private function __construct() {
         $this->db = new PCM_DB();
+        $this->views_path = PCM_PLUGIN_DIR . 'views/';
         
         // Hook into WordPress
         //add_action('init', array($this, 'init'));
@@ -74,6 +80,24 @@ class PHP_Constants_Manager {
         add_action('admin_post_pcm_delete_constant', array($this, 'handle_delete_constant'));
         add_action('admin_post_pcm_toggle_constant', array($this, 'handle_toggle_constant'));
         add_action('admin_post_pcm_bulk_action', array($this, 'handle_bulk_action'));
+    }
+    
+    /**
+     * Load view template
+     */
+    private function load_view($template, $data = array()) {
+        $template_path = $this->views_path . $template . '.php';
+        
+        if (!file_exists($template_path)) {
+            wp_die(sprintf(__('View template not found: %s', 'php-constants-manager'), $template));
+        }
+        
+        // Extract data to variables
+        if (!empty($data)) {
+            extract($data, EXTR_SKIP);
+        }
+        
+        include $template_path;
     }
     
     /**
@@ -185,50 +209,19 @@ class PHP_Constants_Manager {
         $list_table = new PCM_List_Table();
         $list_table->prepare_items();
         
-        ?>
-        <div class="wrap">
-            <h1 class="wp-heading-inline"><?php _e('PHP Constants', 'php-constants-manager'); ?></h1>
-            <a href="<?php echo admin_url('admin.php?page=php-constants-manager-add'); ?>" class="page-title-action"><?php _e('Add New', 'php-constants-manager'); ?></a>
-            
-            <?php 
-            // Check for transient notices
-            $transient_notice = get_transient('pcm_admin_notice');
-            if ($transient_notice) {
-                delete_transient('pcm_admin_notice');
-                ?>
-                <div class="notice notice-<?php echo esc_attr($transient_notice['type']); ?> is-dismissible">
-                    <p><?php echo esc_html($transient_notice['message']); ?></p>
-                </div>
-                <?php
-            }
-            ?>
-            
-            <?php if (isset($_GET['message'])): ?>
-                <?php
-                $messages = array(
-                    'saved' => __('Constant saved successfully.', 'php-constants-manager'),
-                    'deleted' => __('Constant deleted successfully.', 'php-constants-manager'),
-                    'toggled' => __('Constant status updated successfully.', 'php-constants-manager'),
-                    'bulk_deleted' => __('Selected constants deleted successfully.', 'php-constants-manager'),
-                    'bulk_activated' => __('Selected constants activated successfully.', 'php-constants-manager'),
-                    'bulk_deactivated' => __('Selected constants deactivated successfully.', 'php-constants-manager'),
-                );
-                $message = isset($messages[$_GET['message']]) ? $messages[$_GET['message']] : '';
-                if ($message):
-                ?>
-                    <div class="notice notice-success is-dismissible">
-                        <p><?php echo esc_html($message); ?></p>
-                    </div>
-                <?php endif; ?>
-            <?php endif; ?>
-            
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                <input type="hidden" name="action" value="pcm_bulk_action" />
-                <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
-                <?php $list_table->display(); ?>
-            </form>
-        </div>
-        <?php
+        // Prepare data for view
+        $transient_notice = get_transient('pcm_admin_notice');
+        if ($transient_notice) {
+            delete_transient('pcm_admin_notice');
+        }
+        
+        $message = isset($_GET['message']) ? $_GET['message'] : '';
+        
+        $this->load_view('admin/constants-list', array(
+            'list_table' => $list_table,
+            'transient_notice' => $transient_notice,
+            'message' => $message
+        ));
     }
     
     /**
@@ -264,110 +257,12 @@ class PHP_Constants_Manager {
     private function render_form($constant = null) {
         $is_edit = $constant !== null;
         $title = $is_edit ? __('Edit Constant', 'php-constants-manager') : __('Add New Constant', 'php-constants-manager');
-        ?>
-        <div class="wrap">
-            <h1><?php echo esc_html($title); ?></h1>
-            
-            <?php
-            // Check if constant is already defined (for edit mode)
-            if ($is_edit && defined($constant->name)) {
-                $existing_value = constant($constant->name);
-                ?>
-                <div class="notice notice-warning">
-                    <p><?php 
-                        printf(
-                            __('Note: The constant "%s" is currently defined with value: %s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
-                            esc_html($constant->name),
-                            '<code>' . esc_html(var_export($existing_value, true)) . '</code>'
-                        ); 
-                    ?></p>
-                </div>
-                <?php
-            }
-            ?>
-            
-            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" class="pcm-form">
-                <input type="hidden" name="action" value="pcm_save_constant" />
-                <?php if ($is_edit): ?>
-                    <input type="hidden" name="id" value="<?php echo esc_attr($constant->id); ?>" />
-                <?php endif; ?>
-                <?php wp_nonce_field('pcm_save_constant', 'pcm_nonce'); ?>
-                
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">
-                            <label for="constant-name"><?php _e('Constant Name', 'php-constants-manager'); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" id="constant-name" name="constant_name" class="regular-text" 
-                                   value="<?php echo $is_edit ? esc_attr($constant->name) : ''; ?>" 
-                                   required pattern="[A-Z][A-Z0-9_]*" 
-                                   <?php echo $is_edit ? 'readonly' : ''; ?> />
-                            <p class="description"><?php _e('Use uppercase letters, numbers, and underscores only. Must start with a letter.', 'php-constants-manager'); ?></p>
-                            <?php if ($is_edit): ?>
-                                <p class="description"><?php _e('Note: Constant names cannot be changed after creation.', 'php-constants-manager'); ?></p>
-                            <?php endif; ?>
-                            <div id="constant-name-feedback"></div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="constant-value"><?php _e('Value', 'php-constants-manager'); ?></label>
-                        </th>
-                        <td>
-                            <input type="text" id="constant-value" name="constant_value" class="regular-text" 
-                                   value="<?php echo $is_edit ? esc_attr($constant->value) : ''; ?>" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="constant-type"><?php _e('Type', 'php-constants-manager'); ?></label>
-                        </th>
-                        <td>
-                            <select id="constant-type" name="constant_type">
-                                <option value="string" <?php selected($is_edit ? $constant->type : '', 'string'); ?>><?php _e('String', 'php-constants-manager'); ?></option>
-                                <option value="integer" <?php selected($is_edit ? $constant->type : '', 'integer'); ?>><?php _e('Integer', 'php-constants-manager'); ?></option>
-                                <option value="float" <?php selected($is_edit ? $constant->type : '', 'float'); ?>><?php _e('Float', 'php-constants-manager'); ?></option>
-                                <option value="boolean" <?php selected($is_edit ? $constant->type : '', 'boolean'); ?>><?php _e('Boolean', 'php-constants-manager'); ?></option>
-                                <option value="null" <?php selected($is_edit ? $constant->type : '', 'null'); ?>><?php _e('NULL', 'php-constants-manager'); ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="constant-active"><?php _e('Status', 'php-constants-manager'); ?></label>
-                        </th>
-                        <td>
-                            <label>
-                                <input type="checkbox" id="constant-active" name="constant_active" value="1" 
-                                       <?php checked($is_edit ? $constant->is_active : true, true); ?> />
-                                <?php _e('Active', 'php-constants-manager'); ?>
-                            </label>
-                            <p class="description"><?php _e('Only active constants are loaded.', 'php-constants-manager'); ?></p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">
-                            <label for="constant-description"><?php _e('Description', 'php-constants-manager'); ?></label>
-                        </th>
-                        <td>
-                            <textarea id="constant-description" name="constant_description" rows="3" class="large-text"><?php 
-                                echo $is_edit ? esc_textarea($constant->description) : ''; 
-                            ?></textarea>
-                            <p class="description"><?php _e('Optional: Describe what this constant is used for.', 'php-constants-manager'); ?></p>
-                        </td>
-                    </tr>
-                </table>
-                
-                <p class="submit">
-                    <button type="submit" class="button button-primary">
-                        <?php echo $is_edit ? __('Update Constant', 'php-constants-manager') : __('Add Constant', 'php-constants-manager'); ?>
-                    </button>
-                    <a href="<?php echo admin_url('admin.php?page=php-constants-manager'); ?>" class="button"><?php _e('Cancel', 'php-constants-manager'); ?></a>
-                </p>
-            </form>
-        </div>
-        <?php
+        
+        $this->load_view('admin/constant-form', array(
+            'constant' => $constant,
+            'title' => $title,
+            'is_edit' => $is_edit
+        ));
     }
     
     /**
