@@ -120,13 +120,26 @@ class PHP_Constants_Manager {
                 
                 switch ($constant->type) {
                     case 'boolean':
-                        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                        if (is_string($value)) {
+                            $lower_value = strtolower(trim($value));
+                            $value = in_array($lower_value, ['true', '1', 'yes', 'on'], true);
+                        } else {
+                            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                        }
                         break;
                     case 'integer':
-                        $value = intval($value);
+                        if (is_numeric($value)) {
+                            $value = intval($value);
+                        } else {
+                            $value = 0;
+                        }
                         break;
                     case 'float':
-                        $value = floatval($value);
+                        if (is_numeric($value)) {
+                            $value = floatval($value);
+                        } else {
+                            $value = 0.0;
+                        }
                         break;
                     case 'null':
                         $value = null;
