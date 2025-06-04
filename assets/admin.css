@@ -107,11 +107,15 @@
 }
 
 .wp-list-table .column-is_active {
-    width: 12%;
+    width: 10%;
+}
+
+.wp-list-table .column-predefined {
+    width: 10%;
 }
 
 .wp-list-table .column-description {
-    width: 25%;
+    width: 20%;
 }
 
 .wp-list-table .column-created_at {
@@ -142,6 +146,7 @@
     }
     
     .wp-list-table .column-value,
+    .wp-list-table .column-predefined,
     .wp-list-table .column-description,
     .wp-list-table .column-created_at {
         display: none;
