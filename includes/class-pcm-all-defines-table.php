@@ -204,7 +204,6 @@ class PCM_All_Defines_Table extends WP_List_Table {
      * Get views for category filtering
      */
     public function get_views() {
-        $views = array();
         $current_filter = isset($_REQUEST['category_filter']) ? $_REQUEST['category_filter'] : 'all';
         $base_url = admin_url('admin.php?page=php-constants-manager-all-defines');
         
@@ -214,7 +213,8 @@ class PCM_All_Defines_Table extends WP_List_Table {
             $total_count += count($constants);
         }
         
-        // All link
+        // Start with All link
+        $views = array();
         $class = ($current_filter == 'all') ? ' class="current"' : '';
         $views['all'] = sprintf(
             '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
@@ -236,6 +236,7 @@ class PCM_All_Defines_Table extends WP_List_Table {
         // Sort categories alphabetically (case-insensitive)
         uksort($category_counts, 'strcasecmp');
         
+        // Add category links after All
         foreach ($category_counts as $category => $count) {
             $category_slug = sanitize_title($category);
             $class = ($current_filter == $category_slug) ? ' class="current"' : '';
