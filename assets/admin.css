@@ -204,6 +204,62 @@
     width: 15%;
 }
 
+/* My Constants table responsive column adjustments */
+/* When columns are hidden, make remaining columns more flexible */
+.wp-list-table .column-name {
+    min-width: 180px;
+}
+
+.wp-list-table .column-value {
+    min-width: 200px;
+}
+
+.wp-list-table .column-description {
+    min-width: 150px;
+}
+
+/* If description is hidden, let other columns expand */
+.wp-list-table:not(:has(.column-description.manage-column)) .column-value {
+    width: 40%;
+}
+
+.wp-list-table:not(:has(.column-description.manage-column)) .column-name {
+    width: 25%;
+}
+
+/* Alternative approach using CSS that works in more browsers */
+@media screen and (min-width: 783px) {
+    /* When we have fewer visible columns, make table layout more flexible */
+    .wp-list-table.constants-table {
+        table-layout: auto;
+    }
+    
+    .wp-list-table.constants-table .column-name {
+        width: auto;
+        min-width: 180px;
+    }
+    
+    .wp-list-table.constants-table .column-value {
+        width: auto;
+        min-width: 200px;
+    }
+    
+    .wp-list-table.constants-table .column-is_active {
+        width: 100px;
+        min-width: 100px;
+    }
+    
+    .wp-list-table.constants-table .column-predefined {
+        width: 100px;
+        min-width: 100px;
+    }
+    
+    .wp-list-table.constants-table .column-created_at {
+        width: 120px;
+        min-width: 120px;
+    }
+}
+
 /* Category filter links styling */
 .subsubsub {
     list-style: none;

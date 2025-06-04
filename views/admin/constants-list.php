@@ -67,6 +67,15 @@ if (!defined('ABSPATH')) {
     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
         <input type="hidden" name="action" value="pcm_bulk_action" />
         <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
-        <?php $list_table->display(); ?>
+        <div class="constants-table-wrapper">
+            <?php $list_table->display(); ?>
+        </div>
     </form>
+    
+    <script>
+    // Add CSS class to the table for better column management
+    jQuery(document).ready(function($) {
+        $('.constants-table-wrapper .wp-list-table').addClass('constants-table');
+    });
+    </script>
 </div>
