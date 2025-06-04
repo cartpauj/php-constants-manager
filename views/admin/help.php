@@ -25,6 +25,7 @@ if (!defined('ABSPATH')) {
             <li><strong><?php _e('Add New Constants:', 'php-constants-manager'); ?></strong> <?php _e('Go to "My Constants" and click "Add New" to create a new constant.', 'php-constants-manager'); ?></li>
             <li><strong><?php _e('Manage Existing:', 'php-constants-manager'); ?></strong> <?php _e('View, edit, activate/deactivate, or delete your constants from the "My Constants" page.', 'php-constants-manager'); ?></li>
             <li><strong><?php _e('View All Constants:', 'php-constants-manager'); ?></strong> <?php _e('Use "All Constants" to see every constant defined in your WordPress installation.', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Customize View:', 'php-constants-manager'); ?></strong> <?php _e('Use the "Screen Options" button (top-right) to control how many items to display per page and which columns to show/hide.', 'php-constants-manager'); ?></li>
         </ol>
         
         <h2><?php _e('Constant Types', 'php-constants-manager'); ?></h2>
@@ -186,6 +187,26 @@ add_action('init', function() {
 if (defined('MY_CONSTANT')) {
     // Your constant is available here
 }</code></pre>
+        
+        <h2><?php _e('Customizing Your View', 'php-constants-manager'); ?></h2>
+        
+        <h3><?php _e('Screen Options', 'php-constants-manager'); ?></h3>
+        <p><?php _e('Both the "My Constants" and "All Constants" pages include a "Screen Options" button in the top-right corner that allows you to customize how the tables are displayed.', 'php-constants-manager'); ?></p>
+        
+        <h4><?php _e('Number of Items', 'php-constants-manager'); ?></h4>
+        <p><?php _e('You can control how many constants are displayed per page. The default is 50, but you can choose from 5, 10, 20, 50, 100, or more. This is especially useful on the "All Constants" page which may show thousands of constants.', 'php-constants-manager'); ?></p>
+        
+        <h4><?php _e('Column Visibility', 'php-constants-manager'); ?></h4>
+        <p><?php _e('You can show or hide specific columns in both tables:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><strong><?php _e('My Constants:', 'php-constants-manager'); ?></strong> <?php _e('Name, Value, Status, Predefined, Description, Created', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('All Constants:', 'php-constants-manager'); ?></strong> <?php _e('Name, Value & Type, Category', 'php-constants-manager'); ?></li>
+        </ul>
+        <p><?php _e('When you hide columns, the remaining columns will automatically expand to fill the available space, making better use of your screen real estate.', 'php-constants-manager'); ?></p>
+        
+        <div class="notice notice-info" style="margin: 20px 0;">
+            <p><strong><?php _e('Tip:', 'php-constants-manager'); ?></strong> <?php _e('Your Screen Options preferences are saved automatically and will persist across page loads and browser sessions.', 'php-constants-manager'); ?></p>
+        </div>
         
         <div class="notice notice-info" style="margin: 20px 0;">
             <h3><?php _e('Need More Help?', 'php-constants-manager'); ?></h3>
