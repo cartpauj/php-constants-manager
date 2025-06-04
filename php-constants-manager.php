@@ -187,6 +187,15 @@ class PHP_Constants_Manager {
             'php-constants-manager-all-defines',
             array($this, 'render_all_defines_page')
         );
+        
+        add_submenu_page(
+            'php-constants-manager',
+            __('Help', 'php-constants-manager'),
+            __('Help', 'php-constants-manager'),
+            'manage_options',
+            'php-constants-manager-help',
+            array($this, 'render_help_page')
+        );
     }
     
     /**
@@ -523,6 +532,17 @@ class PHP_Constants_Manager {
         $this->load_view('admin/all-defines', array(
             'list_table' => $list_table
         ));
+    }
+    
+    /**
+     * Render help page
+     */
+    public function render_help_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        $this->load_view('admin/help');
     }
     
     /**
