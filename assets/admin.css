@@ -1,0 +1,106 @@
+/* PHP Constants Manager Admin Styles */
+
+/* Form styles */
+.pcm-form .form-table th {
+    width: 200px;
+}
+
+/* Status indicators */
+.pcm-status-active {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+.pcm-status-inactive {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.pcm-status-predefined {
+    color: #996800;
+    font-weight: 600;
+    cursor: help;
+}
+
+.pcm-toggle-link {
+    font-size: 13px;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.pcm-toggle-link:hover {
+    text-decoration: underline;
+}
+
+/* List table styles */
+.wp-list-table code {
+    background: #f0f0f1;
+    padding: 3px 5px;
+    border-radius: 3px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+}
+
+.wp-list-table .column-cb {
+    width: 2.2em;
+}
+
+.wp-list-table .column-name {
+    width: 20%;
+}
+
+.wp-list-table .column-value {
+    width: 25%;
+}
+
+.wp-list-table .column-type {
+    width: 10%;
+}
+
+.wp-list-table .column-is_active {
+    width: 12%;
+}
+
+.wp-list-table .column-description {
+    width: 25%;
+}
+
+.wp-list-table .column-created_at {
+    width: 10%;
+}
+
+/* Status count */
+.pcm-status-count {
+    color: #646970;
+    font-weight: normal;
+}
+
+/* Notices */
+.notice.pcm-notice {
+    margin: 5px 0 15px;
+}
+
+/* Row actions visibility */
+.wp-list-table .row-actions {
+    font-size: 13px;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 782px) {
+    .pcm-form .form-table th {
+        width: auto;
+        padding-bottom: 0;
+    }
+    
+    .wp-list-table .column-value,
+    .wp-list-table .column-description,
+    .wp-list-table .column-created_at {
+        display: none;
+    }
+    
+    .pcm-toggle-link {
+        display: block;
+        margin-left: 0;
+        margin-top: 5px;
+    }
+}
