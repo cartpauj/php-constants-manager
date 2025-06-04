@@ -180,16 +180,23 @@ class PCM_List_Table extends WP_List_Table {
                     break;
             }
             
-            // Check if it's our definition or external
-            if ($existing_value !== $our_value || !$item->is_active) {
+            // If our constant is active and the values match, it's our definition
+            if ($item->is_active && $existing_value === $our_value) {
                 return sprintf(
-                    '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
-                    esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($existing_value, true))),
-                    __('Yes', 'php-constants-manager')
+                    '<span class="pcm-predefined-no">%s</span>',
+                    __('No', 'php-constants-manager')
                 );
             }
+            
+            // If values don't match or constant is inactive, it's predefined elsewhere
+            return sprintf(
+                '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
+                esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($existing_value, true))),
+                __('Yes', 'php-constants-manager')
+            );
         }
         
+        // Constant is not defined anywhere
         return sprintf(
             '<span class="pcm-predefined-no">%s</span>',
             __('No', 'php-constants-manager')
