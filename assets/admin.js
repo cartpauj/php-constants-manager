@@ -127,4 +127,52 @@ jQuery(document).ready(function($) {
         var $submitBtn = $(this).find('button[type="submit"]');
         $submitBtn.prop('disabled', true).addClass('updating-message');
     });
+    
+    // Handle toggle switch changes
+    $(document).on('change', '.pcm-toggle-switch input[type="checkbox"]', function() {
+        var $toggle = $(this).closest('.pcm-toggle-switch');
+        var id = $toggle.data('id');
+        var nonce = $toggle.data('nonce');
+        var $checkbox = $(this);
+        
+        // Disable the toggle while processing
+        $checkbox.prop('disabled', true);
+        $toggle.addClass('pcm-toggle-loading');
+        
+        $.ajax({
+            url: pcm_ajax.ajax_url,
+            type: 'POST',
+            data: {
+                action: 'pcm_toggle_constant',
+                id: id,
+                nonce: nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Update checkbox state
+                    $checkbox.prop('checked', response.data.new_status);
+                    
+                    // Show brief success feedback
+                    $toggle.removeClass('pcm-toggle-loading').addClass('pcm-toggle-success');
+                    setTimeout(function() {
+                        $toggle.removeClass('pcm-toggle-success');
+                    }, 1000);
+                } else {
+                    // Revert checkbox state on error
+                    $checkbox.prop('checked', !$checkbox.prop('checked'));
+                    alert(response.data || 'An error occurred while toggling the constant.');
+                }
+            },
+            error: function() {
+                // Revert checkbox state on error
+                $checkbox.prop('checked', !$checkbox.prop('checked'));
+                alert('An error occurred while toggling the constant.');
+            },
+            complete: function() {
+                // Re-enable the toggle
+                $checkbox.prop('disabled', false);
+                $toggle.removeClass('pcm-toggle-loading');
+            }
+        });
+    });
 });

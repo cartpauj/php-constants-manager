@@ -83,6 +83,7 @@ class PHP_Constants_Manager {
         
         // Handle AJAX requests
         add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
+        add_action('wp_ajax_pcm_toggle_constant', array($this, 'ajax_toggle_constant'));
     }
     
     /**
@@ -470,6 +471,38 @@ class PHP_Constants_Manager {
         wp_send_json_success(array(
             'is_defined' => $is_defined,
             'value' => $value
+        ));
+    }
+    
+    /**
+     * AJAX handler to toggle constant status
+     */
+    public function ajax_toggle_constant() {
+        if (!check_ajax_referer('pcm_toggle_constant', 'nonce', false)) {
+            wp_send_json_error(__('Security check failed', 'php-constants-manager'));
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
+        
+        if (!$id) {
+            wp_send_json_error(__('Invalid constant ID', 'php-constants-manager'));
+        }
+        
+        $constant = $this->db->get_constant($id);
+        if (!$constant) {
+            wp_send_json_error(__('Constant not found', 'php-constants-manager'));
+        }
+        
+        $new_status = !$constant->is_active;
+        $this->db->update_constant($id, array('is_active' => $new_status));
+        
+        wp_send_json_success(array(
+            'new_status' => $new_status,
+            'message' => $new_status ? __('Constant activated', 'php-constants-manager') : __('Constant deactivated', 'php-constants-manager')
         ));
     }
     

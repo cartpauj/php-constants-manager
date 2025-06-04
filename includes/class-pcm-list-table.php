@@ -175,23 +175,16 @@ class PCM_List_Table extends WP_List_Table {
             }
         }
         
-        $toggle_url = wp_nonce_url(
-            admin_url('admin-post.php?action=pcm_toggle_constant&id=' . $item->id),
-            'pcm_toggle_constant',
-            'pcm_nonce'
-        );
-        
-        $status = $item->is_active ? 
-            '<span class="pcm-status-active">' . __('Active', 'php-constants-manager') . '</span>' : 
-            '<span class="pcm-status-inactive">' . __('Inactive', 'php-constants-manager') . '</span>';
-        
-        $toggle_text = $item->is_active ? __('Deactivate', 'php-constants-manager') : __('Activate', 'php-constants-manager');
+        $nonce = wp_create_nonce('pcm_toggle_constant');
         
         return sprintf(
-            '%s <a href="%s" class="pcm-toggle-link">%s</a>',
-            $status,
-            $toggle_url,
-            $toggle_text
+            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s">
+                <input type="checkbox" %s>
+                <span class="pcm-toggle-slider"></span>
+            </label>',
+            $item->id,
+            $nonce,
+            checked($item->is_active, true, false)
         );
     }
     
