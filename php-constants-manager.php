@@ -181,8 +181,8 @@ class PHP_Constants_Manager {
         
         add_submenu_page(
             'php-constants-manager',
-            __('All Defines', 'php-constants-manager'),
-            __('All Defines', 'php-constants-manager'),
+            __('All Constants', 'php-constants-manager'),
+            __('All Constants', 'php-constants-manager'),
             'manage_options',
             'php-constants-manager-all-defines',
             array($this, 'render_all_defines_page')

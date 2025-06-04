@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="wrap">
-    <h1 class="wp-heading-inline"><?php _e('All PHP Defines', 'php-constants-manager'); ?></h1>
+    <h1 class="wp-heading-inline"><?php _e('All Constants', 'php-constants-manager'); ?></h1>
     
     <p class="description">
         <?php _e('This table shows all PHP constants that are currently defined in your system, including built-in PHP constants, WordPress constants, and constants from plugins and themes.', 'php-constants-manager'); ?>
