@@ -135,19 +135,57 @@
 }
 
 /* Category styles for All Defines */
-.pcm-category-core {
+.pcm-category-core,
+.pcm-category-php-core {
     color: #0073aa;
     font-weight: 600;
 }
 
-.pcm-category-user {
+.pcm-category-user-defined {
     color: #00a32a;
     font-weight: 600;
 }
 
-.pcm-category-extensions,
-.pcm-category-standard {
+.pcm-category-wordpress-core,
+.pcm-category-wordpress-config {
+    color: #135e96;
+    font-weight: 600;
+}
+
+.pcm-category-php {
+    color: #8892bf;
+    font-weight: 600;
+}
+
+.pcm-category-date-time,
+.pcm-category-math,
+.pcm-category-string,
+.pcm-category-file {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.pcm-category-network,
+.pcm-category-database,
+.pcm-category-curl {
     color: #996800;
+    font-weight: 600;
+}
+
+.pcm-category-image,
+.pcm-category-json,
+.pcm-category-xml {
+    color: #7b2cbf;
+    font-weight: 600;
+}
+
+.pcm-category-error {
+    color: #cc1818;
+    font-weight: 600;
+}
+
+.pcm-category-other {
+    color: #646970;
     font-weight: 600;
 }
 

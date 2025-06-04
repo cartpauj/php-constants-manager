@@ -30,7 +30,7 @@ class PCM_All_Defines_Table extends WP_List_Table {
             'ajax' => false
         ));
         
-        $this->all_constants = get_defined_constants(true);
+        $this->all_constants = $this->get_categorized_constants();
     }
     
     /**
@@ -211,6 +211,81 @@ class PCM_All_Defines_Table extends WP_List_Table {
                 )
             );
         }
+    }
+    
+    /**
+     * Get categorized constants with better categorization
+     */
+    private function get_categorized_constants() {
+        $all_constants = get_defined_constants(true);
+        $categorized = array();
+        
+        // Define better category mappings based on constant prefixes
+        $category_patterns = array(
+            'PHP' => array('PHP_', 'ZEND_'),
+            'File' => array('FILE_', 'PATHINFO_', 'GLOB_', 'LOCK_', 'SEEK_'),
+            'Date/Time' => array('DATE_', 'ABDAY_', 'DAY_', 'ABMON_', 'MON_', 'AM_STR', 'PM_STR', 'D_T_FMT', 'D_FMT', 'T_FMT'),
+            'Math' => array('M_', 'MATH_'),
+            'String' => array('STR_', 'CRYPT_', 'ENT_', 'HTML_'),
+            'Network' => array('STREAM_', 'SOCKET_', 'SO_', 'SOL_', 'MSG_', 'DNS_'),
+            'Database' => array('MYSQL_', 'MYSQLI_', 'PDO_', 'SQLITE_', 'PGSQL_'),
+            'Image' => array('IMG_', 'IMAGETYPE_', 'GD_'),
+            'Filter' => array('FILTER_', 'INPUT_'),
+            'JSON' => array('JSON_'),
+            'PCRE' => array('PREG_'),
+            'XML' => array('XML_', 'LIBXML_'),
+            'Curl' => array('CURL'),
+            'Hash' => array('HASH_'),
+            'OpenSSL' => array('OPENSSL_'),
+            'SOAP' => array('SOAP_'),
+            'Directory' => array('DIRECTORY_SEPARATOR', 'PATH_SEPARATOR', 'SCANDIR_'),
+            'Error' => array('E_', 'LOG_'),
+            'WordPress Core' => array('WP_', 'WPINC', 'ABSPATH', 'DB_'),
+            'WordPress Config' => array('AUTOMATIC_UPDATER_', 'WP_POST_REVISIONS', 'WP_CRON_LOCK_TIMEOUT'),
+        );
+        
+        // Flatten all constants first
+        $flat_constants = array();
+        foreach ($all_constants as $source_category => $constants) {
+            foreach ($constants as $name => $value) {
+                $flat_constants[$name] = array(
+                    'value' => $value,
+                    'source_category' => $source_category
+                );
+            }
+        }
+        
+        // Categorize constants
+        foreach ($flat_constants as $name => $data) {
+            $category = 'Other';
+            
+            // Check against our pattern mappings
+            foreach ($category_patterns as $cat => $patterns) {
+                foreach ($patterns as $pattern) {
+                    if (strpos($name, $pattern) === 0) {
+                        $category = $cat;
+                        break 2;
+                    }
+                }
+            }
+            
+            // Special cases for specific constants
+            if (in_array($name, array('TRUE', 'FALSE', 'NULL'))) {
+                $category = 'Core';
+            } elseif ($data['source_category'] === 'user') {
+                $category = 'User Defined';
+            } elseif ($data['source_category'] === 'Core' && $category === 'Other') {
+                $category = 'PHP Core';
+            }
+            
+            if (!isset($categorized[$category])) {
+                $categorized[$category] = array();
+            }
+            
+            $categorized[$category][$name] = $data['value'];
+        }
+        
+        return $categorized;
     }
     
     /**
