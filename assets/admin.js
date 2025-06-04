@@ -43,23 +43,49 @@ jQuery(document).ready(function($) {
         }
     });
     
-    // Check if constant already exists
+    // Debounce timer for AJAX requests
+    var checkConstantTimer = null;
+    
+    // Check if constant already exists via AJAX
     function checkExistingConstant(name) {
         var $feedback = $('#constant-name-feedback');
         
-        // List of common WordPress constants to check
-        var commonConstants = [
-            'ABSPATH', 'WP_DEBUG', 'WP_DEBUG_LOG', 'WP_DEBUG_DISPLAY', 
-            'WP_CONTENT_DIR', 'WP_CONTENT_URL', 'WP_PLUGIN_DIR', 'WP_PLUGIN_URL',
-            'WPINC', 'WP_LANG_DIR', 'WP_MEMORY_LIMIT', 'WP_MAX_MEMORY_LIMIT',
-            'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_CHARSET', 'DB_COLLATE',
-            'AUTH_KEY', 'SECURE_AUTH_KEY', 'LOGGED_IN_KEY', 'NONCE_KEY',
-            'AUTH_SALT', 'SECURE_AUTH_SALT', 'LOGGED_IN_SALT', 'NONCE_SALT'
-        ];
-        
-        if (commonConstants.indexOf(name) !== -1) {
-            $feedback.html('<span style="color: #996800;">⚠ This is a WordPress core constant. You can still add it to manage when WordPress is not defining it.</span>');
+        // Clear any existing timer
+        if (checkConstantTimer) {
+            clearTimeout(checkConstantTimer);
         }
+        
+        // Show loading indicator
+        $feedback.html('<span style="color: #666;"><em>Checking...</em></span>');
+        
+        // Debounce the AJAX request
+        checkConstantTimer = setTimeout(function() {
+            $.ajax({
+                url: pcm_ajax.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'pcm_check_constant',
+                    constant_name: name,
+                    nonce: pcm_ajax.nonce
+                },
+                success: function(response) {
+                    if (response.success) {
+                        if (response.data.is_defined) {
+                            var value = response.data.value;
+                            var displayValue = typeof value === 'string' ? '"' + value + '"' : String(value);
+                            $feedback.html('<span style="color: #996800;">⚠ This constant is already defined with value: <code>' + displayValue + '</code>. You can still add it to manage when it\'s not predefined.</span>');
+                        } else {
+                            $feedback.html('<span style="color: #046b00;">✓ This constant is available.</span>');
+                        }
+                    } else {
+                        $feedback.html('<span style="color: #d63638;">Error checking constant.</span>');
+                    }
+                },
+                error: function() {
+                    $feedback.html('<span style="color: #d63638;">Error checking constant.</span>');
+                }
+            });
+        }, 500); // 500ms debounce
     }
     
     // Type field change handler

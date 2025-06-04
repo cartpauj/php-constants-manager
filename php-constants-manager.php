@@ -80,6 +80,9 @@ class PHP_Constants_Manager {
         add_action('admin_post_pcm_delete_constant', array($this, 'handle_delete_constant'));
         add_action('admin_post_pcm_toggle_constant', array($this, 'handle_toggle_constant'));
         add_action('admin_post_pcm_bulk_action', array($this, 'handle_bulk_action'));
+        
+        // Handle AJAX requests
+        add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
     }
     
     /**
@@ -197,7 +200,9 @@ class PHP_Constants_Manager {
         
         wp_localize_script('pcm-admin-script', 'pcm_ajax', array(
             'confirm_delete' => __('Are you sure you want to delete this constant?', 'php-constants-manager'),
-            'confirm_bulk_delete' => __('Are you sure you want to delete the selected constants?', 'php-constants-manager')
+            'confirm_bulk_delete' => __('Are you sure you want to delete the selected constants?', 'php-constants-manager'),
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('pcm_check_constant')
         ));
     }
     
@@ -435,6 +440,37 @@ class PHP_Constants_Manager {
         
         wp_redirect(admin_url('admin.php?page=php-constants-manager&message=' . $message));
         exit;
+    }
+    
+    /**
+     * AJAX handler to check if constant is defined
+     */
+    public function ajax_check_constant() {
+        if (!check_ajax_referer('pcm_check_constant', 'nonce', false)) {
+            wp_die(__('Security check failed', 'php-constants-manager'));
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        $constant_name = sanitize_text_field($_POST['constant_name']);
+        
+        if (empty($constant_name)) {
+            wp_send_json_error('Invalid constant name');
+        }
+        
+        $is_defined = defined($constant_name);
+        $value = null;
+        
+        if ($is_defined) {
+            $value = constant($constant_name);
+        }
+        
+        wp_send_json_success(array(
+            'is_defined' => $is_defined,
+            'value' => $value
+        ));
     }
     
     /**
