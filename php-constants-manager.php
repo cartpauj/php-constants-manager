@@ -240,6 +240,13 @@ class PHP_Constants_Manager {
             return;
         }
         
+        // Add screen options for list table
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'constants_per_page'
+        ));
+        
         // Create list table instance
         $list_table = new PCM_List_Table();
         $list_table->prepare_items();
@@ -527,6 +534,13 @@ class PHP_Constants_Manager {
         if (!current_user_can('manage_options')) {
             return;
         }
+        
+        // Add screen options for list table
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'all_defines_per_page'
+        ));
         
         // Create list table instance
         $list_table = new PCM_All_Defines_Table();

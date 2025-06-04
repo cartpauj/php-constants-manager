@@ -31,13 +31,6 @@ class PCM_All_Defines_Table extends WP_List_Table {
         ));
         
         $this->all_constants = $this->get_categorized_constants();
-        
-        // Add screen options
-        add_screen_option('per_page', array(
-            'label' => __('Constants per page', 'php-constants-manager'),
-            'default' => 50,
-            'option' => 'all_defines_per_page'
-        ));
     }
     
     /**

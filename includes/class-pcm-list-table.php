@@ -31,13 +31,6 @@ class PCM_List_Table extends WP_List_Table {
         ));
         
         $this->db = new PCM_DB();
-        
-        // Add screen options
-        add_screen_option('per_page', array(
-            'label' => __('Constants per page', 'php-constants-manager'),
-            'default' => 50,
-            'option' => 'constants_per_page'
-        ));
     }
     
     /**
