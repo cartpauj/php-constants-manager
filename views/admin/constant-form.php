@@ -18,35 +18,23 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Check if constant is already defined (for edit mode)
-    if ($is_edit && defined($constant->name)) {
-        $existing_value = constant($constant->name);
-        $our_value = $constant->value;
+    if ($is_edit) {
+        $plugin_instance = PHP_Constants_Manager::get_instance();
+        $predefined_check = $plugin_instance->is_constant_predefined(
+            $constant->name, 
+            $constant->value, 
+            $constant->type, 
+            $constant->is_active
+        );
         
-        // Type-cast our value to match what it would be when defined
-        switch ($constant->type) {
-            case 'boolean':
-                $our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
-                break;
-            case 'integer':
-                $our_value = intval($our_value);
-                break;
-            case 'float':
-                $our_value = floatval($our_value);
-                break;
-            case 'null':
-                $our_value = null;
-                break;
-        }
-        
-        // Only show warning if it's NOT our own definition
-        if (!$constant->is_active || $existing_value !== $our_value) {
+        if ($predefined_check['is_predefined']) {
             ?>
             <div class="notice notice-warning">
                 <p><?php 
                     printf(
                         __('Note: The constant "%s" is currently defined with value: %s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
                         esc_html($constant->name),
-                        '<code>' . esc_html(var_export($existing_value, true)) . '</code>'
+                        '<code>' . esc_html(var_export($predefined_check['existing_value'], true)) . '</code>'
                     ); 
                 ?></p>
             </div>

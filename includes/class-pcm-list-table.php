@@ -159,44 +159,22 @@ class PCM_List_Table extends WP_List_Table {
      * Column predefined
      */
     public function column_predefined($item) {
-        // Check if constant is already defined elsewhere
-        if (defined($item->name)) {
-            $existing_value = constant($item->name);
-            $our_value = $item->value;
-            
-            // Type-cast our value to match what it would be when defined
-            switch ($item->type) {
-                case 'boolean':
-                    $our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
-                    break;
-                case 'integer':
-                    $our_value = intval($our_value);
-                    break;
-                case 'float':
-                    $our_value = floatval($our_value);
-                    break;
-                case 'null':
-                    $our_value = null;
-                    break;
-            }
-            
-            // If our constant is active and the values match, it's our definition
-            if ($item->is_active && $existing_value === $our_value) {
-                return sprintf(
-                    '<span class="pcm-predefined-no">%s</span>',
-                    __('No', 'php-constants-manager')
-                );
-            }
-            
-            // If values don't match or constant is inactive, it's predefined elsewhere
+        $plugin_instance = PHP_Constants_Manager::get_instance();
+        $predefined_check = $plugin_instance->is_constant_predefined(
+            $item->name, 
+            $item->value, 
+            $item->type, 
+            $item->is_active
+        );
+        
+        if ($predefined_check['is_predefined']) {
             return sprintf(
                 '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
-                esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($existing_value, true))),
+                esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($predefined_check['existing_value'], true))),
                 __('Yes', 'php-constants-manager')
             );
         }
         
-        // Constant is not defined anywhere
         return sprintf(
             '<span class="pcm-predefined-no">%s</span>',
             __('No', 'php-constants-manager')

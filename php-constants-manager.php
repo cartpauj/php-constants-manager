@@ -312,43 +312,22 @@ class PHP_Constants_Manager {
             wp_die(__('Invalid constant name', 'php-constants-manager'));
         }
         
-        // Check if constant is already defined and warn if it's predefined elsewhere
-        if (defined($name)) {
-            $existing_value = constant($name);
-            $our_value = $value;
+        // Check if constant is predefined elsewhere and warn
+        $predefined_check = $this->is_constant_predefined($name, $value, $type, $is_active);
+        if ($predefined_check['is_predefined']) {
+            $action_text = $id ? __('updated', 'php-constants-manager') : __('added', 'php-constants-manager');
+            $message = sprintf(
+                __('The constant "%s" has been %s, but it is already defined elsewhere with value: %s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
+                $name,
+                $action_text,
+                var_export($predefined_check['existing_value'], true)
+            );
             
-            // Type-cast our value to match what it would be when defined
-            switch ($type) {
-                case 'boolean':
-                    $our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
-                    break;
-                case 'integer':
-                    $our_value = intval($our_value);
-                    break;
-                case 'float':
-                    $our_value = floatval($our_value);
-                    break;
-                case 'null':
-                    $our_value = null;
-                    break;
-            }
-            
-            // Show warning if it's not our definition (inactive or different value)
-            if (!$is_active || $existing_value !== $our_value) {
-                $action_text = $id ? __('updated', 'php-constants-manager') : __('added', 'php-constants-manager');
-                $message = sprintf(
-                    __('The constant "%s" has been %s, but it is already defined elsewhere with value: %s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
-                    $name,
-                    $action_text,
-                    var_export($existing_value, true)
-                );
-                
-                // Store message in transient to show after redirect
-                set_transient('pcm_admin_notice', array(
-                    'type' => 'warning',
-                    'message' => $message
-                ), 30);
-            }
+            // Store message in transient to show after redirect
+            set_transient('pcm_admin_notice', array(
+                'type' => 'warning',
+                'message' => $message
+            ), 30);
         }
         
         // Save constant
@@ -488,16 +467,12 @@ class PHP_Constants_Manager {
             wp_send_json_error('Invalid constant name');
         }
         
-        $is_defined = defined($constant_name);
-        $value = null;
-        
-        if ($is_defined) {
-            $value = constant($constant_name);
-        }
+        $predefined_check = $this->is_constant_predefined($constant_name);
         
         wp_send_json_success(array(
-            'is_defined' => $is_defined,
-            'value' => $value
+            'is_defined' => defined($constant_name),
+            'is_predefined' => $predefined_check['is_predefined'],
+            'value' => $predefined_check['existing_value']
         ));
     }
     
@@ -548,6 +523,53 @@ class PHP_Constants_Manager {
         $this->load_view('admin/all-defines', array(
             'list_table' => $list_table
         ));
+    }
+    
+    /**
+     * Check if a constant is truly predefined (not defined by this plugin)
+     * 
+     * @param string $name Constant name
+     * @param mixed $our_value Our stored value
+     * @param string $our_type Our stored type
+     * @param bool $is_active Whether our constant is active
+     * @return array Array with 'is_predefined' boolean and 'existing_value' if predefined
+     */
+    public function is_constant_predefined($name, $our_value = null, $our_type = 'string', $is_active = true) {
+        if (!defined($name)) {
+            return array('is_predefined' => false, 'existing_value' => null);
+        }
+        
+        $existing_value = constant($name);
+        
+        // If we don't have our value info, it's predefined
+        if ($our_value === null) {
+            return array('is_predefined' => true, 'existing_value' => $existing_value);
+        }
+        
+        // Type-cast our value to match what it would be when defined
+        $typed_our_value = $our_value;
+        switch ($our_type) {
+            case 'boolean':
+                $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
+                break;
+            case 'integer':
+                $typed_our_value = intval($our_value);
+                break;
+            case 'float':
+                $typed_our_value = floatval($our_value);
+                break;
+            case 'null':
+                $typed_our_value = null;
+                break;
+        }
+        
+        // If our constant is active and values match, it's our definition
+        if ($is_active && $existing_value === $typed_our_value) {
+            return array('is_predefined' => false, 'existing_value' => $existing_value);
+        }
+        
+        // Otherwise, it's predefined elsewhere
+        return array('is_predefined' => true, 'existing_value' => $existing_value);
     }
     
     /**
