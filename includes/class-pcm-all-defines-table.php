@@ -233,8 +233,8 @@ class PCM_All_Defines_Table extends WP_List_Table {
             }
         }
         
-        // Sort categories alphabetically
-        ksort($category_counts);
+        // Sort categories alphabetically (case-insensitive)
+        uksort($category_counts, 'strcasecmp');
         
         foreach ($category_counts as $category => $count) {
             $category_slug = sanitize_title($category);
