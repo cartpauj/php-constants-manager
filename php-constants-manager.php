@@ -608,6 +608,29 @@ class PHP_Constants_Manager {
             'default' => 50,
             'option' => 'constants_per_page'
         ));
+        
+        // Add column management
+        add_screen_option('layout_columns', array(
+            'max' => 1,
+            'default' => 1
+        ));
+        
+        // Create temporary list table to get columns
+        $list_table = new PCM_List_Table();
+        $columns = $list_table->get_columns();
+        
+        // Remove checkbox column from options (always visible)
+        unset($columns['cb']);
+        
+        add_meta_box(
+            'pcm-columns',
+            __('Columns', 'php-constants-manager'),
+            array($this, 'render_columns_screen_options'),
+            get_current_screen(),
+            'side',
+            'core',
+            $columns
+        );
     }
     
     /**
@@ -619,6 +642,58 @@ class PHP_Constants_Manager {
             'default' => 50,
             'option' => 'all_defines_per_page'
         ));
+        
+        // Add column management
+        add_screen_option('layout_columns', array(
+            'max' => 1,
+            'default' => 1
+        ));
+        
+        // Create temporary list table to get columns
+        $list_table = new PCM_All_Defines_Table();
+        $columns = $list_table->get_columns();
+        
+        add_meta_box(
+            'pcm-all-columns',
+            __('Columns', 'php-constants-manager'),
+            array($this, 'render_all_columns_screen_options'),
+            get_current_screen(),
+            'side',
+            'core',
+            $columns
+        );
+    }
+    
+    /**
+     * Render column options for My Constants screen
+     */
+    public function render_columns_screen_options($screen, $args) {
+        $columns = $args['args'];
+        $hidden = get_hidden_columns($screen);
+        
+        foreach ($columns as $column_key => $column_title) {
+            $checked = !in_array($column_key, $hidden);
+            echo '<label>';
+            echo '<input type="checkbox" name="' . esc_attr($column_key) . '" value="' . esc_attr($column_key) . '"' . checked($checked, true, false) . ' />';
+            echo ' ' . esc_html($column_title);
+            echo '</label><br>';
+        }
+    }
+    
+    /**
+     * Render column options for All Constants screen
+     */
+    public function render_all_columns_screen_options($screen, $args) {
+        $columns = $args['args'];
+        $hidden = get_hidden_columns($screen);
+        
+        foreach ($columns as $column_key => $column_title) {
+            $checked = !in_array($column_key, $hidden);
+            echo '<label>';
+            echo '<input type="checkbox" name="' . esc_attr($column_key) . '" value="' . esc_attr($column_key) . '"' . checked($checked, true, false) . ' />';
+            echo ' ' . esc_html($column_title);
+            echo '</label><br>';
+        }
     }
     
     /**
