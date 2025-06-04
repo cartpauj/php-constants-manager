@@ -43,6 +43,7 @@ class PCM_List_Table extends WP_List_Table {
             'value' => __('Value', 'php-constants-manager'),
             'type' => __('Type', 'php-constants-manager'),
             'is_active' => __('Status', 'php-constants-manager'),
+            'predefined' => __('Predefined', 'php-constants-manager'),
             'description' => __('Description', 'php-constants-manager'),
             'created_at' => __('Created', 'php-constants-manager')
         );
@@ -56,6 +57,7 @@ class PCM_List_Table extends WP_List_Table {
             'name' => array('name', false),
             'type' => array('type', false),
             'is_active' => array('is_active', false),
+            'predefined' => array('predefined', false),
             'created_at' => array('created_at', false)
         );
     }
@@ -95,6 +97,9 @@ class PCM_List_Table extends WP_List_Table {
                 
             case 'created_at':
                 return date_i18n(get_option('date_format'), strtotime($item->created_at));
+                
+            case 'predefined':
+                return $this->column_predefined($item);
                 
             default:
                 return esc_html($item->$column_name);
@@ -144,6 +149,23 @@ class PCM_List_Table extends WP_List_Table {
      * Column status
      */
     public function column_is_active($item) {
+        $nonce = wp_create_nonce('pcm_toggle_constant');
+        
+        return sprintf(
+            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s">
+                <input type="checkbox" %s>
+                <span class="pcm-toggle-slider"></span>
+            </label>',
+            $item->id,
+            $nonce,
+            checked($item->is_active, true, false)
+        );
+    }
+    
+    /**
+     * Column predefined
+     */
+    public function column_predefined($item) {
         // Check if constant is already defined elsewhere
         if (defined($item->name)) {
             $existing_value = constant($item->name);
@@ -168,23 +190,16 @@ class PCM_List_Table extends WP_List_Table {
             // Check if it's our definition or external
             if ($existing_value !== $our_value || !$item->is_active) {
                 return sprintf(
-                    '<span class="pcm-status-predefined" title="%s">%s</span>',
+                    '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
                     esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($existing_value, true))),
-                    __('Predefined', 'php-constants-manager')
+                    __('Yes', 'php-constants-manager')
                 );
             }
         }
         
-        $nonce = wp_create_nonce('pcm_toggle_constant');
-        
         return sprintf(
-            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s">
-                <input type="checkbox" %s>
-                <span class="pcm-toggle-slider"></span>
-            </label>',
-            $item->id,
-            $nonce,
-            checked($item->is_active, true, false)
+            '<span class="pcm-predefined-no">%s</span>',
+            __('No', 'php-constants-manager')
         );
     }
     
