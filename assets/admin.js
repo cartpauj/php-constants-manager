@@ -85,7 +85,7 @@ jQuery(document).ready(function($) {
                     $feedback.html('<span style="color: #d63638;">Error checking constant.</span>');
                 }
             });
-        }, 500); // 500ms debounce
+        }, 2000); // 2 second debounce
     }
     
     // Type field change handler
