@@ -18,6 +18,21 @@ if (!defined('ABSPATH')) {
         <?php _e('This table shows all PHP constants that are currently defined in your system, including built-in PHP constants, WordPress constants, and constants from plugins and themes.', 'php-constants-manager'); ?>
     </p>
     
+    <?php
+    // Display category filter links
+    $views = $list_table->get_views();
+    if (!empty($views)) {
+        echo '<ul class="subsubsub">';
+        $view_links = array();
+        foreach ($views as $class => $view) {
+            $view_links[] = "<li class='$class'>$view</li>";
+        }
+        echo implode('', $view_links);
+        echo '</ul>';
+        echo '<div class="clear"></div>';
+    }
+    ?>
+    
     <form method="post">
         <?php 
         $list_table->search_box(__('Search Constants', 'php-constants-manager'), 'search_constants');
