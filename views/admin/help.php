@@ -70,13 +70,23 @@ if (!defined('ABSPATH')) {
         </ul>
         
         <h2><?php _e('Load Order Matters', 'php-constants-manager'); ?></h2>
-        <p><?php _e('This plugin loads early in WordPress, but some constants may already be defined by:', 'php-constants-manager'); ?></p>
+        <p><?php _e('This plugin defines your constants during the <code>plugins_loaded</code> action with priority 1, which means it loads very early in the WordPress loading process. However, some constants may already be defined by:', 'php-constants-manager'); ?></p>
         <ul>
-            <li><?php _e('wp-config.php file', 'php-constants-manager'); ?></li>
-            <li><?php _e('WordPress core', 'php-constants-manager'); ?></li>
-            <li><?php _e('Must-use plugins (mu-plugins)', 'php-constants-manager'); ?></li>
-            <li><?php _e('PHP extensions', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>wp-config.php file</strong> - Loads before any plugins', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>WordPress core</strong> - Many constants defined during WordPress bootstrap', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Must-use plugins (mu-plugins)</strong> - Load before regular plugins', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>PHP extensions</strong> - Built-in PHP constants', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Other plugins with higher priority</strong> - Plugins using <code>plugins_loaded</code> with priority 0 or negative values', 'php-constants-manager'); ?></li>
         </ul>
+        
+        <div class="notice notice-info" style="margin: 20px 0;">
+            <p><strong><?php _e('Technical Note:', 'php-constants-manager'); ?></strong> <?php _e('Your constants are defined during <code>plugins_loaded</code> priority 1, which means they are available to:', 'php-constants-manager'); ?></p>
+            <ul style="margin-left: 20px;">
+                <li><?php _e('All theme code (themes load after plugins)', 'php-constants-manager'); ?></li>
+                <li><?php _e('Most other plugins (unless they use higher priority)', 'php-constants-manager'); ?></li>
+                <li><?php _e('WordPress hooks like <code>init</code>, <code>wp_loaded</code>, etc.', 'php-constants-manager'); ?></li>
+            </ul>
+        </div>
         
         <h2><?php _e('Best Practices', 'php-constants-manager'); ?></h2>
         
@@ -155,17 +165,26 @@ if (!defined('ABSPATH')) {
             <li><?php _e('Check if it shows "Predefined: Yes" (meaning something else defined it first)', 'php-constants-manager'); ?></li>
             <li><?php _e('Verify the constant name follows PHP naming rules', 'php-constants-manager'); ?></li>
             <li><?php _e('Check for PHP syntax errors in your constant value', 'php-constants-manager'); ?></li>
+            <li><?php _e('Consider load order: if another plugin defines the same constant with higher priority (priority 0 or negative), it will override yours', 'php-constants-manager'); ?></li>
         </ol>
         
         <h3><?php _e('I see a warning about predefined constants', 'php-constants-manager'); ?></h3>
         <p><?php _e('This warning appears when you try to define a constant that\'s already defined elsewhere. Your definition is saved but won\'t take effect unless the original definition is removed.', 'php-constants-manager'); ?></p>
         
         <h3><?php _e('How to check if my constant is working', 'php-constants-manager'); ?></h3>
-        <p><?php _e('You can test your constants in your theme or plugin code:', 'php-constants-manager'); ?></p>
-        <pre><code>if (defined('MY_CONSTANT')) {
-    echo 'MY_CONSTANT is defined with value: ' . MY_CONSTANT;
-} else {
-    echo 'MY_CONSTANT is not defined';
+        <p><?php _e('You can test your constants in your theme or plugin code. Remember that your constants are available after the <code>plugins_loaded</code> action (priority 1), so test them in appropriate hooks:', 'php-constants-manager'); ?></p>
+        <pre><code>// Test in theme functions.php or after plugins_loaded
+add_action('init', function() {
+    if (defined('MY_CONSTANT')) {
+        echo 'MY_CONSTANT is defined with value: ' . MY_CONSTANT;
+    } else {
+        echo 'MY_CONSTANT is not defined';
+    }
+});
+
+// Or test directly in template files (themes load after plugins)
+if (defined('MY_CONSTANT')) {
+    // Your constant is available here
 }</code></pre>
         
         <div class="notice notice-info" style="margin: 20px 0;">

@@ -26,6 +26,20 @@ jQuery(document).ready(function($) {
     $('#constant-name').on('input', function() {
         var $input = $(this);
         var value = $input.val();
+        
+        // Auto-convert to uppercase (only for non-readonly fields)
+        if (!$input.prop('readonly')) {
+            var cursorPos = $input[0].selectionStart;
+            var upperValue = value.toUpperCase();
+            
+            if (value !== upperValue) {
+                $input.val(upperValue);
+                // Restore cursor position
+                $input[0].setSelectionRange(cursorPos, cursorPos);
+                value = upperValue;
+            }
+        }
+        
         var isValid = /^[A-Z][A-Z0-9_]*$/.test(value);
         var $feedback = $('#constant-name-feedback');
         
