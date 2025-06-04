@@ -435,7 +435,7 @@ class PHP_Constants_Manager {
 }
 
 // Initialize plugin
-add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'));
+add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'), 0);
 
 // Activation hook
 register_activation_hook(__FILE__, function() {
