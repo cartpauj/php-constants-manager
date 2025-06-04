@@ -31,6 +31,13 @@ class PCM_List_Table extends WP_List_Table {
         ));
         
         $this->db = new PCM_DB();
+        
+        // Add screen options
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'constants_per_page'
+        ));
     }
     
     /**
@@ -46,6 +53,13 @@ class PCM_List_Table extends WP_List_Table {
             'description' => __('Description', 'php-constants-manager'),
             'created_at' => __('Created', 'php-constants-manager')
         );
+    }
+    
+    /**
+     * Get hidden columns
+     */
+    public function get_hidden_columns() {
+        return get_hidden_columns($this->screen);
     }
     
     /**
@@ -187,14 +201,14 @@ class PCM_List_Table extends WP_List_Table {
     public function prepare_items() {
         // Set column headers
         $columns = $this->get_columns();
-        $hidden = array();
+        $hidden = $this->get_hidden_columns();
         $sortable = $this->get_sortable_columns();
         
         $this->_column_headers = array($columns, $hidden, $sortable);
         
         // Get current page
         $current_page = $this->get_pagenum();
-        $per_page = $this->get_items_per_page('constants_per_page', 20);
+        $per_page = $this->get_items_per_page('constants_per_page', 50);
         
         // Get query args
         $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';

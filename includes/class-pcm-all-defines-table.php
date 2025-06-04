@@ -31,6 +31,13 @@ class PCM_All_Defines_Table extends WP_List_Table {
         ));
         
         $this->all_constants = $this->get_categorized_constants();
+        
+        // Add screen options
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'all_defines_per_page'
+        ));
     }
     
     /**
@@ -42,6 +49,13 @@ class PCM_All_Defines_Table extends WP_List_Table {
             'value' => __('Value & Type', 'php-constants-manager'),
             'category' => __('Category', 'php-constants-manager')
         );
+    }
+    
+    /**
+     * Get hidden columns
+     */
+    public function get_hidden_columns() {
+        return get_hidden_columns($this->screen);
     }
     
     /**
@@ -127,7 +141,7 @@ class PCM_All_Defines_Table extends WP_List_Table {
     public function prepare_items() {
         // Set column headers
         $columns = $this->get_columns();
-        $hidden = array();
+        $hidden = $this->get_hidden_columns();
         $sortable = $this->get_sortable_columns();
         
         $this->_column_headers = array($columns, $hidden, $sortable);

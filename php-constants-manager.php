@@ -85,6 +85,9 @@ class PHP_Constants_Manager {
         // Handle AJAX requests
         add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
         add_action('wp_ajax_pcm_toggle_constant', array($this, 'ajax_toggle_constant'));
+        
+        // Handle screen options
+        add_filter('set-screen-option', array($this, 'set_screen_options'), 10, 3);
     }
     
     /**
@@ -590,6 +593,16 @@ class PHP_Constants_Manager {
         
         // Otherwise, it's predefined elsewhere
         return array('is_predefined' => true, 'existing_value' => $existing_value);
+    }
+    
+    /**
+     * Handle screen options save
+     */
+    public function set_screen_options($status, $option, $value) {
+        if (in_array($option, array('constants_per_page', 'all_defines_per_page'))) {
+            return $value;
+        }
+        return $status;
     }
     
     /**
