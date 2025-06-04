@@ -314,18 +314,24 @@ class PHP_Constants_Manager {
         
         // Check if constant is already defined (only for new constants)
         if (!$id && defined($name)) {
-            $existing_value = constant($name);
-            $message = sprintf(
-                __('The constant "%s" is already defined with value: %s. You can still add it to manage it when it\'s not predefined.', 'php-constants-manager'),
-                $name,
-                var_export($existing_value, true)
-            );
+            // Check if this constant is already managed by us
+            $existing_constant = $this->db->get_constant_by_name($name);
             
-            // Store message in transient to show after redirect
-            set_transient('pcm_admin_notice', array(
-                'type' => 'warning',
-                'message' => $message
-            ), 30);
+            if (!$existing_constant) {
+                // It's defined elsewhere, not by our plugin
+                $existing_value = constant($name);
+                $message = sprintf(
+                    __('The constant "%s" is already defined with value: %s. You can still add it to manage it when it\'s not predefined.', 'php-constants-manager'),
+                    $name,
+                    var_export($existing_value, true)
+                );
+                
+                // Store message in transient to show after redirect
+                set_transient('pcm_admin_notice', array(
+                    'type' => 'warning',
+                    'message' => $message
+                ), 30);
+            }
         }
         
         // Save constant
