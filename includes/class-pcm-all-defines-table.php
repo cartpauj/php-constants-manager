@@ -131,14 +131,19 @@ class PCM_All_Defines_Table extends WP_List_Table {
         
         $this->_column_headers = array($columns, $hidden, $sortable);
         
-        // Get current page
-        $current_page = $this->get_pagenum();
-        $per_page = $this->get_items_per_page('all_defines_per_page', 50);
-        
         // Get query args
         $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';
         $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
         $search = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
+        
+        // Reset to page 1 if we have a search term
+        if (!empty($search)) {
+            $_REQUEST['paged'] = 1;
+        }
+        
+        // Get current page
+        $current_page = $this->get_pagenum();
+        $per_page = $this->get_items_per_page('all_defines_per_page', 50);
         
         // Flatten all constants
         $items = array();
