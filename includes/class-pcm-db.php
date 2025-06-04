@@ -61,7 +61,8 @@ class PCM_DB {
             'limit' => -1,
             'offset' => 0,
             'search' => '',
-            'is_active' => null
+            'is_active' => null,
+            'type' => null
         );
         
         $args = wp_parse_args($args, $defaults);
@@ -82,6 +83,12 @@ class PCM_DB {
         if ($args['is_active'] !== null) {
             $where .= ' AND is_active = %d';
             $where_values[] = $args['is_active'] ? 1 : 0;
+        }
+        
+        // Add type condition
+        if (isset($args['type']) && !empty($args['type'])) {
+            $where .= ' AND type = %s';
+            $where_values[] = $args['type'];
         }
         
         // Build query
@@ -143,7 +150,8 @@ class PCM_DB {
         
         $defaults = array(
             'search' => '',
-            'is_active' => null
+            'is_active' => null,
+            'type' => null
         );
         
         $args = wp_parse_args($args, $defaults);
@@ -164,6 +172,12 @@ class PCM_DB {
         if ($args['is_active'] !== null) {
             $where .= ' AND is_active = %d';
             $where_values[] = $args['is_active'] ? 1 : 0;
+        }
+        
+        // Add type condition
+        if (isset($args['type']) && !empty($args['type'])) {
+            $where .= ' AND type = %s';
+            $where_values[] = $args['type'];
         }
         
         $sql = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
