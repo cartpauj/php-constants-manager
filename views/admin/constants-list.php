@@ -17,6 +17,8 @@ if (!defined('ABSPATH')) {
     <h1 class="wp-heading-inline"><?php _e('PHP Constants', 'php-constants-manager'); ?></h1>
     <a href="<?php echo admin_url('admin.php?page=php-constants-manager-add'); ?>" class="page-title-action"><?php _e('Add New', 'php-constants-manager'); ?></a>
     
+    <hr class="wp-header-end">
+    
     <?php 
     // Check for transient notices
     if ($transient_notice) {
