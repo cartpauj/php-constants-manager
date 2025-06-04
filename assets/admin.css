@@ -204,30 +204,6 @@
     width: 15%;
 }
 
-/* Dynamic column width adjustments when columns are hidden */
-.wp-list-table th,
-.wp-list-table td {
-    box-sizing: border-box;
-}
-
-/* When description column is hidden, expand other columns */
-.wp-list-table th.column-description.hidden,
-.wp-list-table td.column-description.hidden,
-.wp-list-table thead th.column-description:not(.manage-column),
-.wp-list-table tbody td.column-description:not(.manage-column) {
-    display: none !important;
-}
-
-/* Adjust layout when columns are hidden */
-.wp-list-table.widefat {
-    table-layout: auto;
-}
-
-/* Ensure remaining columns fill space */
-.wp-list-table thead th.manage-column {
-    width: auto;
-}
-
 /* Category filter links styling */
 .subsubsub {
     list-style: none;
