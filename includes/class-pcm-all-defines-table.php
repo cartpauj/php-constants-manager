@@ -75,7 +75,8 @@ class PCM_All_Defines_Table extends WP_List_Table {
                 return '<div><strong>' . esc_html(ucfirst($type)) . '</strong><br><code>' . esc_html($display_value) . '</code></div>';
                 
             case 'category':
-                return '<span class="pcm-category-' . esc_attr($item['category']) . '">' . esc_html(ucfirst($item['category'])) . '</span>';
+                $category_class = sanitize_html_class(strtolower(str_replace('/', '-', $item['category'])));
+                return '<span class="pcm-category-' . $category_class . '">' . esc_html($item['category']) . '</span>';
                 
             default:
                 return esc_html($item[$column_name]);
@@ -135,9 +136,10 @@ class PCM_All_Defines_Table extends WP_List_Table {
         $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';
         $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
         $search = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
+        $category_filter = isset($_REQUEST['category_filter']) ? $_REQUEST['category_filter'] : 'all';
         
-        // Reset to page 1 if we have a search term
-        if (!empty($search)) {
+        // Reset to page 1 if we have a search term or category filter
+        if (!empty($search) || $category_filter != 'all') {
             $_REQUEST['paged'] = 1;
         }
         
@@ -148,6 +150,11 @@ class PCM_All_Defines_Table extends WP_List_Table {
         // Flatten all constants
         $items = array();
         foreach ($this->all_constants as $category => $constants) {
+            // Filter by category if specified
+            if ($category_filter != 'all' && sanitize_title($category) != $category_filter) {
+                continue;
+            }
+            
             foreach ($constants as $name => $value) {
                 $items[] = array(
                     'name' => $name,
@@ -194,22 +201,64 @@ class PCM_All_Defines_Table extends WP_List_Table {
     }
     
     /**
+     * Get views for category filtering
+     */
+    public function get_views() {
+        $views = array();
+        $current_filter = isset($_REQUEST['category_filter']) ? $_REQUEST['category_filter'] : 'all';
+        $base_url = admin_url('admin.php?page=php-constants-manager-all-defines');
+        
+        // Calculate total count
+        $total_count = 0;
+        foreach ($this->all_constants as $category => $constants) {
+            $total_count += count($constants);
+        }
+        
+        // All link
+        $class = ($current_filter == 'all') ? ' class="current"' : '';
+        $views['all'] = sprintf(
+            '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
+            $base_url,
+            $class,
+            __('All', 'php-constants-manager'),
+            number_format_i18n($total_count)
+        );
+        
+        // Category links
+        $category_counts = array();
+        foreach ($this->all_constants as $category => $constants) {
+            $count = count($constants);
+            if ($count > 0) {
+                $category_counts[$category] = $count;
+            }
+        }
+        
+        // Sort categories by count (descending) for better UX
+        arsort($category_counts);
+        
+        foreach ($category_counts as $category => $count) {
+            $category_slug = sanitize_title($category);
+            $class = ($current_filter == $category_slug) ? ' class="current"' : '';
+            $views[$category_slug] = sprintf(
+                '<a href="%s&category_filter=%s"%s>%s <span class="count">(%s)</span></a>',
+                $base_url,
+                urlencode($category_slug),
+                $class,
+                esc_html($category),
+                number_format_i18n($count)
+            );
+        }
+        
+        return $views;
+    }
+    
+    /**
      * Extra table navigation
      */
     public function extra_tablenav($which) {
         if ($which === 'top') {
-            $total_count = 0;
-            foreach ($this->all_constants as $category => $constants) {
-                $total_count += count($constants);
-            }
-            
-            printf(
-                '<div class="alignleft actions"><span class="displaying-num">%s</span></div>',
-                sprintf(
-                    _n('%s constant', '%s constants', $total_count, 'php-constants-manager'),
-                    number_format_i18n($total_count)
-                )
-            );
+            // Category filters are now handled by get_views()
+            return;
         }
     }
     

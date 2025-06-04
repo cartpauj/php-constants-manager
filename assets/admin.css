@@ -174,13 +174,23 @@
 
 .pcm-category-image,
 .pcm-category-json,
-.pcm-category-xml {
+.pcm-category-xml,
+.pcm-category-filter,
+.pcm-category-pcre,
+.pcm-category-hash,
+.pcm-category-openssl,
+.pcm-category-soap {
     color: #7b2cbf;
     font-weight: 600;
 }
 
 .pcm-category-error {
     color: #cc1818;
+    font-weight: 600;
+}
+
+.pcm-category-directory {
+    color: #2d4a23;
     font-weight: 600;
 }
 
@@ -192,6 +202,52 @@
 /* All Defines table column widths */
 .wp-list-table .column-category {
     width: 15%;
+}
+
+/* Category filter links styling */
+.subsubsub {
+    list-style: none;
+    margin: 8px 0 5px;
+    padding: 0;
+    font-size: 13px;
+    float: left;
+    color: #646970;
+}
+
+.subsubsub li {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.subsubsub li::after {
+    content: ' |';
+    color: #c3c4c7;
+}
+
+.subsubsub li:last-child::after {
+    content: '';
+}
+
+.subsubsub a {
+    color: #0073aa;
+    text-decoration: none;
+    padding: 0 7px;
+}
+
+.subsubsub a:hover {
+    color: #135e96;
+}
+
+.subsubsub .current {
+    color: #000;
+    font-weight: 600;
+}
+
+.subsubsub .count {
+    color: #646970;
+    font-weight: normal;
 }
 
 /* Responsive styles */
