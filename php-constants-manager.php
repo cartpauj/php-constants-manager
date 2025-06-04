@@ -163,7 +163,7 @@ class PHP_Constants_Manager {
      * Add admin menu
      */
     public function add_admin_menu() {
-        add_menu_page(
+        $main_page = add_menu_page(
             __('PHP Constants Manager', 'php-constants-manager'),
             __('PHP Constants', 'php-constants-manager'),
             'manage_options',
@@ -173,7 +173,7 @@ class PHP_Constants_Manager {
             80
         );
         
-        add_submenu_page(
+        $my_constants_page = add_submenu_page(
             'php-constants-manager',
             __('My Constants', 'php-constants-manager'),
             __('My Constants', 'php-constants-manager'),
@@ -182,7 +182,7 @@ class PHP_Constants_Manager {
             array($this, 'render_admin_page')
         );
         
-        add_submenu_page(
+        $all_constants_page = add_submenu_page(
             'php-constants-manager',
             __('All Constants', 'php-constants-manager'),
             __('All Constants', 'php-constants-manager'),
@@ -191,7 +191,7 @@ class PHP_Constants_Manager {
             array($this, 'render_all_defines_page')
         );
         
-        add_submenu_page(
+        $help_page = add_submenu_page(
             'php-constants-manager',
             __('Help', 'php-constants-manager'),
             __('Help', 'php-constants-manager'),
@@ -199,6 +199,10 @@ class PHP_Constants_Manager {
             'php-constants-manager-help',
             array($this, 'render_help_page')
         );
+        
+        // Add screen options hooks
+        add_action("load-$main_page", array($this, 'add_my_constants_screen_options'));
+        add_action("load-$all_constants_page", array($this, 'add_all_constants_screen_options'));
     }
     
     /**
@@ -239,13 +243,6 @@ class PHP_Constants_Manager {
             $this->render_add_page();
             return;
         }
-        
-        // Add screen options for list table
-        add_screen_option('per_page', array(
-            'label' => __('Constants per page', 'php-constants-manager'),
-            'default' => 50,
-            'option' => 'constants_per_page'
-        ));
         
         // Create list table instance
         $list_table = new PCM_List_Table();
@@ -535,13 +532,6 @@ class PHP_Constants_Manager {
             return;
         }
         
-        // Add screen options for list table
-        add_screen_option('per_page', array(
-            'label' => __('Constants per page', 'php-constants-manager'),
-            'default' => 50,
-            'option' => 'all_defines_per_page'
-        ));
-        
         // Create list table instance
         $list_table = new PCM_All_Defines_Table();
         $list_table->prepare_items();
@@ -607,6 +597,28 @@ class PHP_Constants_Manager {
         
         // Otherwise, it's predefined elsewhere
         return array('is_predefined' => true, 'existing_value' => $existing_value);
+    }
+    
+    /**
+     * Add screen options for My Constants page
+     */
+    public function add_my_constants_screen_options() {
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'constants_per_page'
+        ));
+    }
+    
+    /**
+     * Add screen options for All Constants page
+     */
+    public function add_all_constants_screen_options() {
+        add_screen_option('per_page', array(
+            'label' => __('Constants per page', 'php-constants-manager'),
+            'default' => 50,
+            'option' => 'all_defines_per_page'
+        ));
     }
     
     /**
