@@ -164,10 +164,14 @@ class PCM_All_Defines_Table extends WP_List_Table {
         if (!empty($search) || $category_filter != 'all') {
             // Reset pagination for new search/filter
             // Note: This modifies $_REQUEST which is acceptable for pagination reset
+            $_REQUEST['paged'] = 1;
+            $current_page = 1;
         }
         
         // Get current page
-        $current_page = $this->get_pagenum();
+        if (!isset($current_page)) {
+            $current_page = $this->get_pagenum();
+        }
         $per_page = $this->get_items_per_page('all_defines_per_page', 50);
         
         // Flatten all constants

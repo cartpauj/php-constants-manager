@@ -234,6 +234,7 @@ class PCM_List_Table extends WP_List_Table {
         if (!empty($search) || $type_filter != 'all') {
             // Reset pagination for new search/filter
             // Note: This modifies $_REQUEST which is acceptable for pagination reset
+            $_REQUEST['paged'] = 1;
             $current_page = 1;
         }
         
