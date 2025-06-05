@@ -17,6 +17,18 @@ if (!defined('ABSPATH')) {
     <h1><?php echo esc_html($title); ?></h1>
     
     <?php
+    // Display transient notices
+    $transient_notice = get_transient('pcm_admin_notice');
+    if ($transient_notice) {
+        delete_transient('pcm_admin_notice');
+        $notice_class = $transient_notice['type'] === 'error' ? 'notice-error' : 'notice-warning';
+        ?>
+        <div class="notice <?php echo esc_attr($notice_class); ?> is-dismissible">
+            <p><?php echo wp_kses($transient_notice['message'], array('a' => array('href' => array()), 'code' => array())); ?></p>
+        </div>
+        <?php
+    }
+    
     // Check if constant is already defined (for edit mode)
     if ($is_edit) {
         $plugin_instance = PHP_Constants_Manager::get_instance();

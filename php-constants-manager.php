@@ -379,24 +379,52 @@ class PHP_Constants_Manager {
         
         // Save constant
         if ($id) {
-            $this->db->update_constant($id, array(
+            $result = $this->db->update_constant($id, array(
                 'value' => $value,
                 'type' => $type,
                 'is_active' => $is_active,
                 'description' => $description
             ));
+            
+            if ($result !== false) {
+                wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
+                exit;
+            } else {
+                wp_die(__('Failed to update constant.', 'php-constants-manager'));
+            }
         } else {
-            $this->db->insert_constant(array(
+            // Check if constant already exists in our database
+            $existing_constant = $this->db->get_constant_by_name($name);
+            if ($existing_constant) {
+                // Store error message in transient
+                set_transient('pcm_admin_notice', array(
+                    'type' => 'error',
+                    'message' => sprintf(
+                        __('A constant with the name "%s" already exists. Please <a href="%s">edit the existing constant</a> instead of creating a new one.', 'php-constants-manager'),
+                        esc_html($name),
+                        admin_url('admin.php?page=php-constants-manager&action=edit&id=' . $existing_constant->id)
+                    )
+                ), 30);
+                
+                wp_redirect(admin_url('admin.php?page=php-constants-manager&action=add'));
+                exit;
+            }
+            
+            $result = $this->db->insert_constant(array(
                 'name' => $name,
                 'value' => $value,
                 'type' => $type,
                 'is_active' => $is_active,
                 'description' => $description
             ));
+            
+            if ($result !== false) {
+                wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
+                exit;
+            } else {
+                wp_die(__('Failed to save constant.', 'php-constants-manager'));
+            }
         }
-        
-        wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
-        exit;
     }
     
     /**
