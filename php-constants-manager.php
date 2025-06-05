@@ -414,7 +414,7 @@ class PHP_Constants_Manager {
             exit;
         }
         
-        // Use the normalized value
+        // Use the normalized value (already normalized to lowercase for booleans)
         $value = $validation_result['value'];
         
         // Check if constant is predefined elsewhere and warn
