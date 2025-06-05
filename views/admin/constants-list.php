@@ -65,6 +65,14 @@ if (!defined('ABSPATH')) {
     }
     ?>
     
+    <form method="get">
+        <input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page'] ?? 'php-constants-manager'); ?>" />
+        <?php if (isset($_REQUEST['type_filter']) && $_REQUEST['type_filter'] !== 'all'): ?>
+            <input type="hidden" name="type_filter" value="<?php echo esc_attr($_REQUEST['type_filter']); ?>" />
+        <?php endif; ?>
+        <?php $data['list_table']->search_box(__('Search Constants', 'php-constants-manager'), 'search_constants'); ?>
+    </form>
+    
     <form method="post">
         <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
         <div class="constants-table-wrapper">

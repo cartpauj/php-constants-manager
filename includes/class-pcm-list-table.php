@@ -84,11 +84,23 @@ class PCM_List_Table extends WP_List_Table {
     public function column_default($item, $column_name) {
         switch ($column_name) {
             case 'value':
+                $type = esc_html(ucfirst($item->type));
+                
+                // Handle NULL type constants - don't display value
+                if ($item->type === 'null') {
+                    return '<div><strong>' . $type . '</strong></div>';
+                }
+                
+                // Handle empty string values - don't display value
+                if (empty($item->value) && $item->value !== '0') {
+                    return '<div><strong>' . $type . '</strong></div>';
+                }
+                
+                // Display value for non-empty values
                 $value = esc_html($item->value);
                 if (strlen($value) > 50) {
                     $value = substr($value, 0, 50) . '...';
                 }
-                $type = esc_html(ucfirst($item->type));
                 return '<div><strong>' . $type . '</strong><br><code>' . $value . '</code></div>';
                 
             case 'description':
@@ -252,14 +264,21 @@ class PCM_List_Table extends WP_List_Table {
     public function get_views() {
         $current_filter = isset($_REQUEST['type_filter']) ? $_REQUEST['type_filter'] : 'all';
         $base_url = admin_url('admin.php?page=php-constants-manager');
+        $search_query = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
+        
+        // Add search parameter to base URL if present
+        if (!empty($search_query)) {
+            $base_url = add_query_arg('s', urlencode($search_query), $base_url);
+        }
         
         // Get type counts
+        $search_args = !empty($search_query) ? array('search' => $search_query) : array();
         $type_counts = array(
-            'string' => $this->db->count_constants(array('type' => 'string')),
-            'integer' => $this->db->count_constants(array('type' => 'integer')),
-            'float' => $this->db->count_constants(array('type' => 'float')),
-            'boolean' => $this->db->count_constants(array('type' => 'boolean')),
-            'null' => $this->db->count_constants(array('type' => 'null'))
+            'string' => $this->db->count_constants(array_merge($search_args, array('type' => 'string'))),
+            'integer' => $this->db->count_constants(array_merge($search_args, array('type' => 'integer'))),
+            'float' => $this->db->count_constants(array_merge($search_args, array('type' => 'float'))),
+            'boolean' => $this->db->count_constants(array_merge($search_args, array('type' => 'boolean'))),
+            'null' => $this->db->count_constants(array_merge($search_args, array('type' => 'null')))
         );
         
         $total_count = array_sum($type_counts);
@@ -288,10 +307,10 @@ class PCM_List_Table extends WP_List_Table {
             $count = $type_counts[$type];
             if ($count > 0) {
                 $class = ($current_filter == $type) ? ' class="current"' : '';
+                $type_url = add_query_arg('type_filter', $type, $base_url);
                 $views[$type] = sprintf(
-                    '<a href="%s&type_filter=%s"%s>%s <span class="count">(%s)</span></a>',
-                    $base_url,
-                    urlencode($type),
+                    '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
+                    $type_url,
                     $class,
                     esc_html($label),
                     number_format_i18n($count)
