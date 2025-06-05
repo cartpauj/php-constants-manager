@@ -81,6 +81,8 @@ class PHP_Constants_Manager {
         add_action('admin_post_pcm_delete_constant', array($this, 'handle_delete_constant'));
         add_action('admin_post_pcm_toggle_constant', array($this, 'handle_toggle_constant'));
         add_action('admin_post_pcm_bulk_action', array($this, 'handle_bulk_action'));
+        add_action('admin_post_pcm_export_csv', array($this, 'handle_export_csv'));
+        add_action('admin_post_pcm_import_csv', array($this, 'handle_import_csv'));
         
         // Handle AJAX requests
         add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
@@ -189,6 +191,15 @@ class PHP_Constants_Manager {
             'manage_options',
             'php-constants-manager-all-defines',
             array($this, 'render_all_defines_page')
+        );
+        
+        $import_export_page = add_submenu_page(
+            'php-constants-manager',
+            __('Import/Export', 'php-constants-manager'),
+            __('Import/Export', 'php-constants-manager'),
+            'manage_options',
+            'php-constants-manager-import-export',
+            array($this, 'render_import_export_page')
         );
         
         $help_page = add_submenu_page(
@@ -553,6 +564,24 @@ class PHP_Constants_Manager {
     }
     
     /**
+     * Render import/export page
+     */
+    public function render_import_export_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Check for success/error messages
+        $message = isset($_GET['message']) ? $_GET['message'] : '';
+        $error = isset($_GET['error']) ? $_GET['error'] : '';
+        
+        $this->load_view('admin/import-export', array(
+            'message' => $message,
+            'error' => $error
+        ));
+    }
+    
+    /**
      * Check if a constant is truly predefined (not defined by this plugin)
      * 
      * @param string $name Constant name
@@ -654,6 +683,180 @@ class PHP_Constants_Manager {
         $settings_link = '<a href="' . admin_url('admin.php?page=php-constants-manager') . '">' . __('Settings', 'php-constants-manager') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
+    }
+    
+    /**
+     * Handle CSV export
+     */
+    public function handle_export_csv() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        if (!check_admin_referer('pcm_export_csv', 'pcm_nonce')) {
+            wp_die(__('Security check failed', 'php-constants-manager'));
+        }
+        
+        // Get all constants
+        $constants = $this->db->get_all_constants();
+        
+        if (empty($constants)) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_constants'));
+            exit;
+        }
+        
+        // Set headers for CSV download
+        $filename = 'php-constants-' . date('Y-m-d-H-i-s') . '.csv';
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $filename);
+        header('Pragma: no-cache');
+        header('Expires: 0');
+        
+        // Create CSV output
+        $output = fopen('php://output', 'w');
+        
+        // Add BOM for UTF-8
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // CSV headers
+        fputcsv($output, array('Name', 'Value', 'Type', 'Active', 'Description'));
+        
+        // Add data rows
+        foreach ($constants as $constant) {
+            fputcsv($output, array(
+                $constant->name,
+                $constant->value,
+                $constant->type,
+                $constant->is_active ? '1' : '0',
+                $constant->description
+            ));
+        }
+        
+        fclose($output);
+        exit;
+    }
+    
+    /**
+     * Handle CSV import
+     */
+    public function handle_import_csv() {
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        if (!check_admin_referer('pcm_import_csv', 'pcm_nonce')) {
+            wp_die(__('Security check failed', 'php-constants-manager'));
+        }
+        
+        // Check if file was uploaded
+        if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_file'));
+            exit;
+        }
+        
+        $file = $_FILES['csv_file'];
+        
+        // Validate file type
+        $file_info = pathinfo($file['name']);
+        if (strtolower($file_info['extension']) !== 'csv') {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_file'));
+            exit;
+        }
+        
+        // Read CSV file
+        $handle = fopen($file['tmp_name'], 'r');
+        if (!$handle) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=read_error'));
+            exit;
+        }
+        
+        $imported = 0;
+        $skipped = 0;
+        $errors = 0;
+        $line = 0;
+        
+        // Skip header row if it exists
+        $first_row = fgetcsv($handle);
+        if ($first_row && (strtolower($first_row[0]) === 'name' || strtolower($first_row[0]) === 'constant name')) {
+            // This looks like a header row, skip it
+        } else {
+            // This is data, process it
+            rewind($handle);
+        }
+        
+        while (($data = fgetcsv($handle)) !== FALSE) {
+            $line++;
+            
+            // Skip empty rows
+            if (empty(array_filter($data))) {
+                continue;
+            }
+            
+            // Validate minimum required columns
+            if (count($data) < 3) {
+                $errors++;
+                continue;
+            }
+            
+            $name = trim($data[0]);
+            $value = isset($data[1]) ? trim($data[1]) : '';
+            $type = isset($data[2]) ? trim($data[2]) : 'string';
+            $is_active = isset($data[3]) ? (bool)$data[3] : true;
+            $description = isset($data[4]) ? trim($data[4]) : '';
+            
+            // Validate constant name
+            if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
+                $errors++;
+                continue;
+            }
+            
+            // Validate type
+            if (!in_array($type, array('string', 'integer', 'float', 'boolean', 'null'))) {
+                $type = 'string';
+            }
+            
+            // Check if constant already exists in our database
+            $existing = $this->db->get_constant_by_name($name);
+            if ($existing) {
+                $skipped++;
+                continue;
+            }
+            
+            // Insert constant
+            $result = $this->db->insert_constant(array(
+                'name' => $name,
+                'value' => $value,
+                'type' => $type,
+                'is_active' => $is_active,
+                'description' => $description
+            ));
+            
+            if ($result) {
+                $imported++;
+            } else {
+                $errors++;
+            }
+        }
+        
+        fclose($handle);
+        
+        // Build success message
+        $message_parts = array();
+        if ($imported > 0) {
+            $message_parts[] = sprintf(_n('%d constant imported', '%d constants imported', $imported, 'php-constants-manager'), $imported);
+        }
+        if ($skipped > 0) {
+            $message_parts[] = sprintf(_n('%d constant skipped (already exists)', '%d constants skipped (already exist)', $skipped, 'php-constants-manager'), $skipped);
+        }
+        if ($errors > 0) {
+            $message_parts[] = sprintf(_n('%d error occurred', '%d errors occurred', $errors, 'php-constants-manager'), $errors);
+        }
+        
+        $message = implode(', ', $message_parts);
+        $redirect_url = admin_url('admin.php?page=php-constants-manager-import-export&message=' . urlencode($message));
+        
+        wp_redirect($redirect_url);
+        exit;
     }
 }
 

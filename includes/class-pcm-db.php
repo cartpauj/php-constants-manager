@@ -119,6 +119,13 @@ class PCM_DB {
     }
     
     /**
+     * Get all constants (no filters)
+     */
+    public function get_all_constants() {
+        return $this->get_constants();
+    }
+    
+    /**
      * Get single constant
      */
     public function get_constant($id) {

@@ -158,6 +158,75 @@ jQuery(document).ready(function($) {
         $submitBtn.prop('disabled', true).addClass('updating-message');
     });
     
+    // Import/Export functionality
+    $('#csv_file').on('change', function() {
+        var $input = $(this);
+        var $label = $input.siblings('.pcm-file-label');
+        var $selected = $input.siblings('.pcm-file-selected');
+        var $submitBtn = $('#import-submit-btn');
+        
+        if (this.files && this.files[0]) {
+            var file = this.files[0];
+            var fileName = file.name;
+            
+            // Validate file type
+            if (!fileName.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file.');
+                $input.val('');
+                return;
+            }
+            
+            // Show selected file
+            $label.hide();
+            $selected.find('.pcm-file-name').text(fileName);
+            $selected.show();
+            $submitBtn.prop('disabled', false);
+        } else {
+            // No file selected
+            $label.show();
+            $selected.hide();
+            $submitBtn.prop('disabled', true);
+        }
+    });
+    
+    // Remove selected file
+    $('.pcm-file-remove').on('click', function() {
+        var $input = $('#csv_file');
+        var $label = $input.siblings('.pcm-file-label');
+        var $selected = $input.siblings('.pcm-file-selected');
+        var $submitBtn = $('#import-submit-btn');
+        
+        $input.val('');
+        $label.show();
+        $selected.hide();
+        $submitBtn.prop('disabled', true);
+    });
+    
+    // Drag and drop functionality
+    $('.pcm-file-label').on('dragover dragenter', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).addClass('drag-over');
+    });
+    
+    $('.pcm-file-label').on('dragleave dragend', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('drag-over');
+    });
+    
+    $('.pcm-file-label').on('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).removeClass('drag-over');
+        
+        var files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            $('#csv_file')[0].files = files;
+            $('#csv_file').trigger('change');
+        }
+    });
+    
     // Handle toggle switch changes
     $(document).on('change', '.pcm-toggle-switch input[type="checkbox"]', function() {
         var $toggle = $(this).closest('.pcm-toggle-switch');
