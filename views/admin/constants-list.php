@@ -65,7 +65,7 @@ if (!defined('ABSPATH')) {
     }
     ?>
     
-    <form method="get">
+    <form method="get" class="search-form">
         <input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page'] ?? 'php-constants-manager'); ?>" />
         <?php if (isset($_REQUEST['type_filter']) && $_REQUEST['type_filter'] !== 'all'): ?>
             <input type="hidden" name="type_filter" value="<?php echo esc_attr($_REQUEST['type_filter']); ?>" />

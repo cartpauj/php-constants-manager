@@ -286,6 +286,39 @@ jQuery(document).ready(function($) {
         }
     });
     
+    // Handle search field clear (x button)
+    $(document).on('input', 'input[name="s"]', function() {
+        var $searchInput = $(this);
+        var searchValue = $searchInput.val();
+        
+        // If search field is cleared (empty), automatically submit the form to refresh the view
+        if (searchValue === '') {
+            // Use a short delay to ensure the field is fully cleared
+            setTimeout(function() {
+                var $form = $searchInput.closest('form');
+                if ($form.length) {
+                    $form.submit();
+                }
+            }, 100);
+        }
+    });
+    
+    // Handle search field keydown events
+    $(document).on('keydown', 'input[name="s"]', function(e) {
+        var $searchInput = $(this);
+        
+        // Handle Escape key to clear search and refresh
+        if (e.keyCode === 27) { // Escape key
+            e.preventDefault();
+            $searchInput.val('');
+            
+            var $form = $searchInput.closest('form');
+            if ($form.length) {
+                $form.submit();
+            }
+        }
+    });
+    
     // Handle toggle switch changes
     $(document).on('change', '.pcm-toggle-switch input[type="checkbox"]', function() {
         var $toggle = $(this).closest('.pcm-toggle-switch');

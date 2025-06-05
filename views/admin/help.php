@@ -298,7 +298,7 @@ DEBUG_MODE,false,boolean</code></pre>
             <li><code>Line 15: Invalid integer value "3.14" (Constant: MAX_ITEMS)</code></li>
         </ul>
         
-        <h3><?php _e('Overwrite vs. Skip Existing Constants', 'php-constants-manager'); ?></h3>
+        <h3 id="overwrite-vs-skip-existing-constants"><?php _e('Overwrite vs. Skip Existing Constants', 'php-constants-manager'); ?></h3>
         <p><?php _e('The import page includes an "Overwrite existing constants" checkbox that controls how duplicate constants are handled:', 'php-constants-manager'); ?></p>
         
         <h4><?php _e('Checkbox Unchecked (Default):', 'php-constants-manager'); ?></h4>

@@ -870,3 +870,31 @@
     font-size: 13px;
     line-height: 1.4;
 }
+
+/* Search field enhancements */
+.search-box {
+    margin-bottom: 16px;
+}
+
+.search-box .search-submit {
+    margin-left: 4px !important;
+}
+
+.search-box input[type="search"] {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.search-box input[type="search"]:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 115, 170, 0.1);
+}
+
+/* Search form spacing */
+form.search-form {
+    margin-bottom: 8px;
+}
