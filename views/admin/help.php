@@ -61,7 +61,7 @@ if (!defined('ABSPATH')) {
         <p><?php esc_html_e('PHP constants are identifiers for values that cannot be changed during script execution. Unlike variables, constants do not have a dollar sign ($) prefix and are typically written in UPPERCASE.', 'php-constants-manager'); ?></p>
         <p><?php
             /* translators: Examples of PHP constant names - these are actual code examples and should be kept as-is */
-            esc_html_e('Examples: <code>SITE_URL</code>, <code>API_KEY</code>, <code>DEBUG_MODE</code>', 'php-constants-manager');
+            _e('Examples: <code>SITE_URL</code>, <code>API_KEY</code>, <code>DEBUG_MODE</code>', 'php-constants-manager');
         ?></p>
         
         <h2 id="how-to-use"><?php esc_html_e('How to Use This Plugin', 'php-constants-manager'); ?></h2>
@@ -181,9 +181,9 @@ if (!defined('ABSPATH')) {
         <h3><?php esc_html_e('Naming Conventions', 'php-constants-manager'); ?></h3>
         <ul>
             <li><?php esc_html_e('Use UPPERCASE letters only', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('Separate words with underscores: <code>MY_CUSTOM_SETTING</code>', 'php-constants-manager'); ?></li>
+            <li><?php _e('Separate words with underscores: <code>MY_CUSTOM_SETTING</code>', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Start with a letter, not a number', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('Use descriptive names: <code>MAX_LOGIN_ATTEMPTS</code> instead of <code>MLA</code>', 'php-constants-manager'); ?></li>
+            <li><?php _e('Use descriptive names: <code>MAX_LOGIN_ATTEMPTS</code> instead of <code>MLA</code>', 'php-constants-manager'); ?></li>
         </ul>
         
         <h3><?php esc_html_e('What to Define as Constants', 'php-constants-manager'); ?></h3>
@@ -214,7 +214,7 @@ if (!defined('ABSPATH')) {
             <li><?php esc_html_e('All constants in your database (both active and inactive)', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Complete data: Name, Value, Type, Status, Description', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('UTF-8 encoding for proper international character support', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('Timestamped filename: <code>php-constants-YYYY-MM-DD-HH-MM-SS.csv</code>', 'php-constants-manager'); ?></li>
+            <li><?php _e('Timestamped filename: <code>php-constants-YYYY-MM-DD-HH-MM-SS.csv</code>', 'php-constants-manager'); ?></li>
         </ul>
         
         <h3><?php esc_html_e('Importing Constants', 'php-constants-manager'); ?></h3>
@@ -312,7 +312,7 @@ DEBUG_MODE,false,boolean</code></pre>
             <li><code>yes</code>, <code>YES</code>, <code>Yes</code></li>
             <li><code>on</code>, <code>ON</code>, <code>On</code></li>
         </ul>
-        <p><?php esc_html_e('All other values (including <code>false</code>, <code>0</code>, empty string) are treated as FALSE.', 'php-constants-manager'); ?></p>
+        <p><?php _e('All other values (including <code>false</code>, <code>0</code>, empty string) are treated as FALSE.', 'php-constants-manager'); ?></p>
         
         <h3><?php esc_html_e('Import Tips', 'php-constants-manager'); ?></h3>
         <ul>
@@ -474,7 +474,7 @@ DEBUG_MODE,false,boolean</code></pre>
         <p><?php esc_html_e('This warning appears when you try to define a constant that\'s already defined elsewhere. Your definition is saved but won\'t take effect unless the original definition is removed.', 'php-constants-manager'); ?></p>
         
         <h3><?php esc_html_e('How to check if my constant is working', 'php-constants-manager'); ?></h3>
-        <p><?php esc_html_e('You can test your constants in your theme or plugin code. Remember that your constants are available after the <code>plugins_loaded</code> action (priority 1), so test them in appropriate hooks:', 'php-constants-manager'); ?></p>
+        <p><?php _e('You can test your constants in your theme or plugin code. Remember that your constants are available after the <code>plugins_loaded</code> action (priority 1), so test them in appropriate hooks:', 'php-constants-manager'); ?></p>
         <pre><code>// Test in theme functions.php or after plugins_loaded
 add_action('init', function() {
     if (defined('MY_CONSTANT')) {
