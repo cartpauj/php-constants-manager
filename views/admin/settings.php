@@ -83,7 +83,7 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                                 </label>
                                 
                                 <p class="description">
-                                    <?php esc_html_e('When enabled, this plugin will create a must-use plugin file that loads your constants before other regular plugins. This helps ensure your constants are available to other plugins that may need them.', 'php-constants-manager'); ?>
+                                    <?php esc_html_e('When enabled, this plugin will create a must-use plugin file that loads your constants before other regular plugins. This helps ensure your constants are available to other plugins that may need them. Note: If downstream code tries to define the same constant without checking if it already exists, PHP warnings may occur.', 'php-constants-manager'); ?>
                                 </p>
                                 
                                 <?php if ($mu_plugin_exists): ?>
