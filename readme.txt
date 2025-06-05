@@ -3,7 +3,7 @@ Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -19,7 +19,8 @@ PHP Constants Manager provides a secure and user-friendly interface for managing
 * **Complete Constant Management**: Create, read, update, and delete PHP constants from the WordPress admin
 * **Dual View System**: "My Constants" for your custom constants and "All Constants" to view every constant in your WordPress installation
 * **Native WordPress UI**: Built using WP_List_Table with sorting, searching, and bulk actions
-* **Multiple Data Types**: Support for String, Integer, Float, Boolean, and NULL constant types
+* **Multiple Data Types**: Support for String, Integer, Float, Boolean, and NULL constant types with strict validation
+* **Real-time Validation**: Form fields validate values against selected type with immediate feedback
 * **Active/Inactive States**: Toggle constants on/off without deleting them
 * **Conflict Detection**: Visual indicators show when constants are already defined elsewhere (predefined)
 * **Screen Options**: Customize table views with adjustable items per page and column visibility controls
@@ -27,7 +28,7 @@ PHP Constants Manager provides a secure and user-friendly interface for managing
 * **Comprehensive Help**: Built-in help system with detailed documentation and best practices
 * **Administrator Only**: Secure access restricted to users with manage_options capability
 * **Database Storage**: Constants stored safely in a custom database table with full audit trail
-* **Import/Export**: Backup and migrate constants using CSV files with comprehensive format validation
+* **Import/Export**: Backup and migrate constants using CSV files with detailed error reporting
 
 = Understanding Predefined Constants =
 
@@ -124,6 +125,26 @@ DEBUG_MODE,true,boolean,0,Enable debug output
 
 No, the import process skips constants that already exist in your database. Only new constants are added. You'll receive a detailed report showing what was imported, skipped, and any errors.
 
+= How does value validation work? =
+
+The plugin validates that constant values match their selected type:
+- **Integer**: Must be whole numbers (42, -10, 0) - decimals are rejected
+- **Float**: Must be valid numbers (3.14, -2.5, 10) - text is rejected  
+- **Boolean**: Must be true, false, 1, 0, yes, no, on, or off (case-insensitive)
+- **String**: Any value accepted, including quotes and special characters
+- **NULL**: Value field is automatically disabled and cleared
+
+Both the form interface and CSV import perform this validation with detailed error messages.
+
+= What happens if my CSV import has errors? =
+
+The import will show exactly what went wrong with specific line numbers and error descriptions. For example:
+- "Line 5: Missing required columns (need at least Name, Value, Type)"
+- "Line 12: Invalid boolean value 'maybe' (Constant: DEBUG_MODE)"
+- "Line 15: Invalid integer value '3.14' (Constant: MAX_ITEMS)"
+
+This helps you fix your CSV file and re-import successfully.
+
 == Screenshots ==
 
 1. "My Constants" page showing custom constants with full management capabilities
@@ -134,6 +155,15 @@ No, the import process skips constants that already exist in your database. Only
 6. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+
+= 1.1.0 =
+* **Enhanced Value Validation**: Strict type validation for all constant types with detailed error messages
+* **Real-time Form Validation**: Immediate feedback while typing with visual error indicators
+* **Improved Data Handling**: Fixed slash stripping issues with quotes in values and descriptions
+* **Detailed Import Error Reporting**: CSV import now shows specific line numbers and error descriptions
+* **Enhanced Security**: Improved WordPress VIP coding standards compliance and PHPCS compatibility
+* **Better User Experience**: Type-specific placeholders and normalized value storage
+* **Code Quality**: Removed security-problematic functions and improved escaping throughout
 
 = 1.0.0 =
 * Initial release

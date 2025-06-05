@@ -41,6 +41,7 @@ if (!defined('ABSPATH')) {
                     <ul>
                         <li><a href="#import-export"><?php _e('Import/Export Constants', 'php-constants-manager'); ?></a></li>
                         <li><a href="#csv-format"><?php _e('CSV Format Guide', 'php-constants-manager'); ?></a></li>
+                        <li><a href="#value-validation"><?php _e('Value Validation', 'php-constants-manager'); ?></a></li>
                         <li><a href="#screen-options"><?php _e('Customizing Views', 'php-constants-manager'); ?></a></li>
                     </ul>
                     
@@ -171,8 +172,9 @@ if (!defined('ABSPATH')) {
         <p><?php _e('Upload a CSV file to import constants into your database. The import process will:', 'php-constants-manager'); ?></p>
         <ul>
             <li><?php _e('Skip constants that already exist (no duplicates)', 'php-constants-manager'); ?></li>
-            <li><?php _e('Validate constant names and data types', 'php-constants-manager'); ?></li>
-            <li><?php _e('Provide detailed feedback on imported, skipped, and error counts', 'php-constants-manager'); ?></li>
+            <li><?php _e('Validate constant names and data types with detailed error reporting', 'php-constants-manager'); ?></li>
+            <li><?php _e('Show specific line numbers and reasons for any import errors', 'php-constants-manager'); ?></li>
+            <li><?php _e('Provide comprehensive feedback on imported, skipped, and error counts', 'php-constants-manager'); ?></li>
             <li><?php _e('Handle both header and non-header CSV files automatically', 'php-constants-manager'); ?></li>
         </ul>
         
@@ -263,6 +265,43 @@ DEBUG_MODE,false,boolean</code></pre>
         <div class="pcm-import-warning">
             <p><strong><?php _e('Important:', 'php-constants-manager'); ?></strong> <?php _e('The CSV import only adds constants to your plugin\'s database. Whether they actually take effect depends on load order and if they\'re already defined elsewhere (see <a href="#predefined-constants">Understanding Predefined Constants</a> above).', 'php-constants-manager'); ?></p>
         </div>
+        
+        <h3><?php _e('Import Error Reporting', 'php-constants-manager'); ?></h3>
+        <p><?php _e('When importing CSV files, any errors will be displayed with specific details to help you fix your data:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><strong><?php _e('Line Numbers:', 'php-constants-manager'); ?></strong> <?php _e('Shows exactly which CSV line had the problem', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Specific Errors:', 'php-constants-manager'); ?></strong> <?php _e('Details what was wrong (invalid name, wrong type, missing columns)', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Value Examples:', 'php-constants-manager'); ?></strong> <?php _e('Shows the problematic value and suggests correct format', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <p><strong><?php _e('Example Error Messages:', 'php-constants-manager'); ?></strong></p>
+        <ul>
+            <li><code>Line 5: Missing required columns (need at least Name, Value, Type)</code></li>
+            <li><code>Line 8: Invalid constant name "my-constant" (must be uppercase letters, numbers, and underscores only)</code></li>
+            <li><code>Line 12: Invalid boolean value "maybe" (Constant: DEBUG_MODE)</code></li>
+            <li><code>Line 15: Invalid integer value "3.14" (Constant: MAX_ITEMS)</code></li>
+        </ul>
+        
+        <h2 id="value-validation"><?php _e('Value Validation', 'php-constants-manager'); ?></h2>
+        <p><?php _e('The plugin validates that constant values match their selected type, both when creating/editing constants and during CSV import:', 'php-constants-manager'); ?></p>
+        
+        <h4><?php _e('Validation Rules', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><strong><?php _e('Integer:', 'php-constants-manager'); ?></strong> <?php _e('Must be whole numbers (42, -10, 0). Decimals like "3.14" are rejected.', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Float:', 'php-constants-manager'); ?></strong> <?php _e('Must be valid numbers (3.14, -2.5, 10). Text like "abc" is rejected.', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Boolean:', 'php-constants-manager'); ?></strong> <?php _e('Must be: true, false, 1, 0, yes, no, on, off (case-insensitive). Values like "maybe" are rejected.', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('String:', 'php-constants-manager'); ?></strong> <?php _e('Any value is accepted, including quotes and special characters.', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('NULL:', 'php-constants-manager'); ?></strong> <?php _e('Value field is disabled and automatically cleared.', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <h4><?php _e('Real-time Validation', 'php-constants-manager'); ?></h4>
+        <p><?php _e('When creating or editing constants, the form provides:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><?php _e('Immediate feedback as you type in the value field', 'php-constants-manager'); ?></li>
+            <li><?php _e('Red borders and error messages for invalid values', 'php-constants-manager'); ?></li>
+            <li><?php _e('Type-specific placeholder text and examples', 'php-constants-manager'); ?></li>
+            <li><?php _e('Automatic validation when changing the type dropdown', 'php-constants-manager'); ?></li>
+        </ul>
         
         <h2 id="common-constants"><?php _e('Common WordPress Constants', 'php-constants-manager'); ?></h2>
         <p><?php _e('Here are some constants you might see that are already defined by WordPress:', 'php-constants-manager'); ?></p>

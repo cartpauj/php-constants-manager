@@ -47,6 +47,32 @@ if (!defined('ABSPATH')) {
         </div>
     <?php endif; ?>
     
+    <?php
+    // Display import error details if available
+    $import_errors = get_transient('pcm_import_errors');
+    if ($import_errors && !empty($import_errors)) {
+        delete_transient('pcm_import_errors');
+        ?>
+        <div class="notice notice-error">
+            <p><strong><?php _e('Import Errors:', 'php-constants-manager'); ?></strong></p>
+            <p><?php _e('The following rows had errors and were not imported:', 'php-constants-manager'); ?></p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <?php 
+                // Limit to first 10 errors to avoid overwhelming display
+                $display_errors = array_slice($import_errors, 0, 10);
+                foreach ($display_errors as $error): 
+                ?>
+                    <li><?php echo esc_html($error); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php if (count($import_errors) > 10): ?>
+                <p><em><?php printf(__('... and %d more errors.', 'php-constants-manager'), count($import_errors) - 10); ?></em></p>
+            <?php endif; ?>
+        </div>
+        <?php
+    }
+    ?>
+    
     <div class="pcm-import-export-container">
         <div class="pcm-import-export-grid">
             <!-- Export Section -->

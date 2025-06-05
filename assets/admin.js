@@ -145,7 +145,66 @@ jQuery(document).ready(function($) {
                     $valueField.attr('placeholder', 'Enter constant value');
             }
         }
+        
+        // Re-validate current value when type changes
+        $valueField.trigger('input');
     }).trigger('change');
+    
+    // Value field validation based on type
+    $('#constant-value').on('input blur', function() {
+        var $valueField = $(this);
+        var value = $valueField.val();
+        var type = $('#constant-type').val();
+        var errorMessage = '';
+        
+        // Skip validation if field is disabled (null type)
+        if ($valueField.prop('disabled')) {
+            return;
+        }
+        
+        // Skip validation if value is empty (allowed for most types)
+        if (value.trim() === '') {
+            $valueField[0].setCustomValidity('');
+            return;
+        }
+        
+        // Validate based on type
+        switch (type) {
+            case 'integer':
+                if (!/^-?\d+$/.test(value.trim())) {
+                    errorMessage = 'Please enter a valid integer (e.g., 42, -10, 0)';
+                }
+                break;
+                
+            case 'float':
+                if (!/^-?\d*\.?\d+$/.test(value.trim())) {
+                    errorMessage = 'Please enter a valid number (e.g., 3.14, -2.5, 10)';
+                }
+                break;
+                
+            case 'boolean':
+                var lowerValue = value.trim().toLowerCase();
+                var validValues = ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'];
+                if (!validValues.includes(lowerValue)) {
+                    errorMessage = 'Please enter: true, false, 1, 0, yes, no, on, or off';
+                }
+                break;
+                
+            case 'string':
+                // Strings are always valid
+                break;
+        }
+        
+        // Set custom validity
+        $valueField[0].setCustomValidity(errorMessage);
+        
+        // Visual feedback
+        if (errorMessage) {
+            $valueField.addClass('pcm-input-error');
+        } else {
+            $valueField.removeClass('pcm-input-error');
+        }
+    });
     
     // Auto-select all text in value field when focused
     $('#constant-value').on('focus', function() {

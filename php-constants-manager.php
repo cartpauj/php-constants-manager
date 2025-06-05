@@ -3,7 +3,7 @@
  * Plugin Name: PHP Constants Manager
  * Plugin URI: https://example.com/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Your Name
  * Author URI: https://example.com
  * License: GPL v2 or later
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('PCM_VERSION', '1.0.0');
+define('PCM_VERSION', '1.1.0');
 define('PCM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PCM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -381,10 +381,25 @@ class PHP_Constants_Manager {
             wp_die(__('Invalid constant name', 'php-constants-manager'));
         }
         
-        // For null type, clear the value
-        if ($type === 'null') {
-            $value = '';
+        // Validate and normalize value based on type
+        $validation_result = $this->validate_constant_value($value, $type);
+        if ($validation_result['error']) {
+            // Store error message in transient
+            set_transient('pcm_admin_notice', array(
+                'type' => 'error',
+                'message' => $validation_result['message']
+            ), 30);
+            
+            // Redirect back to form
+            $redirect_url = $id ? 
+                admin_url('admin.php?page=php-constants-manager&action=edit&id=' . $id) :
+                admin_url('admin.php?page=php-constants-manager&action=add');
+            wp_redirect($redirect_url);
+            exit;
         }
+        
+        // Use the normalized value
+        $value = $validation_result['value'];
         
         // Check if constant is predefined elsewhere and warn
         $predefined_check = $this->is_constant_predefined($name, $value, $type, $is_active);
@@ -802,6 +817,82 @@ class PHP_Constants_Manager {
     }
     
     /**
+     * Validate constant value based on its type
+     * 
+     * @param string $value The value to validate
+     * @param string $type The expected type
+     * @return array Array with 'error' boolean, 'message' string, and 'value' (normalized)
+     */
+    private function validate_constant_value($value, $type) {
+        $result = array(
+            'error' => false,
+            'message' => '',
+            'value' => $value
+        );
+        
+        switch ($type) {
+            case 'string':
+                // Strings are always valid, no validation needed
+                break;
+                
+            case 'integer':
+                if (!is_numeric($value) || (string)(int)$value !== (string)$value) {
+                    $result['error'] = true;
+                    $result['message'] = sprintf(
+                        __('Invalid integer value "%s". Please enter a whole number (e.g., 42, -10, 0).', 'php-constants-manager'),
+                        esc_html($value)
+                    );
+                } else {
+                    $result['value'] = (string)(int)$value; // Normalize
+                }
+                break;
+                
+            case 'float':
+                if (!is_numeric($value)) {
+                    $result['error'] = true;
+                    $result['message'] = sprintf(
+                        __('Invalid float value "%s". Please enter a number (e.g., 3.14, -2.5, 10).', 'php-constants-manager'),
+                        esc_html($value)
+                    );
+                } else {
+                    $result['value'] = (string)(float)$value; // Normalize
+                }
+                break;
+                
+            case 'boolean':
+                $lower_value = strtolower(trim($value));
+                $valid_true = array('true', '1', 'yes', 'on');
+                $valid_false = array('false', '0', 'no', 'off', '');
+                
+                if (!in_array($lower_value, array_merge($valid_true, $valid_false), true)) {
+                    $result['error'] = true;
+                    $result['message'] = sprintf(
+                        __('Invalid boolean value "%s". Please enter one of: true, false, 1, 0, yes, no, on, off (or leave empty for false).', 'php-constants-manager'),
+                        esc_html($value)
+                    );
+                } else {
+                    // Normalize to true/false string
+                    $result['value'] = in_array($lower_value, $valid_true, true) ? 'true' : 'false';
+                }
+                break;
+                
+            case 'null':
+                // For null type, value should be empty
+                $result['value'] = '';
+                break;
+                
+            default:
+                $result['error'] = true;
+                $result['message'] = sprintf(
+                    __('Invalid constant type "%s".', 'php-constants-manager'),
+                    esc_html($type)
+                );
+        }
+        
+        return $result;
+    }
+    
+    /**
      * Add settings link to plugins page
      */
     public function add_settings_link($links) {
@@ -922,6 +1013,7 @@ class PHP_Constants_Manager {
         $imported = 0;
         $skipped = 0;
         $errors = 0;
+        $error_details = array(); // Track specific errors
         $line = 0;
         
         // Skip header row if it exists
@@ -935,7 +1027,8 @@ class PHP_Constants_Manager {
         
         for ($i = $data_start_index; $i < count($csv_data); $i++) {
             $data = $csv_data[$i];
-            $line++;
+            $csv_line_number = $i + 1; // Actual line number in CSV file
+            $line++; // Processing counter
             
             // Skip empty rows
             if (empty(array_filter($data))) {
@@ -945,6 +1038,10 @@ class PHP_Constants_Manager {
             // Validate minimum required columns
             if (count($data) < 3) {
                 $errors++;
+                $error_details[] = sprintf(
+                    __('Line %d: Missing required columns (need at least Name, Value, Type)', 'php-constants-manager'),
+                    $csv_line_number
+                );
                 continue;
             }
             
@@ -957,6 +1054,11 @@ class PHP_Constants_Manager {
             // Validate constant name
             if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
                 $errors++;
+                $error_details[] = sprintf(
+                    __('Line %d: Invalid constant name "%s" (must be uppercase letters, numbers, and underscores only)', 'php-constants-manager'),
+                    $csv_line_number,
+                    esc_html($name)
+                );
                 continue;
             }
             
@@ -964,6 +1066,22 @@ class PHP_Constants_Manager {
             if (!in_array($type, array('string', 'integer', 'float', 'boolean', 'null'))) {
                 $type = 'string';
             }
+            
+            // Validate value matches type
+            $validation_result = $this->validate_constant_value($value, $type);
+            if ($validation_result['error']) {
+                $errors++;
+                $error_details[] = sprintf(
+                    __('Line %d: %s (Constant: %s)', 'php-constants-manager'),
+                    $csv_line_number,
+                    $validation_result['message'],
+                    esc_html($name)
+                );
+                continue;
+            }
+            
+            // Use normalized value
+            $value = $validation_result['value'];
             
             // Check if constant already exists in our database
             $existing = $this->db->get_constant_by_name($name);
@@ -985,6 +1103,11 @@ class PHP_Constants_Manager {
                 $imported++;
             } else {
                 $errors++;
+                $error_details[] = sprintf(
+                    __('Line %d: Database error saving constant \"%s\"', 'php-constants-manager'),
+                    $csv_line_number,
+                    esc_html($name)
+                );
             }
         }
         
@@ -1001,6 +1124,12 @@ class PHP_Constants_Manager {
         }
         
         $message = implode(', ', $message_parts);
+        
+        // Store error details in transient if there are errors
+        if (!empty($error_details)) {
+            set_transient('pcm_import_errors', $error_details, 300); // 5 minutes
+        }
+        
         $redirect_url = admin_url('admin.php?page=php-constants-manager-import-export&message=' . urlencode($message));
         
         wp_redirect($redirect_url);
