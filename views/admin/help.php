@@ -188,6 +188,118 @@ if (defined('MY_CONSTANT')) {
     // Your constant is available here
 }</code></pre>
         
+        <h2><?php _e('Import/Export Constants', 'php-constants-manager'); ?></h2>
+        
+        <p><?php _e('The Import/Export feature allows you to backup your constants or migrate them between WordPress installations using CSV files.', 'php-constants-manager'); ?></p>
+        
+        <h3><?php _e('Exporting Constants', 'php-constants-manager'); ?></h3>
+        <p><?php _e('Go to the "Import/Export" page and click "Export Constants" to download all your managed constants as a CSV file. The exported file includes:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><?php _e('All constants in your database (both active and inactive)', 'php-constants-manager'); ?></li>
+            <li><?php _e('Complete data: Name, Value, Type, Status, Description', 'php-constants-manager'); ?></li>
+            <li><?php _e('UTF-8 encoding for proper international character support', 'php-constants-manager'); ?></li>
+            <li><?php _e('Timestamped filename: <code>php-constants-YYYY-MM-DD-HH-MM-SS.csv</code>', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <h3><?php _e('Importing Constants', 'php-constants-manager'); ?></h3>
+        <p><?php _e('Upload a CSV file to import constants into your database. The import process will:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><?php _e('Skip constants that already exist (no duplicates)', 'php-constants-manager'); ?></li>
+            <li><?php _e('Validate constant names and data types', 'php-constants-manager'); ?></li>
+            <li><?php _e('Provide detailed feedback on imported, skipped, and error counts', 'php-constants-manager'); ?></li>
+            <li><?php _e('Handle both header and non-header CSV files automatically', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <h3><?php _e('CSV Format Requirements', 'php-constants-manager'); ?></h3>
+        
+        <div class="notice notice-info" style="margin: 20px 0;">
+            <p><strong><?php _e('Required Columns (minimum):', 'php-constants-manager'); ?></strong> <?php _e('Name, Value, Type', 'php-constants-manager'); ?></p>
+            <p><strong><?php _e('Optional Columns:', 'php-constants-manager'); ?></strong> <?php _e('Active, Description', 'php-constants-manager'); ?></p>
+        </div>
+        
+        <h4><?php _e('Column Specifications', 'php-constants-manager'); ?></h4>
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th><?php _e('Column', 'php-constants-manager'); ?></th>
+                    <th><?php _e('Required', 'php-constants-manager'); ?></th>
+                    <th><?php _e('Format', 'php-constants-manager'); ?></th>
+                    <th><?php _e('Examples', 'php-constants-manager'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong><?php _e('Name', 'php-constants-manager'); ?></strong></td>
+                    <td><?php _e('Yes', 'php-constants-manager'); ?></td>
+                    <td><?php _e('Uppercase letters, numbers, underscores only. Must start with letter.', 'php-constants-manager'); ?></td>
+                    <td><code>MY_CONSTANT</code>, <code>API_KEY</code>, <code>DEBUG_MODE</code></td>
+                </tr>
+                <tr>
+                    <td><strong><?php _e('Value', 'php-constants-manager'); ?></strong></td>
+                    <td><?php _e('Yes', 'php-constants-manager'); ?></td>
+                    <td><?php _e('Any text. Will be converted based on Type.', 'php-constants-manager'); ?></td>
+                    <td><code>Hello World</code>, <code>123</code>, <code>true</code>, <code>3.14</code></td>
+                </tr>
+                <tr>
+                    <td><strong><?php _e('Type', 'php-constants-manager'); ?></strong></td>
+                    <td><?php _e('Yes', 'php-constants-manager'); ?></td>
+                    <td><?php _e('Must be one of: string, integer, float, boolean, null', 'php-constants-manager'); ?></td>
+                    <td><code>string</code>, <code>integer</code>, <code>boolean</code></td>
+                </tr>
+                <tr>
+                    <td><strong><?php _e('Active', 'php-constants-manager'); ?></strong></td>
+                    <td><?php _e('No', 'php-constants-manager'); ?></td>
+                    <td><?php _e('1 for active, 0 for inactive. Defaults to 1 if omitted.', 'php-constants-manager'); ?></td>
+                    <td><code>1</code>, <code>0</code></td>
+                </tr>
+                <tr>
+                    <td><strong><?php _e('Description', 'php-constants-manager'); ?></strong></td>
+                    <td><?php _e('No', 'php-constants-manager'); ?></td>
+                    <td><?php _e('Any text description.', 'php-constants-manager'); ?></td>
+                    <td><code>API key for external service</code></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4><?php _e('Example CSV Files', 'php-constants-manager'); ?></h4>
+        
+        <p><strong><?php _e('With Headers (Recommended):', 'php-constants-manager'); ?></strong></p>
+        <pre><code>Name,Value,Type,Active,Description
+MY_API_KEY,abc123def456,string,1,External API authentication key
+MAX_POSTS,25,integer,1,Maximum posts per page
+TAX_RATE,0.08,float,1,Sales tax rate
+DEBUG_MODE,true,boolean,0,Enable debug output
+OPTIONAL_SETTING,,null,1,Optional configuration value</code></pre>
+        
+        <p><strong><?php _e('Without Headers (Minimum Required Columns):', 'php-constants-manager'); ?></strong></p>
+        <pre><code>MY_API_KEY,abc123def456,string
+MAX_POSTS,25,integer
+DEBUG_MODE,false,boolean</code></pre>
+        
+        <h4><?php _e('Boolean Values', 'php-constants-manager'); ?></h4>
+        <p><?php _e('For boolean types, these values are recognized as TRUE:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><code>true</code>, <code>TRUE</code>, <code>True</code></li>
+            <li><code>1</code></li>
+            <li><code>yes</code>, <code>YES</code>, <code>Yes</code></li>
+            <li><code>on</code>, <code>ON</code>, <code>On</code></li>
+        </ul>
+        <p><?php _e('All other values (including <code>false</code>, <code>0</code>, empty string) are treated as FALSE.', 'php-constants-manager'); ?></p>
+        
+        <h3><?php _e('Import Tips', 'php-constants-manager'); ?></h3>
+        <ul>
+            <li><?php _e('Always backup your database before importing', 'php-constants-manager'); ?></li>
+            <li><?php _e('Start with a small test file to verify format', 'php-constants-manager'); ?></li>
+            <li><?php _e('The import will show you exactly what was imported, skipped, and any errors', 'php-constants-manager'); ?></li>
+            <li><?php _e('Existing constants with the same name are skipped (not overwritten)', 'php-constants-manager'); ?></li>
+            <li><?php _e('Empty rows in your CSV file are automatically ignored', 'php-constants-manager'); ?></li>
+            <li><?php _e('Invalid constant names or types will be counted as errors and skipped', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <div class="notice notice-warning" style="margin: 20px 0;">
+            <p><strong><?php _e('Important:', 'php-constants-manager'); ?></strong> <?php _e('The CSV import only adds constants to your plugin\'s database. Whether they actually take effect depends on load order and if they\'re already defined elsewhere (see "Understanding Predefined Constants" above).', 'php-constants-manager'); ?></p>
+        </div>
+        
         <h2><?php _e('Customizing Your View', 'php-constants-manager'); ?></h2>
         
         <h3><?php _e('Screen Options', 'php-constants-manager'); ?></h3>

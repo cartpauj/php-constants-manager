@@ -27,6 +27,7 @@ PHP Constants Manager provides a secure and user-friendly interface for managing
 * **Comprehensive Help**: Built-in help system with detailed documentation and best practices
 * **Administrator Only**: Secure access restricted to users with manage_options capability
 * **Database Storage**: Constants stored safely in a custom database table with full audit trail
+* **Import/Export**: Backup and migrate constants using CSV files with comprehensive format validation
 
 = Understanding Predefined Constants =
 
@@ -42,6 +43,8 @@ The plugin intelligently detects when constants are already defined by WordPress
 * Create fallback constants for different environments
 * Document constant purposes with built-in descriptions
 * Audit all constants in your WordPress installation
+* Backup constants to CSV files for migration between sites
+* Import constants in bulk from properly formatted CSV files
 
 == Installation ==
 
@@ -96,13 +99,39 @@ Check the "Predefined" column in "My Constants". If it shows "No" and the status
 
 This is a PHP limitation, not a plugin restriction. Constants cannot be redefined once set. Since WordPress core constants are defined very early (in wp-config.php or during WordPress bootstrap), they cannot be overridden by plugins.
 
+= How do I import/export constants? =
+
+Go to the "Import/Export" page in the plugin menu. You can export all your constants to a CSV file for backup or migration purposes. To import, upload a CSV file with the required format. The CSV must include at minimum: Name, Value, Type columns. Optional columns are Active and Description.
+
+= What CSV format should I use for importing? =
+
+Your CSV should have these columns:
+- **Name** (required): Uppercase constant name, e.g., "MY_CONSTANT"
+- **Value** (required): The constant value
+- **Type** (required): One of: string, integer, float, boolean, null
+- **Active** (optional): 1 for active, 0 for inactive (defaults to 1)
+- **Description** (optional): Text description
+
+Example CSV:
+```
+Name,Value,Type,Active,Description
+MY_API_KEY,abc123,string,1,API key for service
+MAX_POSTS,25,integer,1,Maximum posts per page
+DEBUG_MODE,true,boolean,0,Enable debug output
+```
+
+= Will importing overwrite existing constants? =
+
+No, the import process skips constants that already exist in your database. Only new constants are added. You'll receive a detailed report showing what was imported, skipped, and any errors.
+
 == Screenshots ==
 
 1. "My Constants" page showing custom constants with full management capabilities
 2. "All Constants" page displaying every constant in the WordPress installation
 3. Add new constant form with data type selection and description field
-4. Screen Options panel for customizing table display preferences
-5. Help page with comprehensive documentation and best practices
+4. Import/Export page with CSV upload and download functionality
+5. Screen Options panel for customizing table display preferences
+6. Help page with comprehensive documentation and best practices
 
 == Changelog ==
 
@@ -119,6 +148,9 @@ This is a PHP limitation, not a plugin restriction. Constants cannot be redefine
 * Load order optimization with plugins_loaded priority 1
 * Administrator-only access with proper capability checks
 * Secure database storage with audit trail
+* Import/Export functionality with CSV format support
+* Comprehensive duplicate prevention and validation
+* Enhanced error handling and user feedback
 
 == Developer Information ==
 
