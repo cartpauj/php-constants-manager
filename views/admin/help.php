@@ -157,14 +157,24 @@ if (!defined('ABSPATH')) {
         </ol>
         
         <h3><?php esc_html_e('When Your Constants Are Available', 'php-constants-manager'); ?></h3>
-        <p><?php esc_html_e('<strong>Normal Loading:</strong> Constants are defined during <code>plugins_loaded</code> priority 1, available to:', 'php-constants-manager'); ?></p>
+        
+        <h4><?php esc_html_e('Normal Loading (Default)', 'php-constants-manager'); ?></h4>
+        <p><?php esc_html_e('Constants are defined during <code>plugins_loaded</code> priority 1, available to:', 'php-constants-manager'); ?></p>
         <ul>
             <li><?php esc_html_e('All theme code (themes load after plugins)', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Most other plugins (unless they use higher priority)', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('WordPress hooks like <code>init</code>, <code>wp_loaded</code>, etc.', 'php-constants-manager'); ?></li>
         </ul>
         
-        <p><?php esc_html_e('<strong>Early Loading:</strong> Constants are available to all regular plugins during their initialization.', 'php-constants-manager'); ?></p>
+        <h4><?php esc_html_e('Early Loading (When Enabled)', 'php-constants-manager'); ?></h4>
+        <p><?php esc_html_e('<strong>Important:</strong> When early loading is enabled, your constants are <em>not</em> loaded during <code>plugins_loaded</code> priority 1. Instead, they are loaded much earlier via the must-use plugin system.', 'php-constants-manager'); ?></p>
+        <p><?php esc_html_e('Your constants will be available to:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><?php esc_html_e('<strong>All regular plugins</strong> - During their initialization and loading phase', 'php-constants-manager'); ?></li>
+            <li><?php esc_html_e('<strong>All theme code</strong> - Functions, templates, and hooks', 'php-constants-manager'); ?></li>
+            <li><?php esc_html_e('<strong>All WordPress hooks</strong> - Including very early hooks like <code>plugins_loaded</code>, <code>init</code>, etc.', 'php-constants-manager'); ?></li>
+        </ul>
+        <p><?php esc_html_e('The only things that can override your constants when early loading is enabled are WordPress core constants (from wp-config.php) and other must-use plugins that load before this one.', 'php-constants-manager'); ?></p>
         
         <h2 id="best-practices"><?php esc_html_e('Best Practices', 'php-constants-manager'); ?></h2>
         

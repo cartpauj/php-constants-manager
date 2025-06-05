@@ -107,49 +107,6 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
             <?php submit_button(__('Save Settings', 'php-constants-manager')); ?>
         </form>
         
-        <!-- Information Section -->
-        <div class="pcm-info-section">
-            <h2><?php esc_html_e('About Early Loading', 'php-constants-manager'); ?></h2>
-            
-            <h3><?php esc_html_e('How It Works', 'php-constants-manager'); ?></h3>
-            <p><?php esc_html_e('By default, this plugin loads your constants during the <code>plugins_loaded</code> action at priority 1. While this is very early in the WordPress loading process, some plugins may still load before your constants are available.', 'php-constants-manager'); ?></p>
-            
-            <p><?php esc_html_e('When you enable early loading, this plugin creates a special "must-use" plugin file that WordPress loads automatically before any regular plugins. This ensures your constants are defined as early as possible in the WordPress loading sequence.', 'php-constants-manager'); ?></p>
-            
-            <h3><?php esc_html_e('Loading Order', 'php-constants-manager'); ?></h3>
-            <ol>
-                <li><strong><?php esc_html_e('WordPress Core', 'php-constants-manager'); ?></strong> - <?php esc_html_e('wp-config.php and WordPress core constants', 'php-constants-manager'); ?></li>
-                <li><strong><?php esc_html_e('Must-Use Plugins', 'php-constants-manager'); ?></strong> - <?php esc_html_e('Your constants (when early loading is enabled)', 'php-constants-manager'); ?></li>
-                <li><strong><?php esc_html_e('Regular Plugins', 'php-constants-manager'); ?></strong> - <?php esc_html_e('All other plugins, including this plugin\'s normal loading', 'php-constants-manager'); ?></li>
-                <li><strong><?php esc_html_e('Themes', 'php-constants-manager'); ?></strong> - <?php esc_html_e('Active theme and child theme', 'php-constants-manager'); ?></li>
-            </ol>
-            
-            <h3><?php esc_html_e('Important Notes', 'php-constants-manager'); ?></h3>
-            <ul>
-                <li><?php esc_html_e('The must-use plugin file automatically loads active constants from the database each time.', 'php-constants-manager'); ?></li>
-                <li><?php esc_html_e('Changes to your constants are immediately reflected without needing to update any files.', 'php-constants-manager'); ?></li>
-                <li><?php esc_html_e('Only active constants are loaded by the must-use plugin.', 'php-constants-manager'); ?></li>
-                <li><?php esc_html_e('If you disable early loading, the must-use plugin file will be automatically removed.', 'php-constants-manager'); ?></li>
-                <li><?php esc_html_e('Constants will still be checked for conflicts - if they\'re already defined by WordPress core or wp-config.php, those definitions take precedence.', 'php-constants-manager'); ?></li>
-            </ul>
-            
-            <div class="pcm-info-box">
-                <h4><?php esc_html_e('When to Use Early Loading', 'php-constants-manager'); ?></h4>
-                <p><?php esc_html_e('Enable early loading if:', 'php-constants-manager'); ?></p>
-                <ul>
-                    <li><?php esc_html_e('Other plugins need to access your constants during their initialization', 'php-constants-manager'); ?></li>
-                    <li><?php esc_html_e('You\'re defining configuration constants that affect plugin behavior', 'php-constants-manager'); ?></li>
-                    <li><?php esc_html_e('You need maximum compatibility with other plugins', 'php-constants-manager'); ?></li>
-                </ul>
-                
-                <p><?php esc_html_e('Keep normal loading if:', 'php-constants-manager'); ?></p>
-                <ul>
-                    <li><?php esc_html_e('Your constants are only used by themes or late-loading code', 'php-constants-manager'); ?></li>
-                    <li><?php esc_html_e('You want to minimize files in the mu-plugins directory', 'php-constants-manager'); ?></li>
-                    <li><?php esc_html_e('You\'re not experiencing any compatibility issues', 'php-constants-manager'); ?></li>
-                </ul>
-            </div>
-        </div>
     </div>
 </div>
 
