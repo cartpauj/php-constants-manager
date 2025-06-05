@@ -106,13 +106,26 @@ jQuery(document).ready(function($) {
     $('#constant-type').on('change', function() {
         var type = $(this).val();
         var $valueField = $('#constant-value');
-        var $valueRow = $valueField.closest('tr');
+        var $valueWrapper = $valueField.closest('.pcm-input-wrapper');
+        var $lockIcon = $valueWrapper.find('.pcm-input-icon');
         
         if (type === 'null') {
-            $valueRow.hide();
-            $valueField.val('');
+            // Clear and disable the value field
+            $valueField.val('').prop('disabled', true).addClass('pcm-input-disabled');
+            
+            // Add lock icon if it doesn't exist
+            if ($lockIcon.length === 0) {
+                $valueWrapper.append('<div class="pcm-input-icon">🔒</div>');
+            }
+            
+            // Update placeholder
+            $valueField.attr('placeholder', 'NULL values cannot be edited');
         } else {
-            $valueRow.show();
+            // Enable the value field
+            $valueField.prop('disabled', false).removeClass('pcm-input-disabled');
+            
+            // Remove lock icon
+            $lockIcon.remove();
             
             // Add placeholder based on type
             switch (type) {
@@ -125,8 +138,11 @@ jQuery(document).ready(function($) {
                 case 'float':
                     $valueField.attr('placeholder', 'e.g., 123.45');
                     break;
+                case 'string':
+                    $valueField.attr('placeholder', 'Enter constant value');
+                    break;
                 default:
-                    $valueField.attr('placeholder', '');
+                    $valueField.attr('placeholder', 'Enter constant value');
             }
         }
     }).trigger('change');
