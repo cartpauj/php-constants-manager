@@ -124,7 +124,7 @@ if (!defined('ABSPATH')) {
             <div class="pcm-card">
                 <div class="pcm-card-header">
                     <h2><?php _e('Import Constants', 'php-constants-manager'); ?></h2>
-                    <p class="description"><?php _e('Upload a CSV file to import constants. Existing constants with the same name will be skipped.', 'php-constants-manager'); ?></p>
+                    <p class="description"><?php _e('Upload a CSV file to import constants. Choose whether to skip or overwrite existing constants.', 'php-constants-manager'); ?></p>
                 </div>
                 <div class="pcm-card-body">
                     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" enctype="multipart/form-data" class="pcm-import-form">
@@ -155,6 +155,18 @@ if (!defined('ABSPATH')) {
                                 <li><?php _e('Valid types: string, integer, float, boolean, null', 'php-constants-manager'); ?></li>
                                 <li><?php _e('Active column: 1 for active, 0 for inactive (default: 1)', 'php-constants-manager'); ?></li>
                             </ul>
+                        </div>
+                        
+                        <div class="pcm-import-options">
+                            <label class="pcm-checkbox-label">
+                                <input type="checkbox" name="overwrite_existing" value="1" class="pcm-checkbox">
+                                <span class="pcm-checkbox-custom"></span>
+                                <span class="pcm-checkbox-text">
+                                    <strong><?php _e('Overwrite existing constants', 'php-constants-manager'); ?></strong>
+                                    <br>
+                                    <small class="description"><?php _e('If checked, constants with matching names will be updated. If unchecked, they will be skipped.', 'php-constants-manager'); ?></small>
+                                </span>
+                            </label>
                         </div>
                         
                         <button type="submit" class="pcm-btn pcm-btn-primary" disabled id="import-submit-btn">

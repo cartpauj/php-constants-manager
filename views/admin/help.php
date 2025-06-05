@@ -41,6 +41,7 @@ if (!defined('ABSPATH')) {
                     <ul>
                         <li><a href="#import-export"><?php _e('Import/Export Constants', 'php-constants-manager'); ?></a></li>
                         <li><a href="#csv-format"><?php _e('CSV Format Guide', 'php-constants-manager'); ?></a></li>
+                        <li><a href="#overwrite-vs-skip-existing-constants"><?php _e('Overwrite vs. Skip Existing', 'php-constants-manager'); ?></a></li>
                         <li><a href="#value-validation"><?php _e('Value Validation', 'php-constants-manager'); ?></a></li>
                         <li><a href="#screen-options"><?php _e('Customizing Views', 'php-constants-manager'); ?></a></li>
                     </ul>
@@ -171,10 +172,10 @@ if (!defined('ABSPATH')) {
         <h3><?php _e('Importing Constants', 'php-constants-manager'); ?></h3>
         <p><?php _e('Upload a CSV file to import constants into your database. The import process will:', 'php-constants-manager'); ?></p>
         <ul>
-            <li><?php _e('Skip constants that already exist (no duplicates)', 'php-constants-manager'); ?></li>
+            <li><?php _e('Option to skip or overwrite existing constants', 'php-constants-manager'); ?></li>
             <li><?php _e('Validate constant names and data types with detailed error reporting', 'php-constants-manager'); ?></li>
             <li><?php _e('Show specific line numbers and reasons for any import errors', 'php-constants-manager'); ?></li>
-            <li><?php _e('Provide comprehensive feedback on imported, skipped, and error counts', 'php-constants-manager'); ?></li>
+            <li><?php _e('Provide comprehensive feedback on imported, updated, skipped, and error counts', 'php-constants-manager'); ?></li>
             <li><?php _e('Require header rows for proper column identification', 'php-constants-manager'); ?></li>
         </ul>
         
@@ -295,6 +296,37 @@ DEBUG_MODE,false,boolean</code></pre>
             <li><code>Line 8: Invalid constant name "my-constant" (must be uppercase letters, numbers, and underscores only)</code></li>
             <li><code>Line 12: Invalid boolean value "maybe" (Constant: DEBUG_MODE)</code></li>
             <li><code>Line 15: Invalid integer value "3.14" (Constant: MAX_ITEMS)</code></li>
+        </ul>
+        
+        <h3><?php _e('Overwrite vs. Skip Existing Constants', 'php-constants-manager'); ?></h3>
+        <p><?php _e('The import page includes an "Overwrite existing constants" checkbox that controls how duplicate constants are handled:', 'php-constants-manager'); ?></p>
+        
+        <h4><?php _e('Checkbox Unchecked (Default):', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><?php _e('Constants with matching names are skipped', 'php-constants-manager'); ?></li>
+            <li><?php _e('Existing data is preserved unchanged', 'php-constants-manager'); ?></li>
+            <li><?php _e('Only new constants (not in your database) are imported', 'php-constants-manager'); ?></li>
+            <li><?php _e('Safe for adding new constants without affecting existing ones', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <h4><?php _e('Checkbox Checked (Overwrite Mode):', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><?php _e('Constants with matching names are updated with CSV data', 'php-constants-manager'); ?></li>
+            <li><?php _e('Value, type, status, and description are all updated', 'php-constants-manager'); ?></li>
+            <li><?php _e('New constants are still imported normally', 'php-constants-manager'); ?></li>
+            <li><?php _e('Useful for bulk updates or synchronizing data between environments', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <div class="pcm-import-warning">
+            <p><strong><?php _e('Warning:', 'php-constants-manager'); ?></strong> <?php _e('When overwrite mode is enabled, existing constant data will be replaced. Always backup your database before using overwrite mode.', 'php-constants-manager'); ?></p>
+        </div>
+        
+        <h4><?php _e('Import Result Messages:', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><strong><?php _e('Imported:', 'php-constants-manager'); ?></strong> <?php _e('New constants added to the database', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Updated:', 'php-constants-manager'); ?></strong> <?php _e('Existing constants modified (only shown in overwrite mode)', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Skipped:', 'php-constants-manager'); ?></strong> <?php _e('Existing constants left unchanged (only shown in skip mode)', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Errors:', 'php-constants-manager'); ?></strong> <?php _e('Rows that could not be processed due to validation failures', 'php-constants-manager'); ?></li>
         </ul>
         
         <h2 id="value-validation"><?php _e('Value Validation', 'php-constants-manager'); ?></h2>

@@ -1115,8 +1115,12 @@ class PHP_Constants_Manager {
         $imported = 0;
         $skipped = 0;
         $errors = 0;
+        $updated = 0; // Track updated constants
         $error_details = array(); // Track specific errors
         $line = 0;
+        
+        // Check if overwrite existing constants is enabled
+        $overwrite_existing = !empty($_POST['overwrite_existing']);
         
         // Validate and skip header row (required)
         if (empty($csv_data) || !isset($csv_data[0][0])) {
@@ -1203,11 +1207,33 @@ class PHP_Constants_Manager {
             // Check if constant already exists in our database
             $existing = $this->db->get_constant_by_name($name);
             if ($existing) {
-                $skipped++;
+                if ($overwrite_existing) {
+                    // Update existing constant
+                    $result = $this->db->update_constant($existing->id, array(
+                        'value' => $value,
+                        'type' => $type,
+                        'is_active' => $is_active,
+                        'description' => $description
+                    ));
+                    
+                    if ($result !== false) {
+                        $updated++;
+                    } else {
+                        $errors++;
+                        $error_details[] = sprintf(
+                            __('Line %d: Database error updating constant \"%s\"', 'php-constants-manager'),
+                            $csv_line_number,
+                            esc_html($name)
+                        );
+                    }
+                } else {
+                    // Skip existing constant
+                    $skipped++;
+                }
                 continue;
             }
             
-            // Insert constant
+            // Insert new constant
             $result = $this->db->insert_constant(array(
                 'name' => $name,
                 'value' => $value,
@@ -1232,6 +1258,9 @@ class PHP_Constants_Manager {
         $message_parts = array();
         if ($imported > 0) {
             $message_parts[] = sprintf(_n('%d constant imported', '%d constants imported', $imported, 'php-constants-manager'), $imported);
+        }
+        if ($updated > 0) {
+            $message_parts[] = sprintf(_n('%d constant updated', '%d constants updated', $updated, 'php-constants-manager'), $updated);
         }
         if ($skipped > 0) {
             $message_parts[] = sprintf(_n('%d constant skipped (already exists)', '%d constants skipped (already exist)', $skipped, 'php-constants-manager'), $skipped);

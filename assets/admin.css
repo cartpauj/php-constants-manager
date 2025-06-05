@@ -837,3 +837,36 @@
     border-radius: 3px;
     border-left: 3px solid #d63638;
 }
+
+/* Import options styling */
+.pcm-import-options {
+    margin: 20px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+}
+
+.pcm-import-options .pcm-checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.pcm-import-options .pcm-checkbox-text {
+    flex: 1;
+}
+
+.pcm-import-options .pcm-checkbox-text strong {
+    display: block;
+    color: #1d2327;
+    margin-bottom: 4px;
+}
+
+.pcm-import-options .description {
+    color: #646970;
+    font-size: 13px;
+    line-height: 1.4;
+}
