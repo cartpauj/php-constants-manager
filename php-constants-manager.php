@@ -873,6 +873,9 @@ class PHP_Constants_Manager {
         $content .= "        return;\n";
         $content .= "    }\n";
         $content .= "    \n";
+        $content .= "    // Track which constants we successfully define\n";
+        $content .= "    \$pcm_early_defined = array();\n";
+        $content .= "    \n";
         $content .= "    foreach (\$constants as \$constant) {\n";
         $content .= "        if (!defined(\$constant->name)) {\n";
         $content .= "            \$value = \$constant->value;\n";
@@ -917,8 +920,12 @@ class PHP_Constants_Manager {
         $content .= "            }\n";
         $content .= "            \n";
         $content .= "            define(\$constant->name, \$value);\n";
+        $content .= "            \$pcm_early_defined[] = \$constant->name;\n";
         $content .= "        }\n";
         $content .= "    }\n";
+        $content .= "    \n";
+        $content .= "    // Store the list of constants we defined for the main plugin to check\n";
+        $content .= "    \$GLOBALS['pcm_early_defined_constants'] = \$pcm_early_defined;\n";
         $content .= "}\n\n";
         $content .= "// Load constants\n";
         $content .= "pcm_load_early_constants();\n";
@@ -978,6 +985,13 @@ class PHP_Constants_Manager {
         if (!$our_constant) {
             // Not in our database but is defined = predefined elsewhere
             return array('is_predefined' => true, 'existing_value' => $existing_value);
+        }
+        
+        // Check if we defined this constant via early loading (MU plugin)
+        if (isset($GLOBALS['pcm_early_defined_constants']) && 
+            in_array($name, $GLOBALS['pcm_early_defined_constants'])) {
+            // We successfully defined it via MU plugin, so it's not predefined
+            return array('is_predefined' => false, 'existing_value' => $existing_value);
         }
         
         // Check if we actually defined this constant during load_managed_constants
