@@ -1,6 +1,255 @@
 /* PHP Constants Manager Admin Styles */
 
-/* Form styles */
+/* Modern Form Styles */
+.pcm-modern-form {
+    background: #fff;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 24px;
+    margin-top: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pcm-form-container {
+    max-width: 800px;
+}
+
+.pcm-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.pcm-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.pcm-form-group-full {
+    grid-column: 1 / -1;
+}
+
+.pcm-form-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1e1e1e;
+    font-size: 14px;
+}
+
+.pcm-label-text {
+    margin-right: 4px;
+}
+
+.pcm-required {
+    color: #d63638;
+    font-weight: bold;
+}
+
+.pcm-input-wrapper,
+.pcm-select-wrapper,
+.pcm-textarea-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.pcm-input,
+.pcm-select,
+.pcm-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.pcm-input:focus,
+.pcm-select:focus,
+.pcm-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.pcm-input[readonly] {
+    background: #f7f7f7;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.pcm-input-icon {
+    position: absolute;
+    right: 12px;
+    color: #666;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.pcm-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 44px;
+}
+
+.pcm-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.pcm-checkbox-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pcm-checkbox-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.pcm-checkbox {
+    display: none;
+}
+
+.pcm-checkbox-custom {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    margin-right: 8px;
+    position: relative;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.pcm-checkbox:checked + .pcm-checkbox-custom {
+    background: #0073aa;
+    border-color: #0073aa;
+}
+
+.pcm-checkbox:checked + .pcm-checkbox-custom::after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.pcm-checkbox-text {
+    color: #1e1e1e;
+}
+
+.pcm-help-text {
+    margin: 6px 0 0 0;
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.4;
+}
+
+.pcm-help-warning {
+    color: #996800;
+    font-weight: 500;
+}
+
+.pcm-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e1e1e1;
+}
+
+.pcm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1;
+}
+
+.pcm-btn-primary {
+    background: #0073aa;
+    color: #fff;
+}
+
+.pcm-btn-primary:hover,
+.pcm-btn-primary:focus {
+    background: #005a87;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
+}
+
+.pcm-btn-secondary {
+    background: #f6f7f7;
+    color: #646970;
+    border: 1px solid #ddd;
+}
+
+.pcm-btn-secondary:hover,
+.pcm-btn-secondary:focus {
+    background: #f0f0f1;
+    color: #1e1e1e;
+    border-color: #999;
+    text-decoration: none;
+}
+
+.pcm-btn-icon {
+    font-size: 14px;
+}
+
+/* Responsive design for modern form */
+@media screen and (max-width: 782px) {
+    .pcm-form-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .pcm-form-group-full {
+        grid-column: 1;
+    }
+    
+    .pcm-modern-form {
+        padding: 16px;
+        margin: 12px 0;
+    }
+    
+    .pcm-form-actions {
+        flex-direction: column;
+        margin-top: 24px;
+    }
+    
+    .pcm-btn {
+        justify-content: center;
+        padding: 14px 20px;
+    }
+}
+
+/* Legacy Form styles */
 .pcm-form .form-table th {
     width: 200px;
 }
