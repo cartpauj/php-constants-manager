@@ -856,6 +856,9 @@ class PHP_Constants_Manager {
         $content .= "function pcm_load_early_constants() {\n";
         $content .= "    global \$wpdb;\n";
         $content .= "    \n";
+        $content .= "    // Initialize the global array\n";
+        $content .= "    \$GLOBALS['pcm_early_defined_constants'] = array();\n";
+        $content .= "    \n";
         $content .= "    // Get the table name\n";
         $content .= "    \$table_name = \$wpdb->prefix . 'pcm_constants';\n";
         $content .= "    \n";
@@ -924,7 +927,7 @@ class PHP_Constants_Manager {
         $content .= "        }\n";
         $content .= "    }\n";
         $content .= "    \n";
-        $content .= "    // Store the list of constants we defined for the main plugin to check\n";
+        $content .= "    // Store the list for the main plugin to check\n";
         $content .= "    \$GLOBALS['pcm_early_defined_constants'] = \$pcm_early_defined;\n";
         $content .= "}\n\n";
         $content .= "// Load constants\n";
