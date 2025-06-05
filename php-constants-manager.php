@@ -132,9 +132,22 @@ class PHP_Constants_Manager {
                     case 'boolean':
                         if (is_string($value)) {
                             $lower_value = strtolower(trim($value));
-                            $value = in_array($lower_value, ['true', '1', 'yes', 'on'], true);
+                            // Handle various string representations of boolean values
+                            if (in_array($lower_value, ['true', '1', 'yes', 'on'], true)) {
+                                $value = true;
+                            } elseif (in_array($lower_value, ['false', '0', 'no', 'off', ''], true)) {
+                                $value = false;
+                            } else {
+                                // Fallback to filter_var for other cases
+                                $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                                if ($value === null) {
+                                    $value = false; // Default to false for invalid boolean strings
+                                }
+                            }
+                        } elseif (is_numeric($value)) {
+                            $value = (bool)intval($value);
                         } else {
-                            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                            $value = (bool)$value;
                         }
                         break;
                     case 'integer':
@@ -615,9 +628,22 @@ class PHP_Constants_Manager {
             case 'boolean':
                 if (is_string($our_value)) {
                     $lower_value = strtolower(trim($our_value));
-                    $typed_our_value = in_array($lower_value, ['true', '1', 'yes', 'on'], true);
+                    // Handle various string representations of boolean values
+                    if (in_array($lower_value, ['true', '1', 'yes', 'on'], true)) {
+                        $typed_our_value = true;
+                    } elseif (in_array($lower_value, ['false', '0', 'no', 'off', ''], true)) {
+                        $typed_our_value = false;
+                    } else {
+                        // Fallback to filter_var for other cases
+                        $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        if ($typed_our_value === null) {
+                            $typed_our_value = false; // Default to false for invalid boolean strings
+                        }
+                    }
+                } elseif (is_numeric($our_value)) {
+                    $typed_our_value = (bool)intval($our_value);
                 } else {
-                    $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
+                    $typed_our_value = (bool)$our_value;
                 }
                 break;
             case 'integer':
@@ -641,15 +667,34 @@ class PHP_Constants_Manager {
         
         // The key is: if we're active and values match, we need to check if WE defined it
         // We can do this by checking if the constant was already defined before we tried to define it
-        if ($is_active && $existing_value === $typed_our_value) {
+        // Check for value match - use both strict and type-aware comparison for booleans
+        $values_match = false;
+        if ($our_type === 'boolean') {
+            // For booleans, check both strict equality and logical equivalence
+            $values_match = ($existing_value === $typed_our_value) || 
+                           ((bool)$existing_value === (bool)$typed_our_value);
+        } else {
+            $values_match = ($existing_value === $typed_our_value);
+        }
+        
+        if ($is_active && $values_match) {
             // If this plugin successfully defined the constant, it's not predefined
             // We can't reliably detect this after the fact, so we'll assume if values match
             // and we're active, then we either defined it or it matches our intended definition
             return array('is_predefined' => false, 'existing_value' => $existing_value);
         }
         
+        // Debug info for troubleshooting (can be removed later)
+        if ($name === 'WP_DEBUG') {
+            error_log("WP_DEBUG Debug - Name: $name, Existing: " . var_export($existing_value, true) . 
+                     " (" . gettype($existing_value) . "), Our Value: " . var_export($our_value, true) . 
+                     " (" . gettype($our_value) . "), Typed: " . var_export($typed_our_value, true) . 
+                     " (" . gettype($typed_our_value) . "), Active: " . var_export($is_active, true) . 
+                     ", Type: $our_type");
+        }
+        
         // If our constant is inactive and values match, something else defined it
-        if (!$is_active && $existing_value === $typed_our_value) {
+        if (!$is_active && $values_match) {
             return array('is_predefined' => true, 'existing_value' => $existing_value);
         }
         
