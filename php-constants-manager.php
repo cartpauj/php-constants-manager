@@ -52,6 +52,7 @@ class PHP_Constants_Manager {
      */
     private $defined_by_plugin = array();
     
+    
     /**
      * Get instance of the class
      */
@@ -89,6 +90,7 @@ class PHP_Constants_Manager {
         add_action('admin_post_pcm_bulk_action', array($this, 'handle_bulk_action'));
         add_action('admin_post_pcm_export_csv', array($this, 'handle_export_csv'));
         add_action('admin_post_pcm_import_csv', array($this, 'handle_import_csv'));
+        add_action('admin_post_pcm_save_settings', array($this, 'handle_save_settings'));
         
         // Handle AJAX requests
         add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
@@ -96,6 +98,7 @@ class PHP_Constants_Manager {
         
         // Handle screen options
         add_filter('set-screen-option', array($this, 'set_screen_options'), 10, 3);
+        
     }
     
     /**
@@ -255,6 +258,15 @@ class PHP_Constants_Manager {
             'manage_options',
             'php-constants-manager-import-export',
             array($this, 'render_import_export_page')
+        );
+        
+        $settings_page = add_submenu_page(
+            'php-constants-manager',
+            __('Settings', 'php-constants-manager'),
+            __('Settings', 'php-constants-manager'),
+            'manage_options',
+            'php-constants-manager-settings',
+            array($this, 'render_settings_page')
         );
         
         $help_page = add_submenu_page(
@@ -513,7 +525,7 @@ class PHP_Constants_Manager {
         
         if ($id) {
             $this->db->delete_constant($id);
-        }
+            }
         
         wp_redirect(admin_url('admin.php?page=php-constants-manager&message=deleted'));
         exit;
@@ -535,7 +547,7 @@ class PHP_Constants_Manager {
         
         if ($id) {
             $this->db->toggle_constant($id);
-        }
+            }
         
         wp_redirect(admin_url('admin.php?page=php-constants-manager&message=toggled'));
         exit;
@@ -782,6 +794,162 @@ class PHP_Constants_Manager {
             'message' => $message,
             'error' => $error
         ));
+    }
+    
+    /**
+     * Render settings page
+     */
+    public function render_settings_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Check for success/error messages
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $message = isset($_GET['message']) ? sanitize_text_field(wp_unslash($_GET['message'])) : '';
+        $error = isset($_GET['error']) ? sanitize_text_field(wp_unslash($_GET['error'])) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+        
+        // Check if must-use plugin exists
+        $mu_plugin_exists = $this->mu_plugin_exists();
+        $early_loading_enabled = get_option('pcm_early_loading_enabled', false);
+        
+        $this->load_view('admin/settings', array(
+            'message' => $message,
+            'error' => $error,
+            'mu_plugin_exists' => $mu_plugin_exists,
+            'early_loading_enabled' => $early_loading_enabled
+        ));
+    }
+    
+    /**
+     * Check if must-use plugin exists
+     */
+    private function mu_plugin_exists() {
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        return file_exists($mu_plugin_path);
+    }
+    
+    /**
+     * Create must-use plugin file
+     */
+    private function create_mu_plugin() {
+        // Check if mu-plugins directory exists
+        if (!wp_mkdir_p(WPMU_PLUGIN_DIR)) {
+            return false;
+        }
+        
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        
+        // Generate static must-use plugin content that queries the database
+        $content = "<?php\n";
+        $content .= "/**\n";
+        $content .= " * PHP Constants Manager - Early Loading\n";
+        $content .= " * This file loads constants from PHP Constants Manager before other plugins\n";
+        $content .= " * DO NOT EDIT - Managed by PHP Constants Manager plugin\n";
+        $content .= " */\n\n";
+        $content .= "// Prevent direct access\n";
+        $content .= "if (!defined('ABSPATH')) {\n";
+        $content .= "    exit;\n";
+        $content .= "}\n\n";
+        $content .= "// Load PHP Constants Manager constants early\n";
+        $content .= "function pcm_load_early_constants() {\n";
+        $content .= "    global \$wpdb;\n";
+        $content .= "    \n";
+        $content .= "    // Get the table name\n";
+        $content .= "    \$table_name = \$wpdb->prefix . 'pcm_constants';\n";
+        $content .= "    \n";
+        $content .= "    // Check if table exists\n";
+        $content .= "    if (\$wpdb->get_var(\"SHOW TABLES LIKE '\$table_name'\") !== \$table_name) {\n";
+        $content .= "        return;\n";
+        $content .= "    }\n";
+        $content .= "    \n";
+        $content .= "    // Get active constants\n";
+        $content .= "    \$constants = \$wpdb->get_results(\n";
+        $content .= "        \"SELECT name, value, type FROM \$table_name WHERE is_active = 1\"\n";
+        $content .= "    );\n";
+        $content .= "    \n";
+        $content .= "    if (empty(\$constants)) {\n";
+        $content .= "        return;\n";
+        $content .= "    }\n";
+        $content .= "    \n";
+        $content .= "    foreach (\$constants as \$constant) {\n";
+        $content .= "        if (!defined(\$constant->name)) {\n";
+        $content .= "            \$value = \$constant->value;\n";
+        $content .= "            \n";
+        $content .= "            switch (\$constant->type) {\n";
+        $content .= "                case 'boolean':\n";
+        $content .= "                    if (is_string(\$value)) {\n";
+        $content .= "                        \$lower_value = strtolower(trim(\$value));\n";
+        $content .= "                        if (in_array(\$lower_value, ['true', '1', 'yes', 'on'], true)) {\n";
+        $content .= "                            \$value = true;\n";
+        $content .= "                        } elseif (in_array(\$lower_value, ['false', '0', 'no', 'off', ''], true)) {\n";
+        $content .= "                            \$value = false;\n";
+        $content .= "                        } else {\n";
+        $content .= "                            \$value = filter_var(\$value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);\n";
+        $content .= "                            if (\$value === null) {\n";
+        $content .= "                                \$value = false;\n";
+        $content .= "                            }\n";
+        $content .= "                        }\n";
+        $content .= "                    } elseif (is_numeric(\$value)) {\n";
+        $content .= "                        \$value = (bool)intval(\$value);\n";
+        $content .= "                    } else {\n";
+        $content .= "                        \$value = (bool)\$value;\n";
+        $content .= "                    }\n";
+        $content .= "                    break;\n";
+        $content .= "                case 'integer':\n";
+        $content .= "                    if (is_numeric(\$value)) {\n";
+        $content .= "                        \$value = intval(\$value);\n";
+        $content .= "                    } else {\n";
+        $content .= "                        \$value = 0;\n";
+        $content .= "                    }\n";
+        $content .= "                    break;\n";
+        $content .= "                case 'float':\n";
+        $content .= "                    if (is_numeric(\$value)) {\n";
+        $content .= "                        \$value = floatval(\$value);\n";
+        $content .= "                    } else {\n";
+        $content .= "                        \$value = 0.0;\n";
+        $content .= "                    }\n";
+        $content .= "                    break;\n";
+        $content .= "                case 'null':\n";
+        $content .= "                    \$value = null;\n";
+        $content .= "                    break;\n";
+        $content .= "            }\n";
+        $content .= "            \n";
+        $content .= "            define(\$constant->name, \$value);\n";
+        $content .= "        }\n";
+        $content .= "    }\n";
+        $content .= "}\n\n";
+        $content .= "// Load constants\n";
+        $content .= "pcm_load_early_constants();\n";
+        
+        // Write the file
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once(ABSPATH . '/wp-admin/includes/file.php');
+            WP_Filesystem();
+        }
+        
+        return $wp_filesystem->put_contents($mu_plugin_path, $content, FS_CHMOD_FILE);
+    }
+    
+    /**
+     * Remove must-use plugin file
+     */
+    private function remove_mu_plugin() {
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        
+        if (!file_exists($mu_plugin_path)) {
+            return true;
+        }
+        
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once(ABSPATH . '/wp-admin/includes/file.php');
+            WP_Filesystem();
+        }
+        
+        return $wp_filesystem->delete($mu_plugin_path);
     }
     
     /**
@@ -1245,7 +1413,7 @@ class PHP_Constants_Manager {
                     
                     if ($result !== false) {
                         $updated++;
-                    } else {
+                            } else {
                         $errors++;
                         $error_details[] = sprintf(
                             /* translators: 1: line number in CSV file, 2: constant name */
@@ -1310,6 +1478,61 @@ class PHP_Constants_Manager {
         }
         
         $redirect_url = admin_url('admin.php?page=php-constants-manager-import-export&message=' . urlencode($message));
+        
+        wp_redirect($redirect_url);
+        exit;
+    }
+    
+    /**
+     * Handle save settings
+     */
+    public function handle_save_settings() {
+        if (!current_user_can('manage_options')) {
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        if (!check_admin_referer('pcm_save_settings', 'pcm_nonce')) {
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
+        }
+        
+        $early_loading_enabled = !empty($_POST['early_loading_enabled']);
+        $previous_setting = get_option('pcm_early_loading_enabled', false);
+        
+        // Update the option
+        update_option('pcm_early_loading_enabled', $early_loading_enabled);
+        
+        $message = '';
+        $error = '';
+        
+        if ($early_loading_enabled && !$previous_setting) {
+            // Enable early loading - create MU plugin
+            if ($this->create_mu_plugin()) {
+                $message = 'early_loading_enabled';
+            } else {
+                $error = 'mu_plugin_create_failed';
+                // Revert the option
+                update_option('pcm_early_loading_enabled', false);
+            }
+        } elseif (!$early_loading_enabled && $previous_setting) {
+            // Disable early loading - remove MU plugin
+            if ($this->remove_mu_plugin()) {
+                $message = 'early_loading_disabled';
+            } else {
+                $error = 'mu_plugin_remove_failed';
+                // Revert the option
+                update_option('pcm_early_loading_enabled', true);
+            }
+        } else {
+            $message = 'settings_saved';
+        }
+        
+        $redirect_url = admin_url('admin.php?page=php-constants-manager-settings');
+        if ($message) {
+            $redirect_url .= '&message=' . $message;
+        }
+        if ($error) {
+            $redirect_url .= '&error=' . $error;
+        }
         
         wp_redirect($redirect_url);
         exit;

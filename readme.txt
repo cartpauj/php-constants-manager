@@ -24,6 +24,7 @@ PHP Constants Manager provides a secure and user-friendly interface for managing
 * **Active/Inactive States**: Toggle constants on/off without deleting them
 * **Conflict Detection**: Visual indicators show when constants are already defined elsewhere (predefined)
 * **Screen Options**: Customize table views with adjustable items per page and column visibility controls
+* **Early Loading Option**: Optional must-use plugin creation for loading constants before other plugins
 * **Load Order Awareness**: Constants loaded during plugins_loaded action (priority 1) for broad compatibility
 * **Comprehensive Help**: Built-in help system with detailed documentation and best practices
 * **Administrator Only**: Secure access restricted to users with manage_options capability
@@ -80,10 +81,12 @@ Yes! Each constant has an active/inactive toggle. Inactive constants remain in t
 
 = When are my constants available in my code? =
 
-Constants are loaded during the `plugins_loaded` action with priority 1, making them available to:
+By default, constants are loaded during the `plugins_loaded` action with priority 1, making them available to:
 - All theme code (themes load after plugins)
 - Most other plugins (unless they use higher priority)
 - WordPress hooks like `init`, `wp_loaded`, etc.
+
+For earlier loading, enable the "Early Loading" option in Settings, which creates a must-use plugin that loads constants before any regular plugins.
 
 = Can I customize how the tables are displayed? =
 
@@ -145,18 +148,36 @@ The import will show exactly what went wrong with specific line numbers and erro
 
 This helps you fix your CSV file and re-import successfully.
 
+= What is Early Loading and when should I use it? =
+
+Early Loading creates a must-use plugin file that loads your constants before any regular plugins. This ensures maximum compatibility when other plugins need your constants during their initialization.
+
+**Enable Early Loading if:**
+- Other plugins need to access your constants during their setup
+- You're defining configuration constants that affect plugin behavior
+- You want maximum compatibility across all plugins
+
+**Normal loading is fine if:**
+- Your constants are only used by themes or late-loading code
+- You're not experiencing any compatibility issues
+- You prefer to minimize files in the mu-plugins directory
+
+The Early Loading option is available in the Settings page and automatically manages the must-use plugin file creation and removal.
+
 == Screenshots ==
 
 1. "My Constants" page showing custom constants with full management capabilities
 2. "All Constants" page displaying every constant in the WordPress installation
 3. Add new constant form with data type selection and description field
-4. Import/Export page with CSV upload and download functionality
-5. Screen Options panel for customizing table display preferences
-6. Help page with comprehensive documentation and best practices
+4. Settings page with Early Loading option for must-use plugin creation
+5. Import/Export page with CSV upload and download functionality
+6. Screen Options panel for customizing table display preferences
+7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
 
 = 1.1.0 =
+* **Early Loading Feature**: New Settings page with option to create must-use plugin for loading constants before other plugins
 * **Enhanced Value Validation**: Strict type validation for all constant types with detailed error messages
 * **Real-time Form Validation**: Immediate feedback while typing with visual error indicators
 * **Improved Data Handling**: Fixed slash stripping issues with quotes in values and descriptions
