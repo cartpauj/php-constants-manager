@@ -68,7 +68,9 @@ class PCM_DB {
             $error_msg .= " Possible causes: insufficient database permissions, storage space, or MySQL version compatibility.";
             
             // Log the error
-            error_log($error_msg);
+            if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                error_log($error_msg);
+            }
             
             // Store error for admin notice
             set_transient('pcm_db_error', $error_msg, 300); // 5 minutes
@@ -82,7 +84,9 @@ class PCM_DB {
             $error_msg .= " This may indicate insufficient database permissions or other database configuration issues.";
             
             // Log the error
-            error_log($error_msg);
+            if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                error_log($error_msg);
+            }
             
             // Store error for admin notice
             set_transient('pcm_db_error', $error_msg, 300); // 5 minutes

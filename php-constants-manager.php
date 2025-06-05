@@ -108,10 +108,8 @@ class PHP_Constants_Manager {
             wp_die(sprintf(__('View template not found: %s', 'php-constants-manager'), $template));
         }
         
-        // Extract data to variables
-        if (!empty($data)) {
-            extract($data, EXTR_SKIP);
-        }
+        // Make data available to template (avoiding extract for security)
+        // Variables will be accessed via $data array in templates
         
         include $template_path;
     }
@@ -136,7 +134,9 @@ class PHP_Constants_Manager {
             // If table creation failed, log and bail out gracefully
             if (!$table_ready) {
                 $error_msg = "PHP Constants Manager: Cannot load constants - database table creation failed.";
-                error_log($error_msg);
+                if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                    error_log($error_msg);
+                }
                 
                 // Store error for admin notice (only for admin users)
                 if (function_exists('current_user_can') && current_user_can('manage_options')) {
@@ -830,27 +830,35 @@ class PHP_Constants_Manager {
         header('Pragma: no-cache');
         header('Expires: 0');
         
-        // Create CSV output
-        $output = fopen('php://output', 'w');
-        
+        // Create CSV output using WordPress filesystem API
         // Add BOM for UTF-8
-        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        echo chr(0xEF).chr(0xBB).chr(0xBF);
         
-        // CSV headers
-        fputcsv($output, array('Name', 'Value', 'Type', 'Active', 'Description'));
+        // Output CSV headers
+        echo 'Name,Value,Type,Active,Description' . "\r\n";
         
         // Add data rows
         foreach ($constants as $constant) {
-            fputcsv($output, array(
+            $row = array(
                 $constant->name,
                 $constant->value,
                 $constant->type,
                 $constant->is_active ? '1' : '0',
                 $constant->description
-            ));
+            );
+            
+            // Properly escape CSV values
+            $escaped_row = array();
+            foreach ($row as $field) {
+                if (strpos($field, ',') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false) {
+                    $escaped_row[] = '"' . str_replace('"', '""', $field) . '"';
+                } else {
+                    $escaped_row[] = $field;
+                }
+            }
+            
+            echo implode(',', $escaped_row) . "\r\n";
         }
-        
-        fclose($output);
         exit;
     }
     
@@ -881,11 +889,27 @@ class PHP_Constants_Manager {
             exit;
         }
         
-        // Read CSV file
-        $handle = fopen($file['tmp_name'], 'r');
-        if (!$handle) {
+        // Read CSV file using WordPress filesystem API
+        global $wp_filesystem;
+        if (empty($wp_filesystem)) {
+            require_once(ABSPATH . '/wp-admin/includes/file.php');
+            WP_Filesystem();
+        }
+        
+        $file_contents = $wp_filesystem->get_contents($file['tmp_name']);
+        if ($file_contents === false) {
             wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=read_error'));
             exit;
+        }
+        
+        // Parse CSV data
+        $csv_lines = explode("\n", $file_contents);
+        $csv_data = array();
+        foreach ($csv_lines as $line) {
+            if (trim($line) === '') {
+                continue;
+            }
+            $csv_data[] = str_getcsv($line);
         }
         
         $imported = 0;
@@ -894,15 +918,16 @@ class PHP_Constants_Manager {
         $line = 0;
         
         // Skip header row if it exists
-        $first_row = fgetcsv($handle);
-        if ($first_row && (strtolower($first_row[0]) === 'name' || strtolower($first_row[0]) === 'constant name')) {
-            // This looks like a header row, skip it
-        } else {
-            // This is data, process it
-            rewind($handle);
+        $data_start_index = 0;
+        if (!empty($csv_data) && isset($csv_data[0][0])) {
+            $first_cell = strtolower(trim($csv_data[0][0]));
+            if ($first_cell === 'name' || $first_cell === 'constant name') {
+                $data_start_index = 1; // Skip header row
+            }
         }
         
-        while (($data = fgetcsv($handle)) !== FALSE) {
+        for ($i = $data_start_index; $i < count($csv_data); $i++) {
+            $data = $csv_data[$i];
             $line++;
             
             // Skip empty rows
@@ -955,8 +980,6 @@ class PHP_Constants_Manager {
                 $errors++;
             }
         }
-        
-        fclose($handle);
         
         // Build success message
         $message_parts = array();

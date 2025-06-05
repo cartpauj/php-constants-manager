@@ -2,9 +2,10 @@
 /**
  * Constants list page view
  * 
- * @var PCM_List_Table $list_table
- * @var array $transient_notice
- * @var string $message
+ * Data available via $data array:
+ * - list_table: PCM_List_Table
+ * - transient_notice: array
+ * - message: string
  */
 
 // Prevent direct access
@@ -21,16 +22,16 @@ if (!defined('ABSPATH')) {
     
     <?php 
     // Check for transient notices
-    if ($transient_notice) {
+    if ($data['transient_notice']) {
         ?>
-        <div class="notice notice-<?php echo esc_attr($transient_notice['type']); ?> is-dismissible">
-            <p><?php echo esc_html($transient_notice['message']); ?></p>
+        <div class="notice notice-<?php echo esc_attr($data['transient_notice']['type']); ?> is-dismissible">
+            <p><?php echo esc_html($data['transient_notice']['message']); ?></p>
         </div>
         <?php
     }
     ?>
     
-    <?php if (isset($message) && $message): ?>
+    <?php if (isset($data['message']) && $data['message']): ?>
         <?php
         $messages = array(
             'saved' => __('Constant saved successfully.', 'php-constants-manager'),
@@ -40,7 +41,7 @@ if (!defined('ABSPATH')) {
             'bulk_activated' => __('Selected constants activated successfully.', 'php-constants-manager'),
             'bulk_deactivated' => __('Selected constants deactivated successfully.', 'php-constants-manager'),
         );
-        $message_text = isset($messages[$message]) ? $messages[$message] : '';
+        $message_text = isset($messages[$data['message']]) ? $messages[$data['message']] : '';
         if ($message_text):
         ?>
             <div class="notice notice-success is-dismissible">
@@ -51,12 +52,12 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display type filter links
-    $views = $list_table->get_views();
+    $views = $data['list_table']->get_views();
     if (!empty($views)) {
         echo '<ul class="subsubsub">';
         $view_links = array();
         foreach ($views as $class => $view) {
-            $view_links[] = "<li class='$class'>$view</li>";
+            $view_links[] = '<li class="' . esc_attr($class) . '">' . $view . '</li>';
         }
         echo implode('', $view_links);
         echo '</ul>';
@@ -68,7 +69,7 @@ if (!defined('ABSPATH')) {
         <input type="hidden" name="action" value="pcm_bulk_action" />
         <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
         <div class="constants-table-wrapper">
-            <?php $list_table->display(); ?>
+            <?php $data['list_table']->display(); ?>
         </div>
     </form>
     

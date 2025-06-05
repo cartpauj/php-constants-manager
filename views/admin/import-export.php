@@ -2,8 +2,9 @@
 /**
  * Import/Export page view
  * 
- * @var string $message
- * @var string $error
+ * Data available via $data array:
+ * - message: string
+ * - error: string
  */
 
 // Prevent direct access
@@ -15,17 +16,17 @@ if (!defined('ABSPATH')) {
 <div class="wrap">
     <h1><?php _e('Import/Export Constants', 'php-constants-manager'); ?></h1>
     
-    <?php if (!empty($message)): ?>
+    <?php if (!empty($data['message'])): ?>
         <div class="notice notice-success is-dismissible">
-            <p><?php echo esc_html(urldecode($message)); ?></p>
+            <p><?php echo esc_html(urldecode($data['message'])); ?></p>
         </div>
     <?php endif; ?>
     
-    <?php if (!empty($error)): ?>
+    <?php if (!empty($data['error'])): ?>
         <div class="notice notice-error is-dismissible">
             <p>
                 <?php
-                switch ($error) {
+                switch ($data['error']) {
                     case 'no_constants':
                         _e('No constants found to export.', 'php-constants-manager');
                         break;
@@ -39,7 +40,7 @@ if (!defined('ABSPATH')) {
                         _e('Error reading the uploaded file.', 'php-constants-manager');
                         break;
                     default:
-                        echo esc_html($error);
+                        echo esc_html($data['error']);
                 }
                 ?>
             </p>

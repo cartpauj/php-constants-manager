@@ -2,9 +2,10 @@
 /**
  * Constant add/edit form view
  * 
- * @var object|null $constant
- * @var string $title
- * @var bool $is_edit
+ * Data available via $data array:
+ * - constant: object|null
+ * - title: string
+ * - is_edit: bool
  */
 
 // Prevent direct access
@@ -14,7 +15,7 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="wrap">
-    <h1><?php echo esc_html($title); ?></h1>
+    <h1><?php echo esc_html($data['title']); ?></h1>
     
     <?php
     // Display transient notices
@@ -30,23 +31,26 @@ if (!defined('ABSPATH')) {
     }
     
     // Check if constant is already defined (for edit mode)
-    if ($is_edit) {
+    if ($data['is_edit']) {
         $plugin_instance = PHP_Constants_Manager::get_instance();
         $predefined_check = $plugin_instance->is_constant_predefined(
-            $constant->name, 
-            $constant->value, 
-            $constant->type, 
-            $constant->is_active
+            $data['constant']->name, 
+            $data['constant']->value, 
+            $data['constant']->type, 
+            $data['constant']->is_active
         );
         
         if ($predefined_check['is_predefined']) {
             ?>
             <div class="notice notice-warning">
                 <p><?php 
-                    printf(
-                        __('Note: The constant "%s" is currently defined with value: %s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
-                        esc_html($constant->name),
-                        '<code>' . esc_html(var_export($predefined_check['existing_value'], true)) . '</code>'
+                    echo wp_kses(
+                        sprintf(
+                            __('Note: The constant "%s" is currently defined with value: %s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
+                            esc_html($data['constant']->name),
+                            '<code>' . esc_html(var_export($predefined_check['existing_value'], true)) . '</code>'
+                        ),
+                        array('code' => array())
                     ); 
                 ?></p>
             </div>
@@ -57,8 +61,8 @@ if (!defined('ABSPATH')) {
     
     <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" class="pcm-form pcm-modern-form">
         <input type="hidden" name="action" value="pcm_save_constant" />
-        <?php if ($is_edit): ?>
-            <input type="hidden" name="id" value="<?php echo esc_attr($constant->id); ?>" />
+        <?php if ($data['is_edit']): ?>
+            <input type="hidden" name="id" value="<?php echo esc_attr($data['constant']->id); ?>" />
         <?php endif; ?>
         <?php wp_nonce_field('pcm_save_constant', 'pcm_nonce'); ?>
         
@@ -71,16 +75,16 @@ if (!defined('ABSPATH')) {
                     </label>
                     <div class="pcm-input-wrapper">
                         <input type="text" id="constant-name" name="constant_name" class="pcm-input" 
-                               value="<?php echo $is_edit ? esc_attr($constant->name) : ''; ?>" 
+                               value="<?php echo $data['is_edit'] ? esc_attr($data['constant']->name) : ''; ?>" 
                                required pattern="[A-Z][A-Z0-9_]*" 
                                placeholder="MY_CONSTANT_NAME"
-                               <?php echo $is_edit ? 'readonly' : ''; ?> />
-                        <?php if ($is_edit): ?>
+                               <?php echo $data['is_edit'] ? 'readonly' : ''; ?> />
+                        <?php if ($data['is_edit']): ?>
                             <div class="pcm-input-icon">🔒</div>
                         <?php endif; ?>
                     </div>
                     <p class="pcm-help-text"><?php _e('Use uppercase letters, numbers, and underscores only. Must start with a letter.', 'php-constants-manager'); ?></p>
-                    <?php if ($is_edit): ?>
+                    <?php if ($data['is_edit']): ?>
                         <p class="pcm-help-text pcm-help-warning"><?php _e('Note: Constant names cannot be changed after creation.', 'php-constants-manager'); ?></p>
                     <?php endif; ?>
                     <div id="constant-name-feedback"></div>
@@ -92,7 +96,7 @@ if (!defined('ABSPATH')) {
                     </label>
                     <div class="pcm-input-wrapper">
                         <input type="text" id="constant-value" name="constant_value" class="pcm-input" 
-                               value="<?php echo $is_edit ? esc_attr($constant->value) : ''; ?>" 
+                               value="<?php echo $data['is_edit'] ? esc_attr($data['constant']->value) : ''; ?>" 
                                placeholder="Enter constant value" />
                     </div>
                 </div>
@@ -103,11 +107,11 @@ if (!defined('ABSPATH')) {
                     </label>
                     <div class="pcm-select-wrapper">
                         <select id="constant-type" name="constant_type" class="pcm-select">
-                            <option value="string" <?php selected($is_edit ? $constant->type : '', 'string'); ?>><?php _e('String', 'php-constants-manager'); ?></option>
-                            <option value="integer" <?php selected($is_edit ? $constant->type : '', 'integer'); ?>><?php _e('Integer', 'php-constants-manager'); ?></option>
-                            <option value="float" <?php selected($is_edit ? $constant->type : '', 'float'); ?>><?php _e('Float', 'php-constants-manager'); ?></option>
-                            <option value="boolean" <?php selected($is_edit ? $constant->type : '', 'boolean'); ?>><?php _e('Boolean', 'php-constants-manager'); ?></option>
-                            <option value="null" <?php selected($is_edit ? $constant->type : '', 'null'); ?>><?php _e('NULL', 'php-constants-manager'); ?></option>
+                            <option value="string" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'string'); ?>><?php _e('String', 'php-constants-manager'); ?></option>
+                            <option value="integer" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'integer'); ?>><?php _e('Integer', 'php-constants-manager'); ?></option>
+                            <option value="float" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'float'); ?>><?php _e('Float', 'php-constants-manager'); ?></option>
+                            <option value="boolean" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'boolean'); ?>><?php _e('Boolean', 'php-constants-manager'); ?></option>
+                            <option value="null" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'null'); ?>><?php _e('NULL', 'php-constants-manager'); ?></option>
                         </select>
                     </div>
                 </div>
@@ -120,7 +124,7 @@ if (!defined('ABSPATH')) {
                         <label class="pcm-checkbox-label">
                             <input type="checkbox" id="constant-active" name="constant_active" value="1" 
                                    class="pcm-checkbox"
-                                   <?php checked($is_edit ? $constant->is_active : true, true); ?> />
+                                   <?php checked($data['is_edit'] ? $data['constant']->is_active : true, true); ?> />
                             <span class="pcm-checkbox-custom"></span>
                             <span class="pcm-checkbox-text"><?php _e('Active', 'php-constants-manager'); ?></span>
                         </label>
@@ -135,7 +139,7 @@ if (!defined('ABSPATH')) {
                     <div class="pcm-textarea-wrapper">
                         <textarea id="constant-description" name="constant_description" rows="3" class="pcm-textarea" 
                                   placeholder="Optional: Describe what this constant is used for"><?php 
-                            echo $is_edit ? esc_textarea($constant->description) : ''; 
+                            echo $data['is_edit'] ? esc_textarea($data['constant']->description) : ''; 
                         ?></textarea>
                     </div>
                     <p class="pcm-help-text"><?php _e('Optional: Describe what this constant is used for.', 'php-constants-manager'); ?></p>
@@ -145,7 +149,7 @@ if (!defined('ABSPATH')) {
         
         <div class="pcm-form-actions">
             <button type="submit" class="pcm-btn pcm-btn-primary">
-                <?php if ($is_edit): ?>
+                <?php if ($data['is_edit']): ?>
                     <span class="pcm-btn-icon">💾</span>
                     <?php _e('Update Constant', 'php-constants-manager'); ?>
                 <?php else: ?>

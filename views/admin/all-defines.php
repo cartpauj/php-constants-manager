@@ -2,7 +2,8 @@
 /**
  * All Defines page view
  * 
- * @var PCM_All_Defines_Table $list_table
+ * Data available via $data array:
+ * - list_table: PCM_All_Defines_Table
  */
 
 // Prevent direct access
@@ -20,12 +21,12 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display category filter links
-    $views = $list_table->get_views();
+    $views = $data['list_table']->get_views();
     if (!empty($views)) {
         echo '<ul class="subsubsub">';
         $view_links = array();
         foreach ($views as $class => $view) {
-            $view_links[] = "<li class='$class'>$view</li>";
+            $view_links[] = '<li class="' . esc_attr($class) . '">' . $view . '</li>';
         }
         echo implode('', $view_links);
         echo '</ul>';
@@ -35,8 +36,8 @@ if (!defined('ABSPATH')) {
     
     <form method="post">
         <?php 
-        $list_table->search_box(__('Search Constants', 'php-constants-manager'), 'search_constants');
-        $list_table->display(); 
+        $data['list_table']->search_box(__('Search Constants', 'php-constants-manager'), 'search_constants');
+        $data['list_table']->display(); 
         ?>
     </form>
 </div>
