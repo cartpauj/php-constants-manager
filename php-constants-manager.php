@@ -9,7 +9,6 @@
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: php-constants-manager
- * Domain Path: /languages
  */
 
 // Prevent direct access
@@ -136,13 +135,6 @@ class PHP_Constants_Manager {
         include $template_path;
     }
     
-    /**
-     * Initialize plugin
-     */
-    /*public function init() {
-        // Load text domain
-        load_plugin_textdomain('php-constants-manager', false, dirname(PCM_PLUGIN_BASENAME) . '/languages');
-    }*/
     
     /**
      * Load managed constants
