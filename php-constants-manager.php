@@ -49,6 +49,11 @@ class PHP_Constants_Manager {
     private $views_path;
     
     /**
+     * Track constants defined by this plugin
+     */
+    private $defined_by_plugin = array();
+    
+    /**
      * Get instance of the class
      */
     public static function get_instance() {
@@ -170,6 +175,8 @@ class PHP_Constants_Manager {
                 }
                 
                 define($constant->name, $value);
+                // Track that we successfully defined this constant
+                $this->defined_by_plugin[] = $constant->name;
             }
         }
     }
@@ -622,83 +629,14 @@ class PHP_Constants_Manager {
             return array('is_predefined' => true, 'existing_value' => $existing_value);
         }
         
-        // Type-cast our value to match what it would be when defined
-        $typed_our_value = $our_value;
-        switch ($our_type) {
-            case 'boolean':
-                if (is_string($our_value)) {
-                    $lower_value = strtolower(trim($our_value));
-                    // Handle various string representations of boolean values
-                    if (in_array($lower_value, ['true', '1', 'yes', 'on'], true)) {
-                        $typed_our_value = true;
-                    } elseif (in_array($lower_value, ['false', '0', 'no', 'off', ''], true)) {
-                        $typed_our_value = false;
-                    } else {
-                        // Fallback to filter_var for other cases
-                        $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                        if ($typed_our_value === null) {
-                            $typed_our_value = false; // Default to false for invalid boolean strings
-                        }
-                    }
-                } elseif (is_numeric($our_value)) {
-                    $typed_our_value = (bool)intval($our_value);
-                } else {
-                    $typed_our_value = (bool)$our_value;
-                }
-                break;
-            case 'integer':
-                $typed_our_value = intval($our_value);
-                break;
-            case 'float':
-                $typed_our_value = floatval($our_value);
-                break;
-            case 'null':
-                $typed_our_value = null;
-                break;
-        }
-        
-        // Key insight: Constants from wp-config.php are defined BEFORE this plugin loads
-        // So if our constant is active and we're in the load_managed_constants phase,
-        // we might have failed to define it because it was already defined
-        
-        // If our constant is active and values match exactly, it could be either:
-        // 1. We successfully defined it, OR 
-        // 2. Something else defined it with the same value
-        
-        // The key is: if we're active and values match, we need to check if WE defined it
-        // We can do this by checking if the constant was already defined before we tried to define it
-        // Check for value match - use both strict and type-aware comparison for booleans
-        $values_match = false;
-        if ($our_type === 'boolean') {
-            // For booleans, check both strict equality and logical equivalence
-            $values_match = ($existing_value === $typed_our_value) || 
-                           ((bool)$existing_value === (bool)$typed_our_value);
-        } else {
-            $values_match = ($existing_value === $typed_our_value);
-        }
-        
-        if ($is_active && $values_match) {
-            // If this plugin successfully defined the constant, it's not predefined
-            // We can't reliably detect this after the fact, so we'll assume if values match
-            // and we're active, then we either defined it or it matches our intended definition
+        // Check if we actually defined this constant during load_managed_constants
+        if (in_array($name, $this->defined_by_plugin)) {
+            // We successfully defined it, so it's not predefined
             return array('is_predefined' => false, 'existing_value' => $existing_value);
         }
         
-        // Debug info for troubleshooting (can be removed later)
-        if ($name === 'WP_DEBUG') {
-            error_log("WP_DEBUG Debug - Name: $name, Existing: " . var_export($existing_value, true) . 
-                     " (" . gettype($existing_value) . "), Our Value: " . var_export($our_value, true) . 
-                     " (" . gettype($our_value) . "), Typed: " . var_export($typed_our_value, true) . 
-                     " (" . gettype($typed_our_value) . "), Active: " . var_export($is_active, true) . 
-                     ", Type: $our_type");
-        }
-        
-        // If our constant is inactive and values match, something else defined it
-        if (!$is_active && $values_match) {
-            return array('is_predefined' => true, 'existing_value' => $existing_value);
-        }
-        
-        // If values don't match, it's definitely predefined elsewhere
+        // If we didn't define it but it exists and we have it in our database,
+        // then something else defined it first (e.g., wp-config.php)
         return array('is_predefined' => true, 'existing_value' => $existing_value);
     }
     
