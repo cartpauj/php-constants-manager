@@ -327,7 +327,7 @@ DEBUG_MODE,false,boolean</code></pre>
         </ul>
         
         <div class="pcm-import-warning">
-            <p><strong><?php esc_html_e('Important:', 'php-constants-manager'); ?></strong> <?php esc_html_e('The CSV import only adds constants to your plugin\'s database. Whether they actually take effect depends on load order and if they\'re already defined elsewhere (see <a href="#predefined-constants">Understanding Predefined Constants</a> above).', 'php-constants-manager'); ?></p>
+            <p><strong><?php esc_html_e('Important:', 'php-constants-manager'); ?></strong> <?php _e('The CSV import only adds constants to your plugin\'s database. Whether they actually take effect depends on load order and if they\'re already defined elsewhere (see <a href="#predefined-constants">Understanding Predefined Constants</a> above).', 'php-constants-manager'); ?></p>
         </div>
         
         <h3><?php esc_html_e('Import Error Reporting', 'php-constants-manager'); ?></h3>
