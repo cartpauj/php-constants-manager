@@ -74,6 +74,7 @@ class PHP_Constants_Manager {
         //add_action('init', array($this, 'init'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+        add_action('admin_notices', array($this, 'show_admin_notices'));
         
         // Load constants early
         add_action('plugins_loaded', array($this, 'load_managed_constants'), 1);
@@ -127,6 +128,25 @@ class PHP_Constants_Manager {
      * Load managed constants
      */
     public function load_managed_constants() {
+        // Check if table exists first for performance
+        if (!$this->db->table_exists()) {
+            // Only run create_table if table doesn't exist
+            $table_ready = $this->db->create_table();
+            
+            // If table creation failed, log and bail out gracefully
+            if (!$table_ready) {
+                $error_msg = "PHP Constants Manager: Cannot load constants - database table creation failed.";
+                error_log($error_msg);
+                
+                // Store error for admin notice (only for admin users)
+                if (function_exists('current_user_can') && current_user_can('manage_options')) {
+                    set_transient('pcm_load_error', $error_msg, 300);
+                }
+                
+                return;
+            }
+        }
+        
         $constants = $this->db->get_active_constants();
         
         foreach ($constants as $constant) {
@@ -717,6 +737,64 @@ class PHP_Constants_Manager {
     }
     
     /**
+     * Show admin notices for database errors
+     */
+    public function show_admin_notices() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        // Check for database creation errors
+        $db_error = get_transient('pcm_db_error');
+        if ($db_error) {
+            delete_transient('pcm_db_error');
+            ?>
+            <div class="notice notice-error">
+                <p><strong><?php _e('PHP Constants Manager Database Error:', 'php-constants-manager'); ?></strong></p>
+                <p><?php echo esc_html($db_error); ?></p>
+                <p>
+                    <?php _e('Please check:', 'php-constants-manager'); ?>
+                </p>
+                <ul style="margin-left: 20px;">
+                    <li><?php _e('Database user has CREATE TABLE permissions', 'php-constants-manager'); ?></li>
+                    <li><?php _e('Sufficient disk space available', 'php-constants-manager'); ?></li>
+                    <li><?php _e('MySQL version compatibility', 'php-constants-manager'); ?></li>
+                    <li><?php _e('WordPress database configuration in wp-config.php', 'php-constants-manager'); ?></li>
+                </ul>
+                <p>
+                    <a href="<?php echo admin_url('admin.php?page=php-constants-manager-help#troubleshooting'); ?>" class="button">
+                        <?php _e('View Troubleshooting Guide', 'php-constants-manager'); ?>
+                    </a>
+                    <button type="button" class="button button-secondary" onclick="location.reload();">
+                        <?php _e('Retry', 'php-constants-manager'); ?>
+                    </button>
+                </p>
+            </div>
+            <?php
+        }
+        
+        // Check for constant loading errors
+        $load_error = get_transient('pcm_load_error');
+        if ($load_error) {
+            delete_transient('pcm_load_error');
+            ?>
+            <div class="notice notice-warning">
+                <p><strong><?php _e('PHP Constants Manager Warning:', 'php-constants-manager'); ?></strong></p>
+                <p><?php echo esc_html($load_error); ?></p>
+                <p>
+                    <?php _e('Your managed constants are not being loaded. The plugin interface may not work correctly until this is resolved.', 'php-constants-manager'); ?>
+                </p>
+                <p>
+                    <a href="<?php echo admin_url('admin.php?page=php-constants-manager-help#troubleshooting'); ?>" class="button button-primary">
+                        <?php _e('View Troubleshooting Guide', 'php-constants-manager'); ?>
+                    </a>
+                </p>
+            </div>
+            <?php
+        }
+    }
+    
+    /**
      * Add settings link to plugins page
      */
     public function add_settings_link($links) {
@@ -904,10 +982,37 @@ class PHP_Constants_Manager {
 add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'), 0);
 
 // Activation hook
-register_activation_hook(__FILE__, function() {
+register_activation_hook(__FILE__, 'pcm_activation_hook');
+
+/**
+ * Plugin activation hook
+ */
+function pcm_activation_hook() {
     $db = new PCM_DB();
     $db->create_table();
-});
+    
+    // Store the database version
+    update_option('pcm_db_version', PCM_VERSION);
+}
+
+/**
+ * Check for database updates on plugin load
+ */
+add_action('plugins_loaded', 'pcm_check_db_version', 0);
+
+function pcm_check_db_version() {
+    $installed_version = get_option('pcm_db_version', '0');
+    
+    // If version has changed, run database update
+    if (version_compare($installed_version, PCM_VERSION, '<')) {
+        $db = new PCM_DB();
+        $result = $db->create_table();
+        
+        if ($result) {
+            update_option('pcm_db_version', PCM_VERSION);
+        }
+    }
+}
 
 // Deactivation hook
 register_deactivation_hook(__FILE__, function() {

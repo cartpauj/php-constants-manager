@@ -24,7 +24,19 @@ class PCM_DB {
     }
     
     /**
-     * Create database table
+     * Check if table exists
+     */
+    public function table_exists() {
+        global $wpdb;
+        
+        $table_name = $wpdb->esc_like($this->table_name);
+        $result = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
+        
+        return $result === $this->table_name;
+    }
+    
+    /**
+     * Create database table (also handles updates via dbDelta)
      */
     public function create_table() {
         global $wpdb;
@@ -46,7 +58,39 @@ class PCM_DB {
         ) $charset_collate;";
         
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql);
+        $result = dbDelta($sql);
+        
+        // dbDelta returns an array of queries that were executed
+        // Check if there were any database errors after running dbDelta
+        if (!empty($wpdb->last_error)) {
+            $error_msg = "PHP Constants Manager: Database operation failed for table '{$this->table_name}'.";
+            $error_msg .= " Database error: " . $wpdb->last_error;
+            $error_msg .= " Possible causes: insufficient database permissions, storage space, or MySQL version compatibility.";
+            
+            // Log the error
+            error_log($error_msg);
+            
+            // Store error for admin notice
+            set_transient('pcm_db_error', $error_msg, 300); // 5 minutes
+            
+            return false;
+        }
+        
+        // Verify table exists after dbDelta (for creation, not updates)
+        if (!$this->table_exists()) {
+            $error_msg = "PHP Constants Manager: Table '{$this->table_name}' does not exist after database operation.";
+            $error_msg .= " This may indicate insufficient database permissions or other database configuration issues.";
+            
+            // Log the error
+            error_log($error_msg);
+            
+            // Store error for admin notice
+            set_transient('pcm_db_error', $error_msg, 300); // 5 minutes
+            
+            return false;
+        }
+        
+        return true;
     }
     
     /**
@@ -54,6 +98,11 @@ class PCM_DB {
      */
     public function get_constants($args = array()) {
         global $wpdb;
+        
+        // Check if table exists first
+        if (!$this->table_exists()) {
+            return array();
+        }
         
         $defaults = array(
             'orderby' => 'name',
@@ -131,6 +180,11 @@ class PCM_DB {
     public function get_constant($id) {
         global $wpdb;
         
+        // Check if table exists first
+        if (!$this->table_exists()) {
+            return null;
+        }
+        
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $id
@@ -143,6 +197,11 @@ class PCM_DB {
     public function get_constant_by_name($name) {
         global $wpdb;
         
+        // Check if table exists first
+        if (!$this->table_exists()) {
+            return null;
+        }
+        
         return $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM {$this->table_name} WHERE name = %s",
             $name
@@ -154,6 +213,11 @@ class PCM_DB {
      */
     public function count_constants($args = array()) {
         global $wpdb;
+        
+        // Check if table exists first
+        if (!$this->table_exists()) {
+            return 0;
+        }
         
         $defaults = array(
             'search' => '',

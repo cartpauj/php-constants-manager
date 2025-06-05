@@ -354,6 +354,33 @@ if (defined('MY_CONSTANT')) {
     // Your constant is available here
 }</code></pre>
         
+        <h3><?php _e('Database table doesn\'t exist or can\'t be created', 'php-constants-manager'); ?></h3>
+        <p><?php _e('If you see database errors, check the following:', 'php-constants-manager'); ?></p>
+        <ol>
+            <li><strong><?php _e('Database Permissions:', 'php-constants-manager'); ?></strong> <?php _e('Ensure your WordPress database user has CREATE TABLE privileges', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Disk Space:', 'php-constants-manager'); ?></strong> <?php _e('Check if your server has sufficient disk space', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('MySQL Version:', 'php-constants-manager'); ?></strong> <?php _e('Verify MySQL 5.6+ or MariaDB 10.0+ compatibility', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Plugin Activation:', 'php-constants-manager'); ?></strong> <?php _e('Try deactivating and reactivating the plugin', 'php-constants-manager'); ?></li>
+            <li><strong><?php _e('Manual Creation:', 'php-constants-manager'); ?></strong> <?php _e('Contact your hosting provider to manually create the table if needed', 'php-constants-manager'); ?></li>
+        </ol>
+        
+        <h4><?php _e('Manual Table Creation SQL', 'php-constants-manager'); ?></h4>
+        <p><?php _e('If automatic table creation fails, you can manually run this SQL in your database:', 'php-constants-manager'); ?></p>
+        <pre><code>CREATE TABLE wp_pcm_constants (
+    id int(11) NOT NULL AUTO_INCREMENT,
+    name varchar(255) NOT NULL,
+    value text,
+    type varchar(20) NOT NULL DEFAULT 'string',
+    is_active tinyint(1) NOT NULL DEFAULT 1,
+    description text,
+    created_at datetime DEFAULT CURRENT_TIMESTAMP,
+    updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY name (name),
+    KEY is_active (is_active)
+) DEFAULT CHARSET=utf8mb4;</code></pre>
+        <p><strong><?php _e('Note:', 'php-constants-manager'); ?></strong> <?php _e('Replace "wp_" with your actual WordPress table prefix if different.', 'php-constants-manager'); ?></p>
+        
         <h3><?php _e('Need More Help?', 'php-constants-manager'); ?></h3>
         <p><?php _e('Use the "All Constants" page to see every constant currently defined in your WordPress installation. This can help you understand what\'s already taken and avoid conflicts.', 'php-constants-manager'); ?></p>
         
