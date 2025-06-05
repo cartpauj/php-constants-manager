@@ -72,14 +72,25 @@ class PCM_All_Defines_Table extends WP_List_Table {
             case 'value':
                 $value = $item['value'];
                 $type = $this->get_type($value);
+                $type_display = esc_html(ucfirst($type));
                 
-                // Format the value for display
+                // Handle NULL values - don't display value
+                if (is_null($value)) {
+                    return '<div><strong>' . $type_display . '</strong></div>';
+                }
+                
+                // Handle empty string values - don't display value (but preserve "0")
+                if (is_string($value) && $value === '') {
+                    return '<div><strong>' . $type_display . '</strong></div>';
+                }
+                
+                // Display value for non-empty values
                 $display_value = $this->format_value($value);
                 if (strlen($display_value) > 100) {
                     $display_value = substr($display_value, 0, 100) . '...';
                 }
                 
-                return '<div><strong>' . esc_html(ucfirst($type)) . '</strong><br><code>' . esc_html($display_value) . '</code></div>';
+                return '<div><strong>' . $type_display . '</strong><br><code>' . esc_html($display_value) . '</code></div>';
                 
             case 'category':
                 $category_class = sanitize_html_class(strtolower(str_replace('/', '-', $item['category'])));
