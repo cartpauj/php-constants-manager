@@ -39,6 +39,15 @@ if (!defined('ABSPATH')) {
                     case 'read_error':
                         _e('Error reading the uploaded file.', 'php-constants-manager');
                         break;
+                    case 'empty_file':
+                        _e('The uploaded CSV file is empty or contains no data.', 'php-constants-manager');
+                        break;
+                    case 'missing_header':
+                        _e('CSV file must include a header row. The first column should be "Name" or "Constant Name".', 'php-constants-manager');
+                        break;
+                    case 'invalid_header':
+                        _e('CSV header row must have at least 3 columns: Name, Value, Type.', 'php-constants-manager');
+                        break;
                     default:
                         echo esc_html($data['error']);
                 }

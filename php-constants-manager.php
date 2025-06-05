@@ -929,7 +929,7 @@ class PHP_Constants_Manager {
         header('Expires: 0');
         
         // Create CSV output using WordPress filesystem API
-        // Add BOM for UTF-8
+        // Add UTF-8 BOM for proper Excel/spreadsheet compatibility
         echo chr(0xEF).chr(0xBB).chr(0xBF);
         
         // Output CSV headers
@@ -1000,6 +1000,12 @@ class PHP_Constants_Manager {
             exit;
         }
         
+        // Remove UTF-8 BOM if present (common with files exported from Excel/Google Sheets)
+        $bom = pack('H*','EFBBBF'); // UTF-8 BOM bytes: 0xEF 0xBB 0xBF
+        if (substr($file_contents, 0, 3) === $bom) {
+            $file_contents = substr($file_contents, 3);
+        }
+        
         // Parse CSV data
         $csv_lines = explode("\n", $file_contents);
         $csv_data = array();
@@ -1016,14 +1022,29 @@ class PHP_Constants_Manager {
         $error_details = array(); // Track specific errors
         $line = 0;
         
-        // Skip header row if it exists
-        $data_start_index = 0;
-        if (!empty($csv_data) && isset($csv_data[0][0])) {
-            $first_cell = strtolower(trim($csv_data[0][0]));
-            if ($first_cell === 'name' || $first_cell === 'constant name') {
-                $data_start_index = 1; // Skip header row
-            }
+        // Validate and skip header row (required)
+        if (empty($csv_data) || !isset($csv_data[0][0])) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=empty_file'));
+            exit;
         }
+        
+        $first_row = $csv_data[0];
+        $first_cell = strtolower(trim($first_row[0]));
+        
+        // Require header row
+        if ($first_cell !== 'name' && $first_cell !== 'constant name') {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=missing_header'));
+            exit;
+        }
+        
+        // Validate minimum required headers
+        if (count($first_row) < 3) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_header'));
+            exit;
+        }
+        
+        // Start processing from row 2 (skip header)
+        $data_start_index = 1;
         
         for ($i = $data_start_index; $i < count($csv_data); $i++) {
             $data = $csv_data[$i];

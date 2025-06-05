@@ -175,13 +175,25 @@ if (!defined('ABSPATH')) {
             <li><?php _e('Validate constant names and data types with detailed error reporting', 'php-constants-manager'); ?></li>
             <li><?php _e('Show specific line numbers and reasons for any import errors', 'php-constants-manager'); ?></li>
             <li><?php _e('Provide comprehensive feedback on imported, skipped, and error counts', 'php-constants-manager'); ?></li>
-            <li><?php _e('Handle both header and non-header CSV files automatically', 'php-constants-manager'); ?></li>
+            <li><?php _e('Require header rows for proper column identification', 'php-constants-manager'); ?></li>
         </ul>
         
         <h2 id="csv-format"><?php _e('CSV Format Guide', 'php-constants-manager'); ?></h2>
         
+        <div class="pcm-import-warning">
+            <p><strong><?php _e('Important:', 'php-constants-manager'); ?></strong> <?php _e('CSV files MUST include a header row. The first column must be named "Name" or "Constant Name".', 'php-constants-manager'); ?></p>
+        </div>
+        
         <p><strong><?php _e('Required Columns (minimum):', 'php-constants-manager'); ?></strong> <?php _e('Name, Value, Type', 'php-constants-manager'); ?></p>
         <p><strong><?php _e('Optional Columns:', 'php-constants-manager'); ?></strong> <?php _e('Active, Description', 'php-constants-manager'); ?></p>
+        
+        <h4><?php _e('File Encoding', 'php-constants-manager'); ?></h4>
+        <p><?php _e('CSV files should be saved in UTF-8 encoding for proper international character support. The importer automatically handles:', 'php-constants-manager'); ?></p>
+        <ul>
+            <li><?php _e('UTF-8 with BOM (Byte Order Mark) - BOM is automatically removed', 'php-constants-manager'); ?></li>
+            <li><?php _e('UTF-8 without BOM - processed normally', 'php-constants-manager'); ?></li>
+            <li><?php _e('Files exported from Excel, Google Sheets, or other spreadsheet applications', 'php-constants-manager'); ?></li>
+        </ul>
         
         <h4><?php _e('Column Specifications', 'php-constants-manager'); ?></h4>
         <table class="wp-list-table widefat fixed striped">
@@ -229,7 +241,7 @@ if (!defined('ABSPATH')) {
         
         <h4><?php _e('Example CSV Files', 'php-constants-manager'); ?></h4>
         
-        <p><strong><?php _e('With Headers (Recommended):', 'php-constants-manager'); ?></strong></p>
+        <p><strong><?php _e('Example CSV File (headers required):', 'php-constants-manager'); ?></strong></p>
         <pre><code>Name,Value,Type,Active,Description
 MY_API_KEY,abc123def456,string,1,External API authentication key
 MAX_POSTS,25,integer,1,Maximum posts per page
@@ -237,8 +249,9 @@ TAX_RATE,0.08,float,1,Sales tax rate
 DEBUG_MODE,true,boolean,0,Enable debug output
 OPTIONAL_SETTING,,null,1,Optional configuration value</code></pre>
         
-        <p><strong><?php _e('Without Headers (Minimum Required Columns):', 'php-constants-manager'); ?></strong></p>
-        <pre><code>MY_API_KEY,abc123def456,string
+        <p><strong><?php _e('Minimum Required CSV (with headers):', 'php-constants-manager'); ?></strong></p>
+        <pre><code>Name,Value,Type
+MY_API_KEY,abc123def456,string
 MAX_POSTS,25,integer
 DEBUG_MODE,false,boolean</code></pre>
         
@@ -255,10 +268,12 @@ DEBUG_MODE,false,boolean</code></pre>
         <h3><?php _e('Import Tips', 'php-constants-manager'); ?></h3>
         <ul>
             <li><?php _e('Always backup your database before importing', 'php-constants-manager'); ?></li>
+            <li><?php _e('CSV files must include a header row with column names', 'php-constants-manager'); ?></li>
             <li><?php _e('Start with a small test file to verify format', 'php-constants-manager'); ?></li>
             <li><?php _e('The import will show you exactly what was imported, skipped, and any errors', 'php-constants-manager'); ?></li>
             <li><?php _e('Existing constants with the same name are skipped (not overwritten)', 'php-constants-manager'); ?></li>
             <li><?php _e('Empty rows in your CSV file are automatically ignored', 'php-constants-manager'); ?></li>
+            <li><?php _e('UTF-8 BOM (Byte Order Mark) is automatically detected and removed if present', 'php-constants-manager'); ?></li>
             <li><?php _e('Invalid constant names or types will be counted as errors and skipped', 'php-constants-manager'); ?></li>
         </ul>
         
