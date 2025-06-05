@@ -74,7 +74,7 @@ if (!defined('ABSPATH')) {
                     <div id="constant-name-feedback"></div>
                 </div>
 
-                <div class="pcm-form-group">
+                <div class="pcm-form-group pcm-form-group-full">
                     <label for="constant-value" class="pcm-form-label">
                         <span class="pcm-label-text"><?php _e('Value', 'php-constants-manager'); ?></span>
                     </label>
@@ -85,7 +85,7 @@ if (!defined('ABSPATH')) {
                     </div>
                 </div>
 
-                <div class="pcm-form-group">
+                <div class="pcm-form-group pcm-form-group-full">
                     <label for="constant-type" class="pcm-form-label">
                         <span class="pcm-label-text"><?php _e('Type', 'php-constants-manager'); ?></span>
                     </label>
@@ -100,7 +100,7 @@ if (!defined('ABSPATH')) {
                     </div>
                 </div>
 
-                <div class="pcm-form-group">
+                <div class="pcm-form-group pcm-form-group-full">
                     <label for="constant-active" class="pcm-form-label">
                         <span class="pcm-label-text"><?php _e('Status', 'php-constants-manager'); ?></span>
                     </label>
