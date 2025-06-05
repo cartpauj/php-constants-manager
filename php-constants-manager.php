@@ -369,14 +369,21 @@ class PHP_Constants_Manager {
         
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $name = sanitize_text_field($_POST['constant_name']);
-        $value = sanitize_text_field($_POST['constant_value']);
+        // Handle value properly - preserve quotes and special characters
+        $value = isset($_POST['constant_value']) ? wp_unslash($_POST['constant_value']) : '';
         $type = sanitize_text_field($_POST['constant_type']);
         $is_active = !empty($_POST['constant_active']);
-        $description = sanitize_textarea_field($_POST['constant_description']);
+        // Handle description properly - preserve quotes and special characters
+        $description = isset($_POST['constant_description']) ? wp_unslash($_POST['constant_description']) : '';
         
         // Validate constant name
         if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
             wp_die(__('Invalid constant name', 'php-constants-manager'));
+        }
+        
+        // For null type, clear the value
+        if ($type === 'null') {
+            $value = '';
         }
         
         // Check if constant is predefined elsewhere and warn
