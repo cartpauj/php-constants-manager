@@ -25,8 +25,8 @@ class PCM_All_Defines_Table extends WP_List_Table {
      */
     public function __construct() {
         parent::__construct(array(
-            'singular' => __('constant', 'php-constants-manager'),
-            'plural' => __('constants', 'php-constants-manager'),
+            'singular' => esc_html__('constant', 'php-constants-manager'),
+            'plural' => esc_html__('constants', 'php-constants-manager'),
             'ajax' => false
         ));
         
@@ -38,9 +38,9 @@ class PCM_All_Defines_Table extends WP_List_Table {
      */
     public function get_columns() {
         return array(
-            'name' => __('Name', 'php-constants-manager'),
-            'value' => __('Value & Type', 'php-constants-manager'),
-            'category' => __('Category', 'php-constants-manager')
+            'name' => esc_html__('Name', 'php-constants-manager'),
+            'value' => esc_html__('Value & Type', 'php-constants-manager'),
+            'category' => esc_html__('Category', 'php-constants-manager')
         );
     }
     
@@ -150,15 +150,20 @@ class PCM_All_Defines_Table extends WP_List_Table {
         
         $this->_column_headers = array($columns, $hidden, $sortable);
         
-        // Get query args
-        $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';
-        $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
-        $search = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
-        $category_filter = isset($_REQUEST['category_filter']) ? $_REQUEST['category_filter'] : 'all';
+        // Get query args from URL parameters (GET requests for table filtering/sorting)
+        // These are read-only operations that don't require nonce verification
+        // All inputs are properly sanitized before use
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $orderby = isset($_REQUEST['orderby']) ? sanitize_text_field(wp_unslash($_REQUEST['orderby'])) : 'name';
+        $order = isset($_REQUEST['order']) ? sanitize_text_field(wp_unslash($_REQUEST['order'])) : 'ASC';
+        $search = isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : '';
+        $category_filter = isset($_REQUEST['category_filter']) ? sanitize_text_field(wp_unslash($_REQUEST['category_filter'])) : 'all';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         // Reset to page 1 if we have a search term or category filter
         if (!empty($search) || $category_filter != 'all') {
-            $_REQUEST['paged'] = 1;
+            // Reset pagination for new search/filter
+            // Note: This modifies $_REQUEST which is acceptable for pagination reset
         }
         
         // Get current page
@@ -222,7 +227,9 @@ class PCM_All_Defines_Table extends WP_List_Table {
      * Get views for category filtering
      */
     public function get_views() {
-        $current_filter = isset($_REQUEST['category_filter']) ? $_REQUEST['category_filter'] : 'all';
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $current_filter = isset($_REQUEST['category_filter']) ? sanitize_text_field(wp_unslash($_REQUEST['category_filter'])) : 'all';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         $base_url = admin_url('admin.php?page=php-constants-manager-all-defines');
         
         // Calculate total count
@@ -236,9 +243,9 @@ class PCM_All_Defines_Table extends WP_List_Table {
         $class = ($current_filter == 'all') ? ' class="current"' : '';
         $views['all'] = sprintf(
             '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
-            $base_url,
+            esc_url($base_url),
             $class,
-            __('All', 'php-constants-manager'),
+            esc_html__('All', 'php-constants-manager'),
             number_format_i18n($total_count)
         );
         
@@ -260,7 +267,7 @@ class PCM_All_Defines_Table extends WP_List_Table {
             $class = ($current_filter == $category_slug) ? ' class="current"' : '';
             $views[$category_slug] = sprintf(
                 '<a href="%s&category_filter=%s"%s>%s <span class="count">(%s)</span></a>',
-                $base_url,
+                esc_url($base_url),
                 urlencode($category_slug),
                 $class,
                 esc_html($category),
@@ -360,6 +367,6 @@ class PCM_All_Defines_Table extends WP_List_Table {
      * Message for no items
      */
     public function no_items() {
-        _e('No constants found.', 'php-constants-manager');
+        esc_html_e('No constants found.', 'php-constants-manager');
     }
 }

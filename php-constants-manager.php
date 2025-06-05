@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: PHP Constants Manager
- * Plugin URI: https://example.com/php-constants-manager
+ * Plugin URI: https://github.com/cartpauj/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
  * Version: 1.1.0
- * Author: Your Name
- * Author URI: https://example.com
+ * Author: cartpauj
+ * Author URI: https://github.com/cartpauj/
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: php-constants-manager
@@ -104,14 +104,16 @@ class PHP_Constants_Manager {
      */
     public function handle_admin_actions() {
         // Only process on our plugin pages
-        if (!isset($_GET['page']) || strpos($_GET['page'], 'php-constants-manager') !== 0) {
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        if (!isset($_GET['page']) || strpos(sanitize_text_field(wp_unslash($_GET['page'])), 'php-constants-manager') !== 0) {
             return;
         }
         
         // Process bulk actions for the main constants page
-        if ($_GET['page'] === 'php-constants-manager') {
+        if (sanitize_text_field(wp_unslash($_GET['page'])) === 'php-constants-manager') {
             $this->process_bulk_actions();
         }
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
     }
     
     /**
@@ -121,7 +123,11 @@ class PHP_Constants_Manager {
         $template_path = $this->views_path . $template . '.php';
         
         if (!file_exists($template_path)) {
-            wp_die(sprintf(__('View template not found: %s', 'php-constants-manager'), $template));
+            wp_die(sprintf(
+                /* translators: %s: template file name */
+                esc_html__('View template not found: %s', 'php-constants-manager'), 
+                esc_html($template)
+            ));
         }
         
         // Make data available to template (avoiding extract for security)
@@ -151,6 +157,7 @@ class PHP_Constants_Manager {
             if (!$table_ready) {
                 $error_msg = "PHP Constants Manager: Cannot load constants - database table creation failed.";
                 if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                     error_log($error_msg);
                 }
                 
@@ -284,7 +291,9 @@ class PHP_Constants_Manager {
         wp_enqueue_script('pcm-admin-script', PCM_PLUGIN_URL . 'assets/admin.js', array('jquery'), PCM_VERSION, true);
         
         wp_localize_script('pcm-admin-script', 'pcm_ajax', array(
+            /* translators: JavaScript confirmation message when deleting a single constant */
             'confirm_delete' => __('Are you sure you want to delete this constant?', 'php-constants-manager'),
+            /* translators: JavaScript confirmation message when deleting multiple constants */
             'confirm_bulk_delete' => __('Are you sure you want to delete the selected constants?', 'php-constants-manager'),
             'ajax_url' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('pcm_check_constant')
@@ -300,8 +309,10 @@ class PHP_Constants_Manager {
         }
         
         // Check if editing or adding
-        $action = isset($_GET['action']) ? $_GET['action'] : '';
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $action = isset($_GET['action']) ? sanitize_text_field(wp_unslash($_GET['action'])) : '';
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         if ($action === 'edit' && $id) {
             $this->render_edit_page($id);
@@ -321,7 +332,9 @@ class PHP_Constants_Manager {
             delete_transient('pcm_admin_notice');
         }
         
-        $message = isset($_GET['message']) ? $_GET['message'] : '';
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $message = isset($_GET['message']) ? sanitize_text_field(wp_unslash($_GET['message'])) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         $this->load_view('admin/constants-list', array(
             'list_table' => $list_table,
@@ -351,7 +364,7 @@ class PHP_Constants_Manager {
         
         $constant = $this->db->get_constant($id);
         if (!$constant) {
-            wp_die(__('Constant not found.', 'php-constants-manager'));
+            wp_die(esc_html__('Constant not found.', 'php-constants-manager'));
         }
         
         $this->render_form($constant);
@@ -376,25 +389,29 @@ class PHP_Constants_Manager {
      */
     public function handle_save_constant() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_save_constant', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
-        $name = sanitize_text_field($_POST['constant_name']);
+        $name = isset($_POST['constant_name']) ? sanitize_text_field(wp_unslash($_POST['constant_name'])) : '';
         // Handle value properly - preserve quotes and special characters
+        // Validation occurs later via validate_constant_value() method
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $value = isset($_POST['constant_value']) ? wp_unslash($_POST['constant_value']) : '';
-        $type = sanitize_text_field($_POST['constant_type']);
+        $type = isset($_POST['constant_type']) ? sanitize_text_field(wp_unslash($_POST['constant_type'])) : 'string';
         $is_active = !empty($_POST['constant_active']);
         // Handle description properly - preserve quotes and special characters
+        // This is free-form text that should not be over-sanitized
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         $description = isset($_POST['constant_description']) ? wp_unslash($_POST['constant_description']) : '';
         
         // Validate constant name
         if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
-            wp_die(__('Invalid constant name', 'php-constants-manager'));
+            wp_die(esc_html__('Invalid constant name', 'php-constants-manager'));
         }
         
         // Validate and normalize value based on type
@@ -420,12 +437,14 @@ class PHP_Constants_Manager {
         // Check if constant is predefined elsewhere and warn
         $predefined_check = $this->is_constant_predefined($name, $value, $type, $is_active);
         if ($predefined_check['is_predefined']) {
+            /* translators: action text for when a constant has been updated */
             $action_text = $id ? __('updated', 'php-constants-manager') : __('added', 'php-constants-manager');
             $message = sprintf(
-                __('The constant "%s" has been %s, but it is already defined elsewhere with value: %s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
+                /* translators: 1: constant name, 2: action (added/updated), 3: existing value */
+                __('The constant "%1$s" has been %2$s, but it is already defined elsewhere with value: %3$s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
                 $name,
                 $action_text,
-                var_export($predefined_check['existing_value'], true)
+                pcm_format_constant_value($predefined_check['existing_value'])
             );
             
             // Store message in transient to show after redirect
@@ -448,7 +467,7 @@ class PHP_Constants_Manager {
                 wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
                 exit;
             } else {
-                wp_die(__('Failed to update constant.', 'php-constants-manager'));
+                wp_die(esc_html__('Failed to update constant.', 'php-constants-manager'));
             }
         } else {
             // Check if constant already exists in our database
@@ -458,7 +477,8 @@ class PHP_Constants_Manager {
                 set_transient('pcm_admin_notice', array(
                     'type' => 'error',
                     'message' => sprintf(
-                        __('A constant with the name "%s" already exists. Please <a href="%s">edit the existing constant</a> instead of creating a new one.', 'php-constants-manager'),
+                        /* translators: 1: constant name, 2: URL to edit existing constant */
+                        __('A constant with the name "%1$s" already exists. Please <a href="%2$s">edit the existing constant</a> instead of creating a new one.', 'php-constants-manager'),
                         esc_html($name),
                         admin_url('admin.php?page=php-constants-manager&action=edit&id=' . $existing_constant->id)
                     )
@@ -480,7 +500,7 @@ class PHP_Constants_Manager {
                 wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
                 exit;
             } else {
-                wp_die(__('Failed to save constant.', 'php-constants-manager'));
+                wp_die(esc_html__('Failed to save constant.', 'php-constants-manager'));
             }
         }
     }
@@ -490,11 +510,11 @@ class PHP_Constants_Manager {
      */
     public function handle_delete_constant() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_delete_constant', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -512,11 +532,11 @@ class PHP_Constants_Manager {
      */
     public function handle_toggle_constant() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_toggle_constant', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -534,24 +554,24 @@ class PHP_Constants_Manager {
      */
     private function process_bulk_actions() {
         // Only process if this is a POST request with bulk action data
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
+        if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
             return;
         }
         
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_bulk_action', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
-        $action = isset($_POST['action']) ? $_POST['action'] : '';
+        $action = isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '';
         if ($action === '-1') {
-            $action = isset($_POST['action2']) ? $_POST['action2'] : '';
+            $action = isset($_POST['action2']) ? sanitize_text_field(wp_unslash($_POST['action2'])) : '';
         }
         
-        $ids = isset($_POST['constant']) ? array_map('intval', $_POST['constant']) : array();
+        $ids = isset($_POST['constant']) ? array_map('intval', (array) $_POST['constant']) : array();
         
         if (empty($ids) || empty($action) || $action === '-1') {
             return; // No action selected or no items selected
@@ -587,12 +607,15 @@ class PHP_Constants_Manager {
             $message_text = '';
             switch ($message) {
                 case 'bulk_deleted':
+                    /* translators: %d: number of constants deleted */
                     $message_text = sprintf(_n('%d constant deleted successfully.', '%d constants deleted successfully.', count($ids), 'php-constants-manager'), count($ids));
                     break;
                 case 'bulk_activated':
+                    /* translators: %d: number of constants activated */
                     $message_text = sprintf(_n('%d constant activated successfully.', '%d constants activated successfully.', count($ids), 'php-constants-manager'), count($ids));
                     break;
                 case 'bulk_deactivated':
+                    /* translators: %d: number of constants deactivated */
                     $message_text = sprintf(_n('%d constant deactivated successfully.', '%d constants deactivated successfully.', count($ids), 'php-constants-manager'), count($ids));
                     break;
             }
@@ -614,19 +637,19 @@ class PHP_Constants_Manager {
      */
     public function handle_bulk_action() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_bulk_action', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
-        $action = isset($_POST['action']) ? $_POST['action'] : '';
+        $action = isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '';
         if ($action === '-1') {
-            $action = isset($_POST['action2']) ? $_POST['action2'] : '';
+            $action = isset($_POST['action2']) ? sanitize_text_field(wp_unslash($_POST['action2'])) : '';
         }
         
-        $ids = isset($_POST['constant']) ? array_map('intval', $_POST['constant']) : array();
+        $ids = isset($_POST['constant']) ? array_map('intval', (array) $_POST['constant']) : array();
         
         if (empty($ids) || empty($action)) {
             wp_redirect(admin_url('admin.php?page=php-constants-manager'));
@@ -667,14 +690,14 @@ class PHP_Constants_Manager {
      */
     public function ajax_check_constant() {
         if (!check_ajax_referer('pcm_check_constant', 'nonce', false)) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        $constant_name = sanitize_text_field($_POST['constant_name']);
+        $constant_name = isset($_POST['constant_name']) ? sanitize_text_field(wp_unslash($_POST['constant_name'])) : '';
         
         if (empty($constant_name)) {
             wp_send_json_error('Invalid constant name');
@@ -694,22 +717,22 @@ class PHP_Constants_Manager {
      */
     public function ajax_toggle_constant() {
         if (!check_ajax_referer('pcm_toggle_constant', 'nonce', false)) {
-            wp_send_json_error(__('Security check failed', 'php-constants-manager'));
+            wp_send_json_error(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         if (!current_user_can('manage_options')) {
-            wp_send_json_error(__('Insufficient permissions', 'php-constants-manager'));
+            wp_send_json_error(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         
         if (!$id) {
-            wp_send_json_error(__('Invalid constant ID', 'php-constants-manager'));
+            wp_send_json_error(esc_html__('Invalid constant ID', 'php-constants-manager'));
         }
         
         $constant = $this->db->get_constant($id);
         if (!$constant) {
-            wp_send_json_error(__('Constant not found', 'php-constants-manager'));
+            wp_send_json_error(esc_html__('Constant not found', 'php-constants-manager'));
         }
         
         $new_status = !$constant->is_active;
@@ -717,7 +740,7 @@ class PHP_Constants_Manager {
         
         wp_send_json_success(array(
             'new_status' => $new_status,
-            'message' => $new_status ? __('Constant activated', 'php-constants-manager') : __('Constant deactivated', 'php-constants-manager')
+            'message' => $new_status ? esc_html__('Constant activated', 'php-constants-manager') : esc_html__('Constant deactivated', 'php-constants-manager')
         ));
     }
     
@@ -758,8 +781,10 @@ class PHP_Constants_Manager {
         }
         
         // Check for success/error messages
-        $message = isset($_GET['message']) ? $_GET['message'] : '';
-        $error = isset($_GET['error']) ? $_GET['error'] : '';
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $message = isset($_GET['message']) ? sanitize_text_field(wp_unslash($_GET['message'])) : '';
+        $error = isset($_GET['error']) ? sanitize_text_field(wp_unslash($_GET['error'])) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         $this->load_view('admin/import-export', array(
             'message' => $message,
@@ -868,23 +893,23 @@ class PHP_Constants_Manager {
             delete_transient('pcm_db_error');
             ?>
             <div class="notice notice-error">
-                <p><strong><?php _e('PHP Constants Manager Database Error:', 'php-constants-manager'); ?></strong></p>
+                <p><strong><?php esc_html_e('PHP Constants Manager Database Error:', 'php-constants-manager'); ?></strong></p>
                 <p><?php echo esc_html($db_error); ?></p>
                 <p>
-                    <?php _e('Please check:', 'php-constants-manager'); ?>
+                    <?php esc_html_e('Please check:', 'php-constants-manager'); ?>
                 </p>
                 <ul style="margin-left: 20px;">
-                    <li><?php _e('Database user has CREATE TABLE permissions', 'php-constants-manager'); ?></li>
-                    <li><?php _e('Sufficient disk space available', 'php-constants-manager'); ?></li>
-                    <li><?php _e('MySQL version compatibility', 'php-constants-manager'); ?></li>
-                    <li><?php _e('WordPress database configuration in wp-config.php', 'php-constants-manager'); ?></li>
+                    <li><?php esc_html_e('Database user has CREATE TABLE permissions', 'php-constants-manager'); ?></li>
+                    <li><?php esc_html_e('Sufficient disk space available', 'php-constants-manager'); ?></li>
+                    <li><?php esc_html_e('MySQL version compatibility', 'php-constants-manager'); ?></li>
+                    <li><?php esc_html_e('WordPress database configuration in wp-config.php', 'php-constants-manager'); ?></li>
                 </ul>
                 <p>
-                    <a href="<?php echo admin_url('admin.php?page=php-constants-manager-help#troubleshooting'); ?>" class="button">
-                        <?php _e('View Troubleshooting Guide', 'php-constants-manager'); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=php-constants-manager-help#troubleshooting')); ?>" class="button">
+                        <?php esc_html_e('View Troubleshooting Guide', 'php-constants-manager'); ?>
                     </a>
                     <button type="button" class="button button-secondary" onclick="location.reload();">
-                        <?php _e('Retry', 'php-constants-manager'); ?>
+                        <?php esc_html_e('Retry', 'php-constants-manager'); ?>
                     </button>
                 </p>
             </div>
@@ -897,14 +922,14 @@ class PHP_Constants_Manager {
             delete_transient('pcm_load_error');
             ?>
             <div class="notice notice-warning">
-                <p><strong><?php _e('PHP Constants Manager Warning:', 'php-constants-manager'); ?></strong></p>
+                <p><strong><?php esc_html_e('PHP Constants Manager Warning:', 'php-constants-manager'); ?></strong></p>
                 <p><?php echo esc_html($load_error); ?></p>
                 <p>
-                    <?php _e('Your managed constants are not being loaded. The plugin interface may not work correctly until this is resolved.', 'php-constants-manager'); ?>
+                    <?php esc_html_e('Your managed constants are not being loaded. The plugin interface may not work correctly until this is resolved.', 'php-constants-manager'); ?>
                 </p>
                 <p>
-                    <a href="<?php echo admin_url('admin.php?page=php-constants-manager-help#troubleshooting'); ?>" class="button button-primary">
-                        <?php _e('View Troubleshooting Guide', 'php-constants-manager'); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=php-constants-manager-help#troubleshooting')); ?>" class="button button-primary">
+                        <?php esc_html_e('View Troubleshooting Guide', 'php-constants-manager'); ?>
                     </a>
                 </p>
             </div>
@@ -935,6 +960,7 @@ class PHP_Constants_Manager {
                 if (!is_numeric($value) || (string)(int)$value !== (string)$value) {
                     $result['error'] = true;
                     $result['message'] = sprintf(
+                        /* translators: %s: the invalid value entered by user */
                         __('Invalid integer value "%s". Please enter a whole number (e.g., 42, -10, 0).', 'php-constants-manager'),
                         esc_html($value)
                     );
@@ -947,6 +973,7 @@ class PHP_Constants_Manager {
                 if (!is_numeric($value)) {
                     $result['error'] = true;
                     $result['message'] = sprintf(
+                        /* translators: %s: the invalid value entered by user */
                         __('Invalid float value "%s". Please enter a number (e.g., 3.14, -2.5, 10).', 'php-constants-manager'),
                         esc_html($value)
                     );
@@ -963,6 +990,7 @@ class PHP_Constants_Manager {
                 if (!in_array($lower_value, array_merge($valid_true, $valid_false), true)) {
                     $result['error'] = true;
                     $result['message'] = sprintf(
+                        /* translators: %s: the invalid value entered by user */
                         __('Invalid boolean value "%s". Please enter one of: true, false, 1, 0, yes, no, on, off (or leave empty for false).', 'php-constants-manager'),
                         esc_html($value)
                     );
@@ -980,6 +1008,7 @@ class PHP_Constants_Manager {
             default:
                 $result['error'] = true;
                 $result['message'] = sprintf(
+                    /* translators: %s: the invalid constant type */
                     __('Invalid constant type "%s".', 'php-constants-manager'),
                     esc_html($type)
                 );
@@ -992,7 +1021,7 @@ class PHP_Constants_Manager {
      * Add settings link to plugins page
      */
     public function add_settings_link($links) {
-        $settings_link = '<a href="' . admin_url('admin.php?page=php-constants-manager') . '">' . __('Settings', 'php-constants-manager') . '</a>';
+        $settings_link = '<a href="' . esc_url(admin_url('admin.php?page=php-constants-manager')) . '">' . esc_html__('Settings', 'php-constants-manager') . '</a>';
         array_unshift($links, $settings_link);
         return $links;
     }
@@ -1002,11 +1031,11 @@ class PHP_Constants_Manager {
      */
     public function handle_export_csv() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_export_csv', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         // Get all constants
@@ -1018,7 +1047,7 @@ class PHP_Constants_Manager {
         }
         
         // Set headers for CSV download
-        $filename = 'php-constants-' . date('Y-m-d-H-i-s') . '.csv';
+        $filename = 'php-constants-' . gmdate('Y-m-d-H-i-s') . '.csv';
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $filename);
         header('Pragma: no-cache');
@@ -1026,10 +1055,10 @@ class PHP_Constants_Manager {
         
         // Create CSV output using WordPress filesystem API
         // Add UTF-8 BOM for proper Excel/spreadsheet compatibility
-        echo chr(0xEF).chr(0xBB).chr(0xBF);
+        echo "\xEF\xBB\xBF";
         
         // Output CSV headers
-        echo 'Name,Value,Type,Active,Description' . "\r\n";
+        echo "Name,Value,Type,Active,Description\r\n";
         
         // Add data rows
         foreach ($constants as $constant) {
@@ -1051,7 +1080,7 @@ class PHP_Constants_Manager {
                 }
             }
             
-            echo implode(',', $escaped_row) . "\r\n";
+            echo esc_html(implode(',', $escaped_row)) . "\r\n";
         }
         exit;
     }
@@ -1061,20 +1090,23 @@ class PHP_Constants_Manager {
      */
     public function handle_import_csv() {
         if (!current_user_can('manage_options')) {
-            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+            wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
         if (!check_admin_referer('pcm_import_csv', 'pcm_nonce')) {
-            wp_die(__('Security check failed', 'php-constants-manager'));
+            wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         // Check if file was uploaded
-        if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES['csv_file']) || !isset($_FILES['csv_file']['error']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
             wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_file'));
             exit;
         }
         
-        $file = $_FILES['csv_file'];
+        // File uploads don't need sanitization in the same way as form inputs
+        // The file content will be validated separately
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $file = wp_unslash($_FILES['csv_file']);
         
         // Validate file type
         $file_info = pathinfo($file['name']);
@@ -1160,6 +1192,7 @@ class PHP_Constants_Manager {
             if (count($data) < 3) {
                 $errors++;
                 $error_details[] = sprintf(
+                    /* translators: %d: line number in CSV file */
                     __('Line %d: Missing required columns (need at least Name, Value, Type)', 'php-constants-manager'),
                     $csv_line_number
                 );
@@ -1176,7 +1209,8 @@ class PHP_Constants_Manager {
             if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
                 $errors++;
                 $error_details[] = sprintf(
-                    __('Line %d: Invalid constant name "%s" (must be uppercase letters, numbers, and underscores only)', 'php-constants-manager'),
+                    /* translators: 1: line number in CSV file, 2: invalid constant name */
+                    __('Line %1$d: Invalid constant name "%2$s" (must be uppercase letters, numbers, and underscores only)', 'php-constants-manager'),
                     $csv_line_number,
                     esc_html($name)
                 );
@@ -1193,7 +1227,8 @@ class PHP_Constants_Manager {
             if ($validation_result['error']) {
                 $errors++;
                 $error_details[] = sprintf(
-                    __('Line %d: %s (Constant: %s)', 'php-constants-manager'),
+                    /* translators: 1: line number in CSV file, 2: validation error message, 3: constant name */
+                    __('Line %1$d: %2$s (Constant: %3$s)', 'php-constants-manager'),
                     $csv_line_number,
                     $validation_result['message'],
                     esc_html($name)
@@ -1221,7 +1256,8 @@ class PHP_Constants_Manager {
                     } else {
                         $errors++;
                         $error_details[] = sprintf(
-                            __('Line %d: Database error updating constant \"%s\"', 'php-constants-manager'),
+                            /* translators: 1: line number in CSV file, 2: constant name */
+                            __('Line %1$d: Database error updating constant \"%2$s\"', 'php-constants-manager'),
                             $csv_line_number,
                             esc_html($name)
                         );
@@ -1247,7 +1283,8 @@ class PHP_Constants_Manager {
             } else {
                 $errors++;
                 $error_details[] = sprintf(
-                    __('Line %d: Database error saving constant \"%s\"', 'php-constants-manager'),
+                    /* translators: 1: line number in CSV file, 2: constant name */
+                    __('Line %1$d: Database error saving constant \"%2$s\"', 'php-constants-manager'),
                     $csv_line_number,
                     esc_html($name)
                 );
@@ -1257,15 +1294,19 @@ class PHP_Constants_Manager {
         // Build success message
         $message_parts = array();
         if ($imported > 0) {
+            /* translators: %d: number of constants imported */
             $message_parts[] = sprintf(_n('%d constant imported', '%d constants imported', $imported, 'php-constants-manager'), $imported);
         }
         if ($updated > 0) {
+            /* translators: %d: number of constants updated */
             $message_parts[] = sprintf(_n('%d constant updated', '%d constants updated', $updated, 'php-constants-manager'), $updated);
         }
         if ($skipped > 0) {
+            /* translators: %d: number of constants skipped */
             $message_parts[] = sprintf(_n('%d constant skipped (already exists)', '%d constants skipped (already exist)', $skipped, 'php-constants-manager'), $skipped);
         }
         if ($errors > 0) {
+            /* translators: %d: number of errors that occurred */
             $message_parts[] = sprintf(_n('%d error occurred', '%d errors occurred', $errors, 'php-constants-manager'), $errors);
         }
         
@@ -1288,6 +1329,28 @@ add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'), 0);
 
 // Activation hook
 register_activation_hook(__FILE__, 'pcm_activation_hook');
+
+/**
+ * Format constant value for safe display
+ * Production-safe alternative to var_export()
+ */
+function pcm_format_constant_value($value) {
+    if (is_null($value)) {
+        return 'null';
+    } elseif (is_bool($value)) {
+        return $value ? 'true' : 'false';
+    } elseif (is_string($value)) {
+        return '"' . esc_html($value) . '"';
+    } elseif (is_numeric($value)) {
+        return esc_html((string)$value);
+    } elseif (is_array($value)) {
+        return 'Array(' . count($value) . ')';
+    } elseif (is_object($value)) {
+        return 'Object(' . get_class($value) . ')';
+    } else {
+        return esc_html((string)$value);
+    }
+}
 
 /**
  * Plugin activation hook

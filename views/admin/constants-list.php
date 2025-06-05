@@ -15,8 +15,8 @@ if (!defined('ABSPATH')) {
 ?>
 
 <div class="wrap">
-    <h1 class="wp-heading-inline"><?php _e('PHP Constants', 'php-constants-manager'); ?></h1>
-    <a href="<?php echo admin_url('admin.php?page=php-constants-manager&action=add'); ?>" class="page-title-action"><?php _e('Add New', 'php-constants-manager'); ?></a>
+    <h1 class="wp-heading-inline"><?php esc_html_e('PHP Constants', 'php-constants-manager'); ?></h1>
+    <a href="<?php echo esc_url(admin_url('admin.php?page=php-constants-manager&action=add')); ?>" class="page-title-action"><?php esc_html_e('Add New', 'php-constants-manager'); ?></a>
     
     <hr class="wp-header-end">
     
@@ -57,20 +57,26 @@ if (!defined('ABSPATH')) {
         echo '<ul class="subsubsub">';
         $view_links = array();
         foreach ($views as $class => $view) {
-            $view_links[] = '<li class="' . esc_attr($class) . '">' . $view . '</li>';
+            $view_links[] = '<li class="' . esc_attr($class) . '">' . wp_kses_post($view) . '</li>';
         }
-        echo implode('', $view_links);
+        echo wp_kses_post(implode('', $view_links));
         echo '</ul>';
         echo '<div class="clear"></div>';
     }
     ?>
     
     <form method="get" class="search-form">
-        <input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page'] ?? 'php-constants-manager'); ?>" />
-        <?php if (isset($_REQUEST['type_filter']) && $_REQUEST['type_filter'] !== 'all'): ?>
-            <input type="hidden" name="type_filter" value="<?php echo esc_attr($_REQUEST['type_filter']); ?>" />
+        <?php
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        ?>
+        <input type="hidden" name="page" value="<?php echo esc_attr(sanitize_text_field(wp_unslash($_REQUEST['page'] ?? 'php-constants-manager'))); ?>" />
+        <?php if (isset($_REQUEST['type_filter']) && sanitize_text_field(wp_unslash($_REQUEST['type_filter'])) !== 'all'): ?>
+            <input type="hidden" name="type_filter" value="<?php echo esc_attr(sanitize_text_field(wp_unslash($_REQUEST['type_filter']))); ?>" />
         <?php endif; ?>
-        <?php $data['list_table']->search_box(__('Search Constants', 'php-constants-manager'), 'search_constants'); ?>
+        <?php
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
+        ?>
+        <?php $data['list_table']->search_box(esc_html__('Search Constants', 'php-constants-manager'), 'search_constants'); ?>
     </form>
     
     <form method="post">

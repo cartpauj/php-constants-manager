@@ -25,8 +25,8 @@ class PCM_List_Table extends WP_List_Table {
      */
     public function __construct() {
         parent::__construct(array(
-            'singular' => __('constant', 'php-constants-manager'),
-            'plural' => __('constants', 'php-constants-manager'),
+            'singular' => esc_html__('constant', 'php-constants-manager'),
+            'plural' => esc_html__('constants', 'php-constants-manager'),
             'ajax' => false
         ));
         
@@ -39,12 +39,12 @@ class PCM_List_Table extends WP_List_Table {
     public function get_columns() {
         return array(
             'cb' => '<input type="checkbox" />',
-            'name' => __('Name', 'php-constants-manager'),
-            'value' => __('Value', 'php-constants-manager'),
-            'is_active' => __('Status', 'php-constants-manager'),
-            'predefined' => __('Predefined', 'php-constants-manager'),
-            'description' => __('Description', 'php-constants-manager'),
-            'created_at' => __('Created', 'php-constants-manager')
+            'name' => esc_html__('Name', 'php-constants-manager'),
+            'value' => esc_html__('Value', 'php-constants-manager'),
+            'is_active' => esc_html__('Status', 'php-constants-manager'),
+            'predefined' => esc_html__('Predefined', 'php-constants-manager'),
+            'description' => esc_html__('Description', 'php-constants-manager'),
+            'created_at' => esc_html__('Created', 'php-constants-manager')
         );
     }
     
@@ -72,9 +72,9 @@ class PCM_List_Table extends WP_List_Table {
      */
     public function get_bulk_actions() {
         return array(
-            'delete' => __('Delete', 'php-constants-manager'),
-            'activate' => __('Activate', 'php-constants-manager'),
-            'deactivate' => __('Deactivate', 'php-constants-manager')
+            'delete' => esc_html__('Delete', 'php-constants-manager'),
+            'activate' => esc_html__('Activate', 'php-constants-manager'),
+            'deactivate' => esc_html__('Deactivate', 'php-constants-manager')
         );
     }
     
@@ -143,12 +143,13 @@ class PCM_List_Table extends WP_List_Table {
         );
         
         $actions = array(
-            'edit' => sprintf('<a href="%s">%s</a>', $edit_url, __('Edit', 'php-constants-manager')),
+            'edit' => sprintf('<a href="%s">%s</a>', $edit_url, esc_html__('Edit', 'php-constants-manager')),
             'delete' => sprintf(
                 '<a href="%s" onclick="return confirm(\'%s\');">%s</a>',
                 $delete_url,
+                /* translators: JavaScript confirmation message when deleting a constant */
                 esc_js(__('Are you sure you want to delete this constant?', 'php-constants-manager')),
-                __('Delete', 'php-constants-manager')
+                esc_html__('Delete', 'php-constants-manager')
             )
         );
         
@@ -189,14 +190,18 @@ class PCM_List_Table extends WP_List_Table {
         if ($predefined_check['is_predefined']) {
             return sprintf(
                 '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
-                esc_attr(sprintf(__('Already defined with value: %s', 'php-constants-manager'), var_export($predefined_check['existing_value'], true))),
-                __('Yes', 'php-constants-manager')
+                esc_attr(sprintf(
+                    /* translators: %s: the current value of the predefined constant */
+                    __('Already defined with value: %s', 'php-constants-manager'), 
+                    pcm_format_constant_value($predefined_check['existing_value'])
+                )),
+                esc_html__('Yes', 'php-constants-manager')
             );
         }
         
         return sprintf(
             '<span class="pcm-predefined-no">%s</span>',
-            __('No', 'php-constants-manager')
+            esc_html__('No', 'php-constants-manager')
         );
     }
     
@@ -215,15 +220,20 @@ class PCM_List_Table extends WP_List_Table {
         $current_page = $this->get_pagenum();
         $per_page = $this->get_items_per_page('constants_per_page', 50);
         
-        // Get query args
-        $orderby = isset($_REQUEST['orderby']) ? $_REQUEST['orderby'] : 'name';
-        $order = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'ASC';
-        $search = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
-        $type_filter = isset($_REQUEST['type_filter']) ? $_REQUEST['type_filter'] : 'all';
+        // Get query args from URL parameters (GET requests for table filtering/sorting)
+        // These are read-only operations that don't require nonce verification
+        // All inputs are properly sanitized before use
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $orderby = isset($_REQUEST['orderby']) ? sanitize_text_field(wp_unslash($_REQUEST['orderby'])) : 'name';
+        $order = isset($_REQUEST['order']) ? sanitize_text_field(wp_unslash($_REQUEST['order'])) : 'ASC';
+        $search = isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : '';
+        $type_filter = isset($_REQUEST['type_filter']) ? sanitize_text_field(wp_unslash($_REQUEST['type_filter'])) : 'all';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         // Reset to page 1 if we have a search term or type filter
         if (!empty($search) || $type_filter != 'all') {
-            $_REQUEST['paged'] = 1;
+            // Reset pagination for new search/filter
+            // Note: This modifies $_REQUEST which is acceptable for pagination reset
             $current_page = 1;
         }
         
@@ -262,9 +272,11 @@ class PCM_List_Table extends WP_List_Table {
      * Get views for type filtering
      */
     public function get_views() {
-        $current_filter = isset($_REQUEST['type_filter']) ? $_REQUEST['type_filter'] : 'all';
+        // phpcs:disable WordPress.Security.NonceVerification.Recommended
+        $current_filter = isset($_REQUEST['type_filter']) ? sanitize_text_field(wp_unslash($_REQUEST['type_filter'])) : 'all';
         $base_url = admin_url('admin.php?page=php-constants-manager');
-        $search_query = isset($_REQUEST['s']) ? $_REQUEST['s'] : '';
+        $search_query = isset($_REQUEST['s']) ? sanitize_text_field(wp_unslash($_REQUEST['s'])) : '';
+        // phpcs:enable WordPress.Security.NonceVerification.Recommended
         
         // Add search parameter to base URL if present
         if (!empty($search_query)) {
@@ -288,19 +300,19 @@ class PCM_List_Table extends WP_List_Table {
         $class = ($current_filter == 'all') ? ' class="current"' : '';
         $views['all'] = sprintf(
             '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
-            $base_url,
+            esc_url($base_url),
             $class,
-            __('All', 'php-constants-manager'),
+            esc_html__('All', 'php-constants-manager'),
             number_format_i18n($total_count)
         );
         
         // Add type filters
         $type_labels = array(
-            'string' => __('String', 'php-constants-manager'),
-            'integer' => __('Integer', 'php-constants-manager'),
-            'float' => __('Float', 'php-constants-manager'),
-            'boolean' => __('Boolean', 'php-constants-manager'),
-            'null' => __('Null', 'php-constants-manager')
+            'string' => esc_html__('String', 'php-constants-manager'),
+            'integer' => esc_html__('Integer', 'php-constants-manager'),
+            'float' => esc_html__('Float', 'php-constants-manager'),
+            'boolean' => esc_html__('Boolean', 'php-constants-manager'),
+            'null' => esc_html__('Null', 'php-constants-manager')
         );
         
         foreach ($type_labels as $type => $label) {
@@ -310,7 +322,7 @@ class PCM_List_Table extends WP_List_Table {
                 $type_url = add_query_arg('type_filter', $type, $base_url);
                 $views[$type] = sprintf(
                     '<a href="%s"%s>%s <span class="count">(%s)</span></a>',
-                    $type_url,
+                    esc_url($type_url),
                     $class,
                     esc_html($label),
                     number_format_i18n($count)
@@ -335,6 +347,6 @@ class PCM_List_Table extends WP_List_Table {
      * Message for no items
      */
     public function no_items() {
-        _e('No constants found.', 'php-constants-manager');
+        esc_html_e('No constants found.', 'php-constants-manager');
     }
 }

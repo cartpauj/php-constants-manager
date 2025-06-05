@@ -29,10 +29,24 @@ class PCM_DB {
     public function table_exists() {
         global $wpdb;
         
+        // Check cache first
+        $cache_key = 'pcm_table_exists';
+        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        
+        if (false !== $cached_result) {
+            return $cached_result;
+        }
+        
         $table_name = $wpdb->esc_like($this->table_name);
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
         $result = $wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $table_name));
         
-        return $result === $this->table_name;
+        $exists = $result === $this->table_name;
+        
+        // Cache for 10 minutes (table creation/deletion is rare)
+        wp_cache_set($cache_key, $exists, 'pcm_constants', 600);
+        
+        return $exists;
     }
     
     /**
@@ -69,6 +83,7 @@ class PCM_DB {
             
             // Log the error
             if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                 error_log($error_msg);
             }
             
@@ -85,6 +100,7 @@ class PCM_DB {
             
             // Log the error
             if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                 error_log($error_msg);
             }
             
@@ -106,6 +122,14 @@ class PCM_DB {
         // Check if table exists first
         if (!$this->table_exists()) {
             return array();
+        }
+        
+        // Generate cache key based on arguments
+        $cache_key = 'pcm_constants_' . md5(serialize($args));
+        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        
+        if (false !== $cached_result) {
+            return $cached_result;
         }
         
         $defaults = array(
@@ -144,24 +168,33 @@ class PCM_DB {
             $where_values[] = $args['type'];
         }
         
-        // Build query
-        $sql = "SELECT * FROM {$this->table_name} WHERE {$where}";
-        
-        if (!empty($where_values)) {
-            $sql = $wpdb->prepare($sql, $where_values);
-        }
-        
-        // Add order by
+        // Build order by clause
         $orderby = in_array($args['orderby'], array('name', 'value', 'type', 'is_active', 'created_at')) ? $args['orderby'] : 'name';
         $order = strtoupper($args['order']) === 'DESC' ? 'DESC' : 'ASC';
-        $sql .= " ORDER BY {$orderby} {$order}";
+        $order_clause = " ORDER BY {$orderby} {$order}";
         
-        // Add limit
+        // Build limit clause
+        $limit_clause = '';
         if ($args['limit'] > 0) {
-            $sql .= $wpdb->prepare(" LIMIT %d OFFSET %d", $args['limit'], $args['offset']);
+            $limit_clause = $wpdb->prepare(" LIMIT %d OFFSET %d", $args['limit'], $args['offset']);
         }
         
-        return $wpdb->get_results($sql);
+        // Build complete query
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $sql = "SELECT * FROM {$this->table_name} WHERE {$where}{$order_clause}{$limit_clause}";
+        
+        if (!empty($where_values)) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            $results = $wpdb->get_results($wpdb->prepare($sql, $where_values));
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            $results = $wpdb->get_results($sql);
+        }
+        
+        // Cache the results for 5 minutes
+        wp_cache_set($cache_key, $results, 'pcm_constants', 300);
+        
+        return $results;
     }
     
     /**
@@ -189,10 +222,25 @@ class PCM_DB {
             return null;
         }
         
-        return $wpdb->get_row($wpdb->prepare(
+        // Check cache first
+        $cache_key = 'pcm_constant_' . $id;
+        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        
+        if (false !== $cached_result) {
+            return $cached_result;
+        }
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        $result = $wpdb->get_row($wpdb->prepare(
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "SELECT * FROM {$this->table_name} WHERE id = %d",
             $id
         ));
+        
+        // Cache the result for 5 minutes
+        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        
+        return $result;
     }
     
     /**
@@ -206,10 +254,25 @@ class PCM_DB {
             return null;
         }
         
-        return $wpdb->get_row($wpdb->prepare(
+        // Check cache first
+        $cache_key = 'pcm_constant_name_' . sanitize_key($name);
+        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        
+        if (false !== $cached_result) {
+            return $cached_result;
+        }
+        
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        $result = $wpdb->get_row($wpdb->prepare(
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             "SELECT * FROM {$this->table_name} WHERE name = %s",
             $name
         ));
+        
+        // Cache the result for 5 minutes
+        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        
+        return $result;
     }
     
     /**
@@ -230,6 +293,14 @@ class PCM_DB {
         );
         
         $args = wp_parse_args($args, $defaults);
+        
+        // Generate cache key based on arguments
+        $cache_key = 'pcm_count_constants_' . md5(serialize($args));
+        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        
+        if (false !== $cached_result) {
+            return $cached_result;
+        }
         
         $where = '1=1';
         $where_values = array();
@@ -255,13 +326,21 @@ class PCM_DB {
             $where_values[] = $args['type'];
         }
         
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $sql = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
         
         if (!empty($where_values)) {
-            $sql = $wpdb->prepare($sql, $where_values);
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            $result = $wpdb->get_var($wpdb->prepare($sql, $where_values));
+        } else {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            $result = $wpdb->get_var($sql);
         }
         
-        return $wpdb->get_var($sql);
+        // Cache the result for 5 minutes
+        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        
+        return $result;
     }
     
     /**
@@ -285,7 +364,8 @@ class PCM_DB {
             return false;
         }
         
-        return $wpdb->insert(
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+        $result = $wpdb->insert(
             $this->table_name,
             array(
                 'name' => $data['name'],
@@ -296,6 +376,13 @@ class PCM_DB {
             ),
             array('%s', '%s', '%s', '%d', '%s')
         );
+        
+        // Clear all cache when data changes
+        if ($result !== false) {
+            $this->clear_cache();
+        }
+        
+        return $result;
     }
     
     /**
@@ -332,13 +419,21 @@ class PCM_DB {
             return false;
         }
         
-        return $wpdb->update(
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $result = $wpdb->update(
             $this->table_name,
             $update_data,
             array('id' => $id),
             $format,
             array('%d')
         );
+        
+        // Clear all cache when data changes
+        if ($result !== false) {
+            $this->clear_cache();
+        }
+        
+        return $result;
     }
     
     /**
@@ -347,11 +442,19 @@ class PCM_DB {
     public function delete_constant($id) {
         global $wpdb;
         
-        return $wpdb->delete(
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+        $result = $wpdb->delete(
             $this->table_name,
             array('id' => $id),
             array('%d')
         );
+        
+        // Clear all cache when data changes
+        if ($result !== false) {
+            $this->clear_cache();
+        }
+        
+        return $result;
     }
     
     /**
@@ -368,5 +471,13 @@ class PCM_DB {
         return $this->update_constant($id, array(
             'is_active' => !$constant->is_active
         ));
+    }
+    
+    /**
+     * Clear all cache for constants
+     */
+    private function clear_cache() {
+        // Clear the entire cache group
+        wp_cache_flush_group('pcm_constants');
     }
 }
