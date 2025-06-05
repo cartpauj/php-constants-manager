@@ -72,6 +72,7 @@ class PHP_Constants_Manager {
         
         // Hook into WordPress
         //add_action('init', array($this, 'init'));
+        add_action('admin_init', array($this, 'handle_admin_actions'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('admin_notices', array($this, 'show_admin_notices'));
@@ -96,6 +97,21 @@ class PHP_Constants_Manager {
         
         // Handle screen options
         add_filter('set-screen-option', array($this, 'set_screen_options'), 10, 3);
+    }
+    
+    /**
+     * Handle admin actions (including bulk actions)
+     */
+    public function handle_admin_actions() {
+        // Only process on our plugin pages
+        if (!isset($_GET['page']) || strpos($_GET['page'], 'php-constants-manager') !== 0) {
+            return;
+        }
+        
+        // Process bulk actions for the main constants page
+        if ($_GET['page'] === 'php-constants-manager') {
+            $this->process_bulk_actions();
+        }
     }
     
     /**
@@ -294,9 +310,6 @@ class PHP_Constants_Manager {
             $this->render_add_page();
             return;
         }
-        
-        // Handle bulk actions before creating list table
-        $this->process_bulk_actions();
         
         // Create list table instance
         $list_table = new PCM_List_Table();
@@ -570,7 +583,28 @@ class PHP_Constants_Manager {
         }
         
         if ($message) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager&message=' . $message));
+            // Set success message in transient and redirect
+            $message_text = '';
+            switch ($message) {
+                case 'bulk_deleted':
+                    $message_text = sprintf(_n('%d constant deleted successfully.', '%d constants deleted successfully.', count($ids), 'php-constants-manager'), count($ids));
+                    break;
+                case 'bulk_activated':
+                    $message_text = sprintf(_n('%d constant activated successfully.', '%d constants activated successfully.', count($ids), 'php-constants-manager'), count($ids));
+                    break;
+                case 'bulk_deactivated':
+                    $message_text = sprintf(_n('%d constant deactivated successfully.', '%d constants deactivated successfully.', count($ids), 'php-constants-manager'), count($ids));
+                    break;
+            }
+            
+            if ($message_text) {
+                set_transient('pcm_admin_notice', array(
+                    'type' => 'success',
+                    'message' => $message_text
+                ), 30);
+            }
+            
+            wp_redirect(admin_url('admin.php?page=php-constants-manager'));
             exit;
         }
     }
