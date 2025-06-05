@@ -65,8 +65,7 @@ if (!defined('ABSPATH')) {
     }
     ?>
     
-    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-        <input type="hidden" name="action" value="pcm_bulk_action" />
+    <form method="post">
         <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
         <div class="constants-table-wrapper">
             <?php $data['list_table']->display(); ?>

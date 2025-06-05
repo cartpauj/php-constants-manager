@@ -295,6 +295,9 @@ class PHP_Constants_Manager {
             return;
         }
         
+        // Handle bulk actions before creating list table
+        $this->process_bulk_actions();
+        
         // Create list table instance
         $list_table = new PCM_List_Table();
         $list_table->prepare_items();
@@ -514,7 +517,66 @@ class PHP_Constants_Manager {
     }
     
     /**
-     * Handle bulk actions
+     * Process bulk actions (called from admin page)
+     */
+    private function process_bulk_actions() {
+        // Only process if this is a POST request with bulk action data
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action'])) {
+            return;
+        }
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Insufficient permissions', 'php-constants-manager'));
+        }
+        
+        if (!check_admin_referer('pcm_bulk_action', 'pcm_nonce')) {
+            wp_die(__('Security check failed', 'php-constants-manager'));
+        }
+        
+        $action = isset($_POST['action']) ? $_POST['action'] : '';
+        if ($action === '-1') {
+            $action = isset($_POST['action2']) ? $_POST['action2'] : '';
+        }
+        
+        $ids = isset($_POST['constant']) ? array_map('intval', $_POST['constant']) : array();
+        
+        if (empty($ids) || empty($action) || $action === '-1') {
+            return; // No action selected or no items selected
+        }
+        
+        $message = '';
+        
+        switch ($action) {
+            case 'delete':
+                foreach ($ids as $id) {
+                    $this->db->delete_constant($id);
+                }
+                $message = 'bulk_deleted';
+                break;
+                
+            case 'activate':
+                foreach ($ids as $id) {
+                    $this->db->update_constant($id, array('is_active' => true));
+                }
+                $message = 'bulk_activated';
+                break;
+                
+            case 'deactivate':
+                foreach ($ids as $id) {
+                    $this->db->update_constant($id, array('is_active' => false));
+                }
+                $message = 'bulk_deactivated';
+                break;
+        }
+        
+        if ($message) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager&message=' . $message));
+            exit;
+        }
+    }
+    
+    /**
+     * Handle bulk actions (legacy admin-post handler)
      */
     public function handle_bulk_action() {
         if (!current_user_can('manage_options')) {
