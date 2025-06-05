@@ -120,8 +120,8 @@
     font-weight: 500;
 }
 
-.pcm-checkbox {
-    display: none;
+.pcm-checkbox-label .pcm-checkbox {
+    display: none !important;
 }
 
 .pcm-checkbox-custom {
