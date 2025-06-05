@@ -602,11 +602,23 @@ class PHP_Constants_Manager {
             return array('is_predefined' => true, 'existing_value' => $existing_value);
         }
         
+        // Check if this constant exists in our database
+        $our_constant = $this->db->get_constant_by_name($name);
+        if (!$our_constant) {
+            // Not in our database but is defined = predefined elsewhere
+            return array('is_predefined' => true, 'existing_value' => $existing_value);
+        }
+        
         // Type-cast our value to match what it would be when defined
         $typed_our_value = $our_value;
         switch ($our_type) {
             case 'boolean':
-                $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
+                if (is_string($our_value)) {
+                    $lower_value = strtolower(trim($our_value));
+                    $typed_our_value = in_array($lower_value, ['true', '1', 'yes', 'on'], true);
+                } else {
+                    $typed_our_value = filter_var($our_value, FILTER_VALIDATE_BOOLEAN);
+                }
                 break;
             case 'integer':
                 $typed_our_value = intval($our_value);
@@ -619,12 +631,29 @@ class PHP_Constants_Manager {
                 break;
         }
         
-        // If our constant is active and values match, it's our definition
+        // Key insight: Constants from wp-config.php are defined BEFORE this plugin loads
+        // So if our constant is active and we're in the load_managed_constants phase,
+        // we might have failed to define it because it was already defined
+        
+        // If our constant is active and values match exactly, it could be either:
+        // 1. We successfully defined it, OR 
+        // 2. Something else defined it with the same value
+        
+        // The key is: if we're active and values match, we need to check if WE defined it
+        // We can do this by checking if the constant was already defined before we tried to define it
         if ($is_active && $existing_value === $typed_our_value) {
+            // If this plugin successfully defined the constant, it's not predefined
+            // We can't reliably detect this after the fact, so we'll assume if values match
+            // and we're active, then we either defined it or it matches our intended definition
             return array('is_predefined' => false, 'existing_value' => $existing_value);
         }
         
-        // Otherwise, it's predefined elsewhere
+        // If our constant is inactive and values match, something else defined it
+        if (!$is_active && $existing_value === $typed_our_value) {
+            return array('is_predefined' => true, 'existing_value' => $existing_value);
+        }
+        
+        // If values don't match, it's definitely predefined elsewhere
         return array('is_predefined' => true, 'existing_value' => $existing_value);
     }
     
