@@ -123,56 +123,56 @@ if (!defined('ABSPATH')) {
         
         <h3><?php esc_html_e('When to Enable Early Loading', 'php-constants-manager'); ?></h3>
         <ul>
-            <li><?php esc_html_e('<strong>Plugin Dependencies:</strong> Other plugins need your constants during their initialization', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Configuration Constants:</strong> You\'re defining constants that affect how other plugins behave', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Maximum Compatibility:</strong> You want to ensure constants are available as early as possible', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Plugin Dependencies:</strong> Other plugins need your constants during their initialization', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Configuration Constants:</strong> You\'re defining constants that affect how other plugins behave', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Maximum Compatibility:</strong> You want to ensure constants are available as early as possible', 'php-constants-manager'); ?></li>
         </ul>
         
         <h3><?php esc_html_e('When Normal Loading is Fine', 'php-constants-manager'); ?></h3>
         <ul>
-            <li><?php esc_html_e('<strong>Theme Usage Only:</strong> Constants are only used by themes or template files', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>No Compatibility Issues:</strong> Everything works fine with the default loading', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Clean mu-plugins:</strong> You prefer to minimize files in the mu-plugins directory', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Theme Usage Only:</strong> Constants are only used by themes or template files', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>No Compatibility Issues:</strong> Everything works fine with the default loading', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Clean mu-plugins:</strong> You prefer to minimize files in the mu-plugins directory', 'php-constants-manager'); ?></li>
         </ul>
         
         <h2 id="load-order"><?php esc_html_e('Load Order & Timing', 'php-constants-manager'); ?></h2>
         
         <h3><?php esc_html_e('Normal Loading (Default)', 'php-constants-manager'); ?></h3>
-        <p><?php esc_html_e('By default, this plugin defines your constants during the <code>plugins_loaded</code> action with priority 1, which means it loads very early in the WordPress loading process. However, some constants may already be defined by:', 'php-constants-manager'); ?></p>
+        <p><?php _e('By default, this plugin defines your constants during the <code>plugins_loaded</code> action with priority 1, which means it loads very early in the WordPress loading process. However, some constants may already be defined by:', 'php-constants-manager'); ?></p>
         <ul>
-            <li><?php esc_html_e('<strong>wp-config.php file</strong> - Loads before any plugins', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>WordPress core</strong> - Many constants defined during WordPress bootstrap', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Must-use plugins (mu-plugins)</strong> - Load before regular plugins', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>PHP extensions</strong> - Built-in PHP constants', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Other plugins with higher priority</strong> - Plugins using <code>plugins_loaded</code> with priority 0 or negative values', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>wp-config.php file</strong> - Loads before any plugins', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>WordPress core</strong> - Many constants defined during WordPress bootstrap', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Must-use plugins (mu-plugins)</strong> - Load before regular plugins', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>PHP extensions</strong> - Built-in PHP constants', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Other plugins with higher priority</strong> - Plugins using <code>plugins_loaded</code> with priority 0 or negative values', 'php-constants-manager'); ?></li>
         </ul>
         
         <h3><?php esc_html_e('Early Loading (Optional)', 'php-constants-manager'); ?></h3>
         <p><?php esc_html_e('When Early Loading is enabled, the complete WordPress loading order becomes:', 'php-constants-manager'); ?></p>
         <ol>
-            <li><?php esc_html_e('<strong>WordPress Core</strong> - wp-config.php and WordPress core constants', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Must-Use Plugins</strong> - Your constants (when Early Loading is enabled)', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Regular Plugins</strong> - All other plugins, including this plugin\'s normal loading', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>Themes</strong> - Active theme and child theme', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>WordPress Core</strong> - wp-config.php and WordPress core constants', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Must-Use Plugins</strong> - Your constants (when Early Loading is enabled)', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Regular Plugins</strong> - All other plugins, including this plugin\'s normal loading', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>Themes</strong> - Active theme and child theme', 'php-constants-manager'); ?></li>
         </ol>
         
         <h3><?php esc_html_e('When Your Constants Are Available', 'php-constants-manager'); ?></h3>
         
         <h4><?php esc_html_e('Normal Loading (Default)', 'php-constants-manager'); ?></h4>
-        <p><?php esc_html_e('Constants are defined during <code>plugins_loaded</code> priority 1, available to:', 'php-constants-manager'); ?></p>
+        <p><?php _e('Constants are defined during <code>plugins_loaded</code> priority 1, available to:', 'php-constants-manager'); ?></p>
         <ul>
             <li><?php esc_html_e('All theme code (themes load after plugins)', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Most other plugins (unless they use higher priority)', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('WordPress hooks like <code>init</code>, <code>wp_loaded</code>, etc.', 'php-constants-manager'); ?></li>
+            <li><?php _e('WordPress hooks like <code>init</code>, <code>wp_loaded</code>, etc.', 'php-constants-manager'); ?></li>
         </ul>
         
         <h4><?php esc_html_e('Early Loading (When Enabled)', 'php-constants-manager'); ?></h4>
-        <p><?php esc_html_e('<strong>Important:</strong> When early loading is enabled, your constants are <em>not</em> loaded during <code>plugins_loaded</code> priority 1. Instead, they are loaded much earlier via the must-use plugin system.', 'php-constants-manager'); ?></p>
+        <p><?php _e('<strong>Important:</strong> When early loading is enabled, your constants are <em>not</em> loaded during <code>plugins_loaded</code> priority 1. Instead, they are loaded much earlier via the must-use plugin system.', 'php-constants-manager'); ?></p>
         <p><?php esc_html_e('Your constants will be available to:', 'php-constants-manager'); ?></p>
         <ul>
-            <li><?php esc_html_e('<strong>All regular plugins</strong> - During their initialization and loading phase', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>All theme code</strong> - Functions, templates, and hooks', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('<strong>All WordPress hooks</strong> - Including very early hooks like <code>plugins_loaded</code>, <code>init</code>, etc.', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>All regular plugins</strong> - During their initialization and loading phase', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>All theme code</strong> - Functions, templates, and hooks', 'php-constants-manager'); ?></li>
+            <li><?php _e('<strong>All WordPress hooks</strong> - Including very early hooks like <code>plugins_loaded</code>, <code>init</code>, etc.', 'php-constants-manager'); ?></li>
         </ul>
         <p><?php esc_html_e('The only things that can override your constants when early loading is enabled are WordPress core constants (from wp-config.php) and other must-use plugins that load before this one.', 'php-constants-manager'); ?></p>
         
