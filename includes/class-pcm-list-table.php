@@ -189,13 +189,13 @@ class PCM_List_Table extends WP_List_Table {
         
         if ($predefined_check['is_predefined']) {
             return sprintf(
-                '<span class="pcm-predefined-yes" title="%s" style="color: #dc3232; font-weight: bold;">%s</span>',
+                '<div class="pcm-predefined-badge" title="%s"><span class="pcm-predefined-badge-text">%s</span></div>',
                 esc_attr(sprintf(
                     /* translators: %s: the current value of the predefined constant */
-                    __('Already defined with value: %s', 'php-constants-manager'), 
+                    __('Already defined by PHP/WordPress with value: %s. Your custom value will only apply when the system constant is not available.', 'php-constants-manager'), 
                     pcm_format_constant_value($predefined_check['existing_value'])
                 )),
-                esc_html__('Yes', 'php-constants-manager')
+                esc_html__('Overridden', 'php-constants-manager')
             );
         }
         
@@ -203,6 +203,28 @@ class PCM_List_Table extends WP_List_Table {
             '<span class="pcm-predefined-no">%s</span>',
             esc_html__('No', 'php-constants-manager')
         );
+    }
+    
+    /**
+     * Override single row to add CSS classes for predefined constants
+     */
+    public function single_row($item) {
+        $plugin_instance = PHP_Constants_Manager::get_instance();
+        $predefined_check = $plugin_instance->is_constant_predefined(
+            $item->name, 
+            $item->value, 
+            $item->type, 
+            $item->is_active
+        );
+        
+        $css_class = '';
+        if ($predefined_check['is_predefined']) {
+            $css_class = 'predefined-constant';
+        }
+        
+        echo '<tr class="' . esc_attr($css_class) . '">';
+        $this->single_row_columns($item);
+        echo '</tr>';
     }
     
     /**

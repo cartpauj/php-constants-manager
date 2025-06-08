@@ -287,6 +287,39 @@
     cursor: help;
 }
 
+/* Enhanced predefined badge styling */
+.pcm-predefined-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 16px;
+    color: #856404;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 4px;
+}
+
+.pcm-predefined-badge::before {
+    content: "⚠️";
+    font-size: 12px;
+}
+
+.pcm-predefined-badge-text {
+    white-space: nowrap;
+}
+
+/* Visual row distinction for predefined constants */
+.wp-list-table tr.predefined-constant {
+    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 10%);
+    border-left: 3px solid #ffc107;
+}
+
+.wp-list-table tr.predefined-constant td {
+    position: relative;
+}
+
 /* Toggle switch styles */
 .pcm-toggle-switch {
     position: relative;

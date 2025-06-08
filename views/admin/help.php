@@ -102,7 +102,7 @@ if (!defined('ABSPATH')) {
         
         <ul>
             <li><strong><?php esc_html_e('Predefined: No', 'php-constants-manager'); ?></strong> - <?php esc_html_e('This constant is only defined by this plugin. You have full control over it.', 'php-constants-manager'); ?></li>
-            <li><strong><?php esc_html_e('Predefined: Yes', 'php-constants-manager'); ?></strong> - <?php esc_html_e('This constant is already defined by WordPress core, another plugin, or your theme. Your definition will only take effect if the original definition is removed.', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('Predefined: Overridden', 'php-constants-manager'); ?></strong> - <?php esc_html_e('This constant is already defined by WordPress core, another plugin, or your theme. Your custom value will only apply when the system constant is not available.', 'php-constants-manager'); ?></li>
         </ul>
         
         <h3><?php esc_html_e('Why Can\'t I Override Existing Constants?', 'php-constants-manager'); ?></h3>
@@ -111,7 +111,7 @@ if (!defined('ABSPATH')) {
         <h4><?php esc_html_e('What Happens When:', 'php-constants-manager'); ?></h4>
         <ul>
             <li><strong><?php esc_html_e('Constant is Active + Not Predefined:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Your constant is successfully defined and working.', 'php-constants-manager'); ?></li>
-            <li><strong><?php esc_html_e('Constant is Active + Predefined:', 'php-constants-manager'); ?></strong> <?php esc_html_e('The predefined value takes precedence. Your value is stored but not used.', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('Constant is Active + Overridden:', 'php-constants-manager'); ?></strong> <?php esc_html_e('The system value takes precedence. Your value is stored and will be used if the system constant becomes unavailable.', 'php-constants-manager'); ?></li>
             <li><strong><?php esc_html_e('Constant is Inactive:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Your constant is not defined at all, regardless of predefined status.', 'php-constants-manager'); ?></li>
         </ul>
         
@@ -518,15 +518,15 @@ DEBUG_MODE,false,boolean</code></pre>
         <h3><?php esc_html_e('My constant isn\'t working', 'php-constants-manager'); ?></h3>
         <ol>
             <li><?php esc_html_e('Check if it\'s marked as "Active"', 'php-constants-manager'); ?></li>
-            <li><?php esc_html_e('Check if it shows "Predefined: Yes" (meaning something else defined it first)', 'php-constants-manager'); ?></li>
+            <li><?php esc_html_e('Check if it shows "Predefined: Overridden" (meaning something else defined it first)', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Verify the constant name follows PHP naming rules', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Check for PHP syntax errors in your constant value', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Consider load order: if another plugin defines the same constant with higher priority, it will override yours', 'php-constants-manager'); ?></li>
             <li><?php esc_html_e('Try enabling Early Loading in Settings if other plugins need your constants during initialization', 'php-constants-manager'); ?></li>
         </ol>
         
-        <h3><?php esc_html_e('I see a warning about predefined constants', 'php-constants-manager'); ?></h3>
-        <p><?php esc_html_e('This warning appears when you try to define a constant that\'s already defined elsewhere. Your definition is saved but won\'t take effect unless the original definition is removed.', 'php-constants-manager'); ?></p>
+        <h3><?php esc_html_e('I see "Overridden" in the predefined column', 'php-constants-manager'); ?></h3>
+        <p><?php esc_html_e('The "Overridden" badge (with warning icon) indicates that your constant is already defined elsewhere in the system. Your definition is saved and will be used as a fallback if the system constant becomes unavailable, but currently the system value takes precedence.', 'php-constants-manager'); ?></p>
         
         <h3><?php esc_html_e('How to check if my constant is working', 'php-constants-manager'); ?></h3>
         <p><?php 
