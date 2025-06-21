@@ -1278,7 +1278,13 @@ class PHP_Constants_Manager {
         }
         
         // Validate file upload and sanitize file data
-        $file = $_FILES['csv_file'];
+        $file = array(
+            'name' => sanitize_text_field($_FILES['csv_file']['name']),
+            'type' => sanitize_text_field($_FILES['csv_file']['type']),
+            'tmp_name' => $_FILES['csv_file']['tmp_name'], // tmp_name is safe as it's managed by PHP
+            'error' => intval($_FILES['csv_file']['error']),
+            'size' => intval($_FILES['csv_file']['size'])
+        );
         
         // Additional upload error checks
         if ($file['error'] !== UPLOAD_ERR_OK) {
