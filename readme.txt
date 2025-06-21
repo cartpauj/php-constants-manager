@@ -3,7 +3,7 @@ Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -175,6 +175,14 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.1.2 =
+* File input sanitation
+
+= 1.1.1 =
+* Use wp_enqueue commands properly
+* Ensure data is sanitized, escaped and validated properly
+* Avoid generic class and function names
+* Increase prefix length to help avoid conflicts with other plugins
 
 = 1.1.0 =
 * **Early Loading Feature**: New Settings page with option to create must-use plugin for loading constants before other plugins
