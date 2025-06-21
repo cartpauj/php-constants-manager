@@ -3,7 +3,7 @@
  * Plugin Name: PHP Constants Manager
  * Plugin URI: https://github.com/cartpauj/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: cartpauj
  * Author URI: https://github.com/cartpauj/
  * License: GPL v2 or later
@@ -17,7 +17,8 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('PHPCM_VERSION', '1.1.2');
+$plugin_header = get_file_data(__FILE__, array('Version' => 'Version'));
+define('PHPCM_VERSION', $plugin_header['Version']);
 define('PHPCM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PHPCM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PHPCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
@@ -1279,11 +1280,11 @@ class PHP_Constants_Manager {
         
         // Validate file upload and sanitize file data
         $file = array(
-            'name' => sanitize_text_field($_FILES['csv_file']['name']),
-            'type' => sanitize_text_field($_FILES['csv_file']['type']),
-            'tmp_name' => $_FILES['csv_file']['tmp_name'], // tmp_name is safe as it's managed by PHP
-            'error' => intval($_FILES['csv_file']['error']),
-            'size' => intval($_FILES['csv_file']['size'])
+            'name' => isset($_FILES['csv_file']['name']) ? sanitize_text_field($_FILES['csv_file']['name']) : '',
+            'type' => isset($_FILES['csv_file']['type']) ? sanitize_text_field($_FILES['csv_file']['type']) : '',
+            'tmp_name' => isset($_FILES['csv_file']['tmp_name']) ? sanitize_text_field($_FILES['csv_file']['tmp_name']) : '',
+            'error' => isset($_FILES['csv_file']['error']) ? intval($_FILES['csv_file']['error']) : UPLOAD_ERR_NO_FILE,
+            'size' => isset($_FILES['csv_file']['size']) ? intval($_FILES['csv_file']['size']) : 0
         );
         
         // Additional upload error checks
