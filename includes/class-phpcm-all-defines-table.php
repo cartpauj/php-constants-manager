@@ -13,7 +13,7 @@ if (!class_exists('WP_List_Table')) {
     require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 }
 
-class PCM_All_Defines_Table extends WP_List_Table {
+class PHPCM_All_Defines_Table extends WP_List_Table {
     
     /**
      * All PHP constants
@@ -94,7 +94,7 @@ class PCM_All_Defines_Table extends WP_List_Table {
                 
             case 'category':
                 $category_class = sanitize_html_class(strtolower(str_replace('/', '-', $item['category'])));
-                return '<span class="pcm-category-' . $category_class . '">' . esc_html($item['category']) . '</span>';
+                return '<span class="phpcm-category-' . $category_class . '">' . esc_html($item['category']) . '</span>';
                 
             default:
                 return esc_html($item[$column_name]);

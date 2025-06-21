@@ -17,15 +17,15 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('PCM_VERSION', '1.1.0');
-define('PCM_PLUGIN_DIR', plugin_dir_path(__FILE__));
-define('PCM_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('PCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('PHPCM_VERSION', '1.1.0');
+define('PHPCM_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('PHPCM_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('PHPCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Include required files
-require_once PCM_PLUGIN_DIR . 'includes/class-pcm-list-table.php';
-require_once PCM_PLUGIN_DIR . 'includes/class-pcm-all-defines-table.php';
-require_once PCM_PLUGIN_DIR . 'includes/class-pcm-db.php';
+require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-list-table.php';
+require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-all-defines-table.php';
+require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-db.php';
 
 /**
  * Main plugin class
@@ -67,8 +67,8 @@ class PHP_Constants_Manager {
      * Constructor
      */
     private function __construct() {
-        $this->db = new PCM_DB();
-        $this->views_path = PCM_PLUGIN_DIR . 'views/';
+        $this->db = new PHPCM_DB();
+        $this->views_path = PHPCM_PLUGIN_DIR . 'views/';
         
         // Hook into WordPress
         //add_action('init', array($this, 'init'));
@@ -81,20 +81,20 @@ class PHP_Constants_Manager {
         add_action('plugins_loaded', array($this, 'load_managed_constants'), 1);
         
         // Add settings link
-        add_filter('plugin_action_links_' . PCM_PLUGIN_BASENAME, array($this, 'add_settings_link'));
+        add_filter('plugin_action_links_' . PHPCM_PLUGIN_BASENAME, array($this, 'add_settings_link'));
         
         // Handle form submissions
-        add_action('admin_post_pcm_save_constant', array($this, 'handle_save_constant'));
-        add_action('admin_post_pcm_delete_constant', array($this, 'handle_delete_constant'));
-        add_action('admin_post_pcm_toggle_constant', array($this, 'handle_toggle_constant'));
-        add_action('admin_post_pcm_bulk_action', array($this, 'handle_bulk_action'));
-        add_action('admin_post_pcm_export_csv', array($this, 'handle_export_csv'));
-        add_action('admin_post_pcm_import_csv', array($this, 'handle_import_csv'));
-        add_action('admin_post_pcm_save_settings', array($this, 'handle_save_settings'));
+        add_action('admin_post_phpcm_save_constant', array($this, 'handle_save_constant'));
+        add_action('admin_post_phpcm_delete_constant', array($this, 'handle_delete_constant'));
+        add_action('admin_post_phpcm_toggle_constant', array($this, 'handle_toggle_constant'));
+        add_action('admin_post_phpcm_bulk_action', array($this, 'handle_bulk_action'));
+        add_action('admin_post_phpcm_export_csv', array($this, 'handle_export_csv'));
+        add_action('admin_post_phpcm_import_csv', array($this, 'handle_import_csv'));
+        add_action('admin_post_phpcm_save_settings', array($this, 'handle_save_settings'));
         
         // Handle AJAX requests
-        add_action('wp_ajax_pcm_check_constant', array($this, 'ajax_check_constant'));
-        add_action('wp_ajax_pcm_toggle_constant', array($this, 'ajax_toggle_constant'));
+        add_action('wp_ajax_phpcm_check_constant', array($this, 'ajax_check_constant'));
+        add_action('wp_ajax_phpcm_toggle_constant', array($this, 'ajax_toggle_constant'));
         
         // Handle screen options
         add_filter('set-screen-option', array($this, 'set_screen_options'), 10, 3);
@@ -158,7 +158,7 @@ class PHP_Constants_Manager {
                 
                 // Store error for admin notice (only for admin users)
                 if (function_exists('current_user_can') && current_user_can('manage_options')) {
-                    set_transient('pcm_load_error', $error_msg, 300);
+                    set_transient('phpcm_load_error', $error_msg, 300);
                 }
                 
                 return;
@@ -291,16 +291,16 @@ class PHP_Constants_Manager {
             return;
         }
         
-        wp_enqueue_style('pcm-admin-style', PCM_PLUGIN_URL . 'assets/admin.css', array(), PCM_VERSION);
-        wp_enqueue_script('pcm-admin-script', PCM_PLUGIN_URL . 'assets/admin.js', array('jquery'), PCM_VERSION, true);
+        wp_enqueue_style('phpcm-admin-style', PHPCM_PLUGIN_URL . 'assets/admin.css', array(), PHPCM_VERSION);
+        wp_enqueue_script('phpcm-admin-script', PHPCM_PLUGIN_URL . 'assets/admin.js', array('jquery'), PHPCM_VERSION, true);
         
-        wp_localize_script('pcm-admin-script', 'pcm_ajax', array(
+        wp_localize_script('phpcm-admin-script', 'phpcm_ajax', array(
             /* translators: JavaScript confirmation message when deleting a single constant */
             'confirm_delete' => __('Are you sure you want to delete this constant?', 'php-constants-manager'),
             /* translators: JavaScript confirmation message when deleting multiple constants */
             'confirm_bulk_delete' => __('Are you sure you want to delete the selected constants?', 'php-constants-manager'),
             'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('pcm_check_constant')
+            'nonce' => wp_create_nonce('phpcm_check_constant')
         ));
     }
     
@@ -327,13 +327,13 @@ class PHP_Constants_Manager {
         }
         
         // Create list table instance
-        $list_table = new PCM_List_Table();
+        $list_table = new PHPCM_List_Table();
         $list_table->prepare_items();
         
         // Prepare data for view
-        $transient_notice = get_transient('pcm_admin_notice');
+        $transient_notice = get_transient('phpcm_admin_notice');
         if ($transient_notice) {
-            delete_transient('pcm_admin_notice');
+            delete_transient('phpcm_admin_notice');
         }
         
         // phpcs:disable WordPress.Security.NonceVerification.Recommended
@@ -396,22 +396,19 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_save_constant', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_save_constant', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $name = isset($_POST['constant_name']) ? sanitize_text_field(wp_unslash($_POST['constant_name'])) : '';
-        // Handle value properly - preserve quotes and special characters
+        // Handle value properly - sanitize but preserve quotes and special characters for strings
         // Validation occurs later via validate_constant_value() method
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $value = isset($_POST['constant_value']) ? wp_unslash($_POST['constant_value']) : '';
+        $value = isset($_POST['constant_value']) ? sanitize_textarea_field(wp_unslash($_POST['constant_value'])) : '';
         $type = isset($_POST['constant_type']) ? sanitize_text_field(wp_unslash($_POST['constant_type'])) : 'string';
         $is_active = !empty($_POST['constant_active']);
-        // Handle description properly - preserve quotes and special characters
-        // This is free-form text that should not be over-sanitized
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $description = isset($_POST['constant_description']) ? wp_unslash($_POST['constant_description']) : '';
+        // Handle description properly - sanitize but preserve formatting for textarea content
+        $description = isset($_POST['constant_description']) ? sanitize_textarea_field(wp_unslash($_POST['constant_description'])) : '';
         
         // Validate constant name
         if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
@@ -422,7 +419,7 @@ class PHP_Constants_Manager {
         $validation_result = $this->validate_constant_value($value, $type);
         if ($validation_result['error']) {
             // Store error message in transient
-            set_transient('pcm_admin_notice', array(
+            set_transient('phpcm_admin_notice', array(
                 'type' => 'error',
                 'message' => $validation_result['message']
             ), 30);
@@ -448,11 +445,11 @@ class PHP_Constants_Manager {
                 __('The constant "%1$s" has been %2$s, but it is already defined elsewhere with value: %3$s. Your definition will only take effect when the predefined constant is removed.', 'php-constants-manager'),
                 $name,
                 $action_text,
-                pcm_format_constant_value($predefined_check['existing_value'])
+                phpcm_format_constant_value($predefined_check['existing_value'])
             );
             
             // Store message in transient to show after redirect
-            set_transient('pcm_admin_notice', array(
+            set_transient('phpcm_admin_notice', array(
                 'type' => 'warning',
                 'message' => $message
             ), 30);
@@ -478,7 +475,7 @@ class PHP_Constants_Manager {
             $existing_constant = $this->db->get_constant_by_name($name);
             if ($existing_constant) {
                 // Store error message in transient
-                set_transient('pcm_admin_notice', array(
+                set_transient('phpcm_admin_notice', array(
                     'type' => 'error',
                     'message' => sprintf(
                         /* translators: 1: constant name, 2: URL to edit existing constant */
@@ -517,7 +514,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_delete_constant', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_delete_constant', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -539,7 +536,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_toggle_constant', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_toggle_constant', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -566,7 +563,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_bulk_action', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_bulk_action', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -625,7 +622,7 @@ class PHP_Constants_Manager {
             }
             
             if ($message_text) {
-                set_transient('pcm_admin_notice', array(
+                set_transient('phpcm_admin_notice', array(
                     'type' => 'success',
                     'message' => $message_text
                 ), 30);
@@ -644,7 +641,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_bulk_action', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_bulk_action', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -693,7 +690,7 @@ class PHP_Constants_Manager {
      * AJAX handler to check if constant is defined
      */
     public function ajax_check_constant() {
-        if (!check_ajax_referer('pcm_check_constant', 'nonce', false)) {
+        if (!check_ajax_referer('phpcm_check_constant', 'nonce', false)) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -720,7 +717,7 @@ class PHP_Constants_Manager {
      * AJAX handler to toggle constant status
      */
     public function ajax_toggle_constant() {
-        if (!check_ajax_referer('pcm_toggle_constant', 'nonce', false)) {
+        if (!check_ajax_referer('phpcm_toggle_constant', 'nonce', false)) {
             wp_send_json_error(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -757,7 +754,7 @@ class PHP_Constants_Manager {
         }
         
         // Create list table instance
-        $list_table = new PCM_All_Defines_Table();
+        $list_table = new PHPCM_All_Defines_Table();
         $list_table->prepare_items();
         
         $this->load_view('admin/all-defines', array(
@@ -812,7 +809,7 @@ class PHP_Constants_Manager {
         
         // Check if must-use plugin exists
         $mu_plugin_exists = $this->mu_plugin_exists();
-        $early_loading_enabled = get_option('pcm_early_loading_enabled', false);
+        $early_loading_enabled = get_option('phpcm_early_loading_enabled', false);
         
         $this->load_view('admin/settings', array(
             'message' => $message,
@@ -853,14 +850,14 @@ class PHP_Constants_Manager {
         $content .= "    exit;\n";
         $content .= "}\n\n";
         $content .= "// Load PHP Constants Manager constants early\n";
-        $content .= "function pcm_load_early_constants() {\n";
+        $content .= "function phpcm_load_early_constants() {\n";
         $content .= "    global \$wpdb;\n";
         $content .= "    \n";
         $content .= "    // Initialize the global array\n";
-        $content .= "    \$GLOBALS['pcm_early_defined_constants'] = array();\n";
+        $content .= "    \$GLOBALS['phpcm_early_defined_constants'] = array();\n";
         $content .= "    \n";
         $content .= "    // Get the table name\n";
-        $content .= "    \$table_name = \$wpdb->prefix . 'pcm_constants';\n";
+        $content .= "    \$table_name = \$wpdb->prefix . 'phpcm_constants';\n";
         $content .= "    \n";
         $content .= "    // Check if table exists\n";
         $content .= "    if (\$wpdb->get_var(\"SHOW TABLES LIKE '\$table_name'\") !== \$table_name) {\n";
@@ -877,7 +874,7 @@ class PHP_Constants_Manager {
         $content .= "    }\n";
         $content .= "    \n";
         $content .= "    // Track which constants we successfully define\n";
-        $content .= "    \$pcm_early_defined = array();\n";
+        $content .= "    \$phpcm_early_defined = array();\n";
         $content .= "    \n";
         $content .= "    foreach (\$constants as \$constant) {\n";
         $content .= "        if (!defined(\$constant->name)) {\n";
@@ -923,15 +920,15 @@ class PHP_Constants_Manager {
         $content .= "            }\n";
         $content .= "            \n";
         $content .= "            define(\$constant->name, \$value);\n";
-        $content .= "            \$pcm_early_defined[] = \$constant->name;\n";
+        $content .= "            \$phpcm_early_defined[] = \$constant->name;\n";
         $content .= "        }\n";
         $content .= "    }\n";
         $content .= "    \n";
         $content .= "    // Store the list for the main plugin to check\n";
-        $content .= "    \$GLOBALS['pcm_early_defined_constants'] = \$pcm_early_defined;\n";
+        $content .= "    \$GLOBALS['phpcm_early_defined_constants'] = \$phpcm_early_defined;\n";
         $content .= "}\n\n";
         $content .= "// Load constants\n";
-        $content .= "pcm_load_early_constants();\n";
+        $content .= "phpcm_load_early_constants();\n";
         
         // Write the file
         global $wp_filesystem;
@@ -991,8 +988,8 @@ class PHP_Constants_Manager {
         }
         
         // Check if we defined this constant via early loading (MU plugin)
-        if (isset($GLOBALS['pcm_early_defined_constants']) && 
-            in_array($name, $GLOBALS['pcm_early_defined_constants'])) {
+        if (isset($GLOBALS['phpcm_early_defined_constants']) && 
+            in_array($name, $GLOBALS['phpcm_early_defined_constants'])) {
             // We successfully defined it via MU plugin, so it's not predefined
             return array('is_predefined' => false, 'existing_value' => $existing_value);
         }
@@ -1019,7 +1016,7 @@ class PHP_Constants_Manager {
         ));
         
         // Create temporary list table to get columns
-        $list_table = new PCM_List_Table();
+        $list_table = new PHPCM_List_Table();
         $columns = $list_table->get_columns();
         
         // Remove checkbox column from options (always visible)
@@ -1039,7 +1036,7 @@ class PHP_Constants_Manager {
         ));
         
         // Create temporary list table to get columns
-        $list_table = new PCM_All_Defines_Table();
+        $list_table = new PHPCM_All_Defines_Table();
         $columns = $list_table->get_columns();
         
         // Column management works automatically with get_hidden_columns() in the table
@@ -1065,9 +1062,9 @@ class PHP_Constants_Manager {
         }
         
         // Check for database creation errors
-        $db_error = get_transient('pcm_db_error');
+        $db_error = get_transient('phpcm_db_error');
         if ($db_error) {
-            delete_transient('pcm_db_error');
+            delete_transient('phpcm_db_error');
             ?>
             <div class="notice notice-error">
                 <p><strong><?php esc_html_e('PHP Constants Manager Database Error:', 'php-constants-manager'); ?></strong></p>
@@ -1094,9 +1091,9 @@ class PHP_Constants_Manager {
         }
         
         // Check for constant loading errors
-        $load_error = get_transient('pcm_load_error');
+        $load_error = get_transient('phpcm_load_error');
         if ($load_error) {
-            delete_transient('pcm_load_error');
+            delete_transient('phpcm_load_error');
             ?>
             <div class="notice notice-warning">
                 <p><strong><?php esc_html_e('PHP Constants Manager Warning:', 'php-constants-manager'); ?></strong></p>
@@ -1211,7 +1208,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_export_csv', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_export_csv', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -1270,7 +1267,7 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_import_csv', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_import_csv', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
@@ -1280,15 +1277,41 @@ class PHP_Constants_Manager {
             exit;
         }
         
-        // File uploads don't need sanitization in the same way as form inputs
-        // The file content will be validated separately
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $file = wp_unslash($_FILES['csv_file']);
+        // Validate file upload and sanitize file data
+        $file = $_FILES['csv_file'];
         
-        // Validate file type
-        $file_info = pathinfo($file['name']);
-        if (strtolower($file_info['extension']) !== 'csv') {
+        // Additional upload error checks
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=upload_error'));
+            exit;
+        }
+        
+        // Validate file size (limit to 10MB)
+        $max_file_size = 10 * 1024 * 1024; // 10MB
+        if ($file['size'] > $max_file_size) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=file_too_large'));
+            exit;
+        }
+        
+        // Sanitize filename and validate file type
+        $sanitized_filename = sanitize_file_name($file['name']);
+        $file_info = pathinfo($sanitized_filename);
+        if (!isset($file_info['extension']) || strtolower($file_info['extension']) !== 'csv') {
             wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_file'));
+            exit;
+        }
+        
+        // Validate MIME type for additional security
+        $allowed_mime_types = array('text/csv', 'text/plain', 'application/csv');
+        $file_mime_type = mime_content_type($file['tmp_name']);
+        if (!in_array($file_mime_type, $allowed_mime_types, true)) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_mime'));
+            exit;
+        }
+        
+        // Validate temporary file path
+        if (!is_uploaded_file($file['tmp_name'])) {
+            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_upload'));
             exit;
         }
         
@@ -1491,7 +1514,7 @@ class PHP_Constants_Manager {
         
         // Store error details in transient if there are errors
         if (!empty($error_details)) {
-            set_transient('pcm_import_errors', $error_details, 300); // 5 minutes
+            set_transient('phpcm_import_errors', $error_details, 300); // 5 minutes
         }
         
         $redirect_url = admin_url('admin.php?page=php-constants-manager-import-export&message=' . urlencode($message));
@@ -1508,15 +1531,15 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Insufficient permissions', 'php-constants-manager'));
         }
         
-        if (!check_admin_referer('pcm_save_settings', 'pcm_nonce')) {
+        if (!check_admin_referer('phpcm_save_settings', 'phpcm_nonce')) {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
         $early_loading_enabled = !empty($_POST['early_loading_enabled']);
-        $previous_setting = get_option('pcm_early_loading_enabled', false);
+        $previous_setting = get_option('phpcm_early_loading_enabled', false);
         
         // Update the option
-        update_option('pcm_early_loading_enabled', $early_loading_enabled);
+        update_option('phpcm_early_loading_enabled', $early_loading_enabled);
         
         $message = '';
         $error = '';
@@ -1528,7 +1551,7 @@ class PHP_Constants_Manager {
             } else {
                 $error = 'mu_plugin_create_failed';
                 // Revert the option
-                update_option('pcm_early_loading_enabled', false);
+                update_option('phpcm_early_loading_enabled', false);
             }
         } elseif (!$early_loading_enabled && $previous_setting) {
             // Disable early loading - remove MU plugin
@@ -1537,7 +1560,7 @@ class PHP_Constants_Manager {
             } else {
                 $error = 'mu_plugin_remove_failed';
                 // Revert the option
-                update_option('pcm_early_loading_enabled', true);
+                update_option('phpcm_early_loading_enabled', true);
             }
         } else {
             $message = 'settings_saved';
@@ -1560,13 +1583,13 @@ class PHP_Constants_Manager {
 add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'), 0);
 
 // Activation hook
-register_activation_hook(__FILE__, 'pcm_activation_hook');
+register_activation_hook(__FILE__, 'phpcm_activation_hook');
 
 /**
  * Format constant value for safe display
  * Production-safe alternative to var_export()
  */
-function pcm_format_constant_value($value) {
+function phpcm_format_constant_value($value) {
     if (is_null($value)) {
         return 'null';
     } elseif (is_bool($value)) {
@@ -1587,29 +1610,29 @@ function pcm_format_constant_value($value) {
 /**
  * Plugin activation hook
  */
-function pcm_activation_hook() {
-    $db = new PCM_DB();
+function phpcm_activation_hook() {
+    $db = new PHPCM_DB();
     $db->create_table();
     
     // Store the database version
-    update_option('pcm_db_version', PCM_VERSION);
+    update_option('phpcm_db_version', PHPCM_VERSION);
 }
 
 /**
  * Check for database updates on plugin load
  */
-add_action('plugins_loaded', 'pcm_check_db_version', 0);
+add_action('plugins_loaded', 'phpcm_check_db_version', 0);
 
-function pcm_check_db_version() {
-    $installed_version = get_option('pcm_db_version', '0');
+function phpcm_check_db_version() {
+    $installed_version = get_option('phpcm_db_version', '0');
     
     // If version has changed, run database update
-    if (version_compare($installed_version, PCM_VERSION, '<')) {
-        $db = new PCM_DB();
+    if (version_compare($installed_version, PHPCM_VERSION, '<')) {
+        $db = new PHPCM_DB();
         $result = $db->create_table();
         
         if ($result) {
-            update_option('pcm_db_version', PCM_VERSION);
+            update_option('phpcm_db_version', PHPCM_VERSION);
         }
     }
 }

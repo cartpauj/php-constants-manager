@@ -3,7 +3,7 @@
  * Constants list page view
  * 
  * Data available via $data array:
- * - list_table: PCM_List_Table
+ * - list_table: PHPCM_List_Table
  * - transient_notice: array
  * - message: string
  */
@@ -80,16 +80,9 @@ if (!defined('ABSPATH')) {
     </form>
     
     <form method="post">
-        <?php wp_nonce_field('pcm_bulk_action', 'pcm_nonce'); ?>
+        <?php wp_nonce_field('phpcm_bulk_action', 'phpcm_nonce'); ?>
         <div class="constants-table-wrapper">
             <?php $data['list_table']->display(); ?>
         </div>
     </form>
-    
-    <script>
-    // Add CSS class to the table for better column management
-    jQuery(document).ready(function($) {
-        $('.constants-table-wrapper .wp-list-table').addClass('constants-table');
-    });
-    </script>
 </div>

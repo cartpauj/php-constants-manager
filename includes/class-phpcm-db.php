@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class PCM_DB {
+class PHPCM_DB {
     
     /**
      * Table name
@@ -20,7 +20,7 @@ class PCM_DB {
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name = $wpdb->prefix . 'pcm_constants';
+        $this->table_name = $wpdb->prefix . 'phpcm_constants';
     }
     
     /**
@@ -30,8 +30,8 @@ class PCM_DB {
         global $wpdb;
         
         // Check cache first
-        $cache_key = 'pcm_table_exists';
-        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        $cache_key = 'phpcm_table_exists';
+        $cached_result = wp_cache_get($cache_key, 'phpcm_constants');
         
         if (false !== $cached_result) {
             return $cached_result;
@@ -44,7 +44,7 @@ class PCM_DB {
         $exists = $result === $this->table_name;
         
         // Cache for 10 minutes (table creation/deletion is rare)
-        wp_cache_set($cache_key, $exists, 'pcm_constants', 600);
+        wp_cache_set($cache_key, $exists, 'phpcm_constants', 600);
         
         return $exists;
     }
@@ -88,7 +88,7 @@ class PCM_DB {
             }
             
             // Store error for admin notice
-            set_transient('pcm_db_error', $error_msg, 300); // 5 minutes
+            set_transient('phpcm_db_error', $error_msg, 300); // 5 minutes
             
             return false;
         }
@@ -105,7 +105,7 @@ class PCM_DB {
             }
             
             // Store error for admin notice
-            set_transient('pcm_db_error', $error_msg, 300); // 5 minutes
+            set_transient('phpcm_db_error', $error_msg, 300); // 5 minutes
             
             return false;
         }
@@ -125,8 +125,8 @@ class PCM_DB {
         }
         
         // Generate cache key based on arguments
-        $cache_key = 'pcm_constants_' . md5(serialize($args));
-        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        $cache_key = 'phpcm_constants_' . md5(serialize($args));
+        $cached_result = wp_cache_get($cache_key, 'phpcm_constants');
         
         if (false !== $cached_result) {
             return $cached_result;
@@ -192,7 +192,7 @@ class PCM_DB {
         }
         
         // Cache the results for 5 minutes
-        wp_cache_set($cache_key, $results, 'pcm_constants', 300);
+        wp_cache_set($cache_key, $results, 'phpcm_constants', 300);
         
         return $results;
     }
@@ -223,8 +223,8 @@ class PCM_DB {
         }
         
         // Check cache first
-        $cache_key = 'pcm_constant_' . $id;
-        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        $cache_key = 'phpcm_constant_' . $id;
+        $cached_result = wp_cache_get($cache_key, 'phpcm_constants');
         
         if (false !== $cached_result) {
             return $cached_result;
@@ -238,7 +238,7 @@ class PCM_DB {
         ));
         
         // Cache the result for 5 minutes
-        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        wp_cache_set($cache_key, $result, 'phpcm_constants', 300);
         
         return $result;
     }
@@ -255,8 +255,8 @@ class PCM_DB {
         }
         
         // Check cache first
-        $cache_key = 'pcm_constant_name_' . sanitize_key($name);
-        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        $cache_key = 'phpcm_constant_name_' . sanitize_key($name);
+        $cached_result = wp_cache_get($cache_key, 'phpcm_constants');
         
         if (false !== $cached_result) {
             return $cached_result;
@@ -270,7 +270,7 @@ class PCM_DB {
         ));
         
         // Cache the result for 5 minutes
-        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        wp_cache_set($cache_key, $result, 'phpcm_constants', 300);
         
         return $result;
     }
@@ -295,8 +295,8 @@ class PCM_DB {
         $args = wp_parse_args($args, $defaults);
         
         // Generate cache key based on arguments
-        $cache_key = 'pcm_count_constants_' . md5(serialize($args));
-        $cached_result = wp_cache_get($cache_key, 'pcm_constants');
+        $cache_key = 'phpcm_count_constants_' . md5(serialize($args));
+        $cached_result = wp_cache_get($cache_key, 'phpcm_constants');
         
         if (false !== $cached_result) {
             return $cached_result;
@@ -338,7 +338,7 @@ class PCM_DB {
         }
         
         // Cache the result for 5 minutes
-        wp_cache_set($cache_key, $result, 'pcm_constants', 300);
+        wp_cache_set($cache_key, $result, 'phpcm_constants', 300);
         
         return $result;
     }
@@ -478,6 +478,6 @@ class PCM_DB {
      */
     private function clear_cache() {
         // Clear the entire cache group
-        wp_cache_flush_group('pcm_constants');
+        wp_cache_flush_group('phpcm_constants');
     }
 }

@@ -62,10 +62,10 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
         </div>
     <?php endif; ?>
     
-    <div class="pcm-settings-content">
+    <div class="phpcm-settings-content">
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-            <?php wp_nonce_field('pcm_save_settings', 'pcm_nonce'); ?>
-            <input type="hidden" name="action" value="pcm_save_settings">
+            <?php wp_nonce_field('phpcm_save_settings', 'phpcm_nonce'); ?>
+            <input type="hidden" name="action" value="phpcm_save_settings">
             
             <table class="form-table" role="presentation">
                 <tbody>
@@ -87,13 +87,13 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                                 </p>
                                 
                                 <?php if ($mu_plugin_exists): ?>
-                                    <p class="pcm-status-info">
+                                    <p class="phpcm-status-info">
                                         <span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
                                         <?php esc_html_e('Must-use plugin file exists:', 'php-constants-manager'); ?>
                                         <code><?php echo esc_html(WPMU_PLUGIN_DIR . '/php-constants-manager-early.php'); ?></code>
                                     </p>
                                 <?php else: ?>
-                                    <p class="pcm-status-info">
+                                    <p class="phpcm-status-info">
                                         <span class="dashicons dashicons-warning" style="color: #dba617;"></span>
                                         <?php esc_html_e('Must-use plugin file does not exist yet.', 'php-constants-manager'); ?>
                                     </p>
@@ -110,93 +110,3 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
     </div>
 </div>
 
-<style>
-.pcm-settings-content {
-    max-width: 1000px;
-}
-
-.pcm-status-info {
-    margin: 10px 0;
-    padding: 8px 12px;
-    background: #f0f0f1;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.pcm-status-info .dashicons {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-}
-
-.pcm-status-info code {
-    background: #fff;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: Consolas, Monaco, monospace;
-    font-size: 13px;
-}
-
-.pcm-info-section {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid #dcdcde;
-}
-
-.pcm-info-section h2 {
-    color: #1d2327;
-    border-bottom: 1px solid #ccd0d4;
-    padding-bottom: 10px;
-}
-
-.pcm-info-section h3 {
-    color: #1d2327;
-    margin-top: 25px;
-}
-
-.pcm-info-section h4 {
-    color: #1d2327;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
-
-.pcm-info-section code {
-    background: #f0f0f1;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: Consolas, Monaco, monospace;
-    font-size: 13px;
-}
-
-.pcm-info-section ul, .pcm-info-section ol {
-    margin-left: 20px;
-}
-
-.pcm-info-section li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-.pcm-info-box {
-    background: #f8f9fa;
-    border: 1px solid #e1e1e1;
-    border-radius: 6px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.pcm-info-box h4 {
-    margin-top: 0;
-    color: #0073aa;
-}
-
-.pcm-info-box ul {
-    margin-bottom: 15px;
-}
-
-.pcm-info-box p:last-child {
-    margin-bottom: 0;
-}
-</style>

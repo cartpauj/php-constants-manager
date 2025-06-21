@@ -14,13 +14,13 @@ if (!defined('ABSPATH')) {
     
     <hr class="wp-header-end">
     
-    <div class="pcm-help-content">
+    <div class="phpcm-help-content">
         
         <!-- Table of Contents -->
-        <div class="pcm-toc-container">
+        <div class="phpcm-toc-container">
             <h2><?php esc_html_e('Table of Contents', 'php-constants-manager'); ?></h2>
-            <div class="pcm-toc-grid">
-                <div class="pcm-toc-column">
+            <div class="phpcm-toc-grid">
+                <div class="phpcm-toc-column">
                     <h3><?php esc_html_e('Getting Started', 'php-constants-manager'); ?></h3>
                     <ul>
                         <li><a href="#what-are-constants"><?php esc_html_e('What are PHP Constants?', 'php-constants-manager'); ?></a></li>
@@ -36,7 +36,7 @@ if (!defined('ABSPATH')) {
                     </ul>
                 </div>
                 
-                <div class="pcm-toc-column">
+                <div class="phpcm-toc-column">
                     <h3><?php esc_html_e('Features', 'php-constants-manager'); ?></h3>
                     <ul>
                         <li><a href="#early-loading"><?php esc_html_e('Early Loading Settings', 'php-constants-manager'); ?></a></li>
@@ -280,7 +280,7 @@ if (!defined('ABSPATH')) {
         
         <h2 id="csv-format"><?php esc_html_e('CSV Format Guide', 'php-constants-manager'); ?></h2>
         
-        <div class="pcm-import-warning">
+        <div class="phpcm-import-warning">
             <p><strong><?php esc_html_e('Important:', 'php-constants-manager'); ?></strong> <?php esc_html_e('CSV files MUST include a header row. The first column must be named "Name" or "Constant Name".', 'php-constants-manager'); ?></p>
         </div>
         
@@ -379,7 +379,7 @@ DEBUG_MODE,false,boolean</code></pre>
             <li><?php esc_html_e('Invalid constant names or types will be counted as errors and skipped', 'php-constants-manager'); ?></li>
         </ul>
         
-        <div class="pcm-import-warning">
+        <div class="phpcm-import-warning">
             <p><strong><?php esc_html_e('Important:', 'php-constants-manager'); ?></strong> <?php 
                 // phpcs:ignore WordPress.Security.EscapeOutput.UnsafePrintingFunction
                 _e('The CSV import only adds constants to your plugin\'s database. Whether they actually take effect depends on load order and if they\'re already defined elsewhere (see <a href="#predefined-constants">Understanding Predefined Constants</a> above).', 'php-constants-manager'); ?></p>
@@ -420,7 +420,7 @@ DEBUG_MODE,false,boolean</code></pre>
             <li><?php esc_html_e('Useful for bulk updates or synchronizing data between environments', 'php-constants-manager'); ?></li>
         </ul>
         
-        <div class="pcm-import-warning">
+        <div class="phpcm-import-warning">
             <p><strong><?php esc_html_e('Warning:', 'php-constants-manager'); ?></strong> <?php esc_html_e('When overwrite mode is enabled, existing constant data will be replaced. Always backup your database before using overwrite mode.', 'php-constants-manager'); ?></p>
         </div>
         
@@ -558,7 +558,7 @@ if (defined('MY_CONSTANT')) {
         
         <h4><?php esc_html_e('Manual Table Creation SQL', 'php-constants-manager'); ?></h4>
         <p><?php esc_html_e('If automatic table creation fails, you can manually run this SQL in your database:', 'php-constants-manager'); ?></p>
-        <pre><code>CREATE TABLE wp_pcm_constants (
+        <pre><code>CREATE TABLE wp_phpcm_constants (
     id int(11) NOT NULL AUTO_INCREMENT,
     name varchar(255) NOT NULL,
     value text,
@@ -578,166 +578,3 @@ if (defined('MY_CONSTANT')) {
         
     </div>
 </div>
-
-<style>
-/* Table of Contents Styles */
-.pcm-toc-container {
-    background: #f8f9fa;
-    border: 1px solid #e1e1e1;
-    border-radius: 8px;
-    padding: 24px;
-    margin: 20px 0 40px 0;
-}
-
-.pcm-toc-container h2 {
-    margin-top: 0 !important;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #0073aa;
-    padding-bottom: 8px;
-    color: #0073aa;
-}
-
-.pcm-toc-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-}
-
-.pcm-toc-column h3 {
-    font-size: 16px;
-    color: #1d2327;
-    margin: 0 0 10px 0;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #ddd;
-}
-
-.pcm-toc-column ul {
-    margin: 0 0 25px 0;
-    padding-left: 0;
-    list-style: none;
-}
-
-.pcm-toc-column li {
-    margin-bottom: 6px;
-}
-
-.pcm-toc-column a {
-    color: #0073aa;
-    text-decoration: none;
-    padding: 4px 8px;
-    display: block;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-}
-
-.pcm-toc-column a:hover {
-    background: #e1f4ff;
-    color: #005a87;
-    text-decoration: none;
-}
-
-/* Smooth scrolling */
-html {
-    scroll-behavior: smooth;
-}
-
-/* Content sections */
-.pcm-help-content h2 {
-    border-bottom: 1px solid #ccd0d4;
-    padding-bottom: 10px;
-    margin-top: 40px;
-    scroll-margin-top: 20px;
-}
-
-.pcm-help-content h2:first-of-type {
-    margin-top: 20px;
-}
-
-.pcm-help-content h3 {
-    color: #1d2327;
-    margin-top: 20px;
-    scroll-margin-top: 20px;
-}
-
-.pcm-help-content code {
-    background: #f0f0f1;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-family: Consolas, Monaco, monospace;
-    font-size: 13px;
-}
-
-.pcm-help-content pre {
-    background: #f6f7f7;
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    padding: 15px;
-    overflow-x: auto;
-    margin: 15px 0;
-}
-
-.pcm-help-content pre code {
-    background: none;
-    padding: 0;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.pcm-help-content ul, .pcm-help-content ol {
-    margin-left: 20px;
-}
-
-.pcm-help-content li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-.pcm-help-content .wp-list-table {
-    margin: 20px 0;
-}
-
-.pcm-help-content .wp-list-table td {
-    padding: 12px;
-    vertical-align: top;
-}
-
-.pcm-help-content .wp-list-table code {
-    font-weight: 600;
-    color: #1d2327;
-}
-
-/* Import warning box */
-.pcm-import-warning {
-    background: #fff8e1;
-    border: 1px solid #f0c674;
-    border-radius: 6px;
-    padding: 16px;
-    margin: 20px 0;
-}
-
-.pcm-import-warning p {
-    margin: 0;
-    color: #8b6914;
-}
-
-.pcm-import-warning a {
-    color: #8b6914;
-    text-decoration: underline;
-}
-
-/* Responsive design */
-@media screen and (max-width: 782px) {
-    .pcm-toc-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-    
-    .pcm-toc-container {
-        padding: 16px;
-    }
-    
-    .pcm-help-content h2 {
-        margin-top: 30px;
-    }
-}
-</style>

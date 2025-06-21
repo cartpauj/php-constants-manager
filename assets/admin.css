@@ -1,7 +1,7 @@
 /* PHP Constants Manager Admin Styles */
 
 /* Modern Form Styles */
-.pcm-modern-form {
+.phpcm-modern-form {
     background: #fff;
     border: 1px solid #e1e1e1;
     border-radius: 8px;
@@ -10,27 +10,27 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.pcm-form-container {
+.phpcm-form-container {
     max-width: 800px;
 }
 
-.pcm-form-grid {
+.phpcm-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
     align-items: start;
 }
 
-.pcm-form-group {
+.phpcm-form-group {
     display: flex;
     flex-direction: column;
 }
 
-.pcm-form-group-full {
+.phpcm-form-group-full {
     grid-column: 1 / -1;
 }
 
-.pcm-form-label {
+.phpcm-form-label {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
@@ -39,26 +39,26 @@
     font-size: 14px;
 }
 
-.pcm-label-text {
+.phpcm-label-text {
     margin-right: 4px;
 }
 
-.pcm-required {
+.phpcm-required {
     color: #d63638;
     font-weight: bold;
 }
 
-.pcm-input-wrapper,
-.pcm-select-wrapper,
-.pcm-textarea-wrapper {
+.phpcm-input-wrapper,
+.phpcm-select-wrapper,
+.phpcm-textarea-wrapper {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.pcm-input,
-.pcm-select,
-.pcm-textarea {
+.phpcm-input,
+.phpcm-select,
+.phpcm-textarea {
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #ddd;
@@ -69,23 +69,23 @@
     background: #fff;
 }
 
-.pcm-input:focus,
-.pcm-select:focus,
-.pcm-textarea:focus {
+.phpcm-input:focus,
+.phpcm-select:focus,
+.phpcm-textarea:focus {
     outline: none;
     border-color: #0073aa;
     box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
 }
 
-.pcm-input[readonly],
-.pcm-input[disabled],
-.pcm-input.pcm-input-disabled {
+.phpcm-input[readonly],
+.phpcm-input[disabled],
+.phpcm-input.phpcm-input-disabled {
     background: #f7f7f7;
     color: #666;
     cursor: not-allowed;
 }
 
-.pcm-input-icon {
+.phpcm-input-icon {
     position: absolute;
     right: 12px;
     color: #666;
@@ -93,21 +93,21 @@
     pointer-events: none;
 }
 
-.pcm-input-error,
-.pcm-select-error,
-.pcm-textarea-error {
+.phpcm-input-error,
+.phpcm-select-error,
+.phpcm-textarea-error {
     border-color: #d63638 !important;
     box-shadow: 0 0 0 3px rgba(214, 54, 56, 0.1) !important;
 }
 
-.pcm-input-error:focus,
-.pcm-select-error:focus,
-.pcm-textarea-error:focus {
+.phpcm-input-error:focus,
+.phpcm-select-error:focus,
+.phpcm-textarea-error:focus {
     border-color: #d63638 !important;
     box-shadow: 0 0 0 3px rgba(214, 54, 56, 0.2) !important;
 }
 
-.pcm-select {
+.phpcm-select {
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
@@ -116,19 +116,19 @@
     padding-right: 44px;
 }
 
-.pcm-textarea {
+.phpcm-textarea {
     resize: vertical;
     min-height: 80px;
     font-family: inherit;
 }
 
-.pcm-checkbox-wrapper {
+.phpcm-checkbox-wrapper {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.pcm-checkbox-label {
+.phpcm-checkbox-label {
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -136,11 +136,11 @@
     font-weight: 500;
 }
 
-.pcm-checkbox-label .pcm-checkbox {
+.phpcm-checkbox-label .phpcm-checkbox {
     display: none !important;
 }
 
-.pcm-checkbox-custom {
+.phpcm-checkbox-custom {
     width: 20px;
     height: 20px;
     border: 2px solid #ddd;
@@ -151,12 +151,12 @@
     background: #fff;
 }
 
-.pcm-checkbox:checked + .pcm-checkbox-custom {
+.phpcm-checkbox:checked + .phpcm-checkbox-custom {
     background: #0073aa;
     border-color: #0073aa;
 }
 
-.pcm-checkbox:checked + .pcm-checkbox-custom::after {
+.phpcm-checkbox:checked + .phpcm-checkbox-custom::after {
     content: '';
     position: absolute;
     left: 6px;
@@ -168,23 +168,23 @@
     transform: rotate(45deg);
 }
 
-.pcm-checkbox-text {
+.phpcm-checkbox-text {
     color: #1e1e1e;
 }
 
-.pcm-help-text {
+.phpcm-help-text {
     margin: 6px 0 0 0;
     font-size: 13px;
     color: #646970;
     line-height: 1.4;
 }
 
-.pcm-help-warning {
+.phpcm-help-warning {
     color: #996800;
     font-weight: 500;
 }
 
-.pcm-form-actions {
+.phpcm-form-actions {
     display: flex;
     gap: 12px;
     margin-top: 32px;
@@ -192,7 +192,7 @@
     border-top: 1px solid #e1e1e1;
 }
 
-.pcm-btn {
+.phpcm-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -207,88 +207,88 @@
     line-height: 1;
 }
 
-.pcm-btn-primary {
+.phpcm-btn-primary {
     background: #0073aa;
     color: #fff;
 }
 
-.pcm-btn-primary:hover,
-.pcm-btn-primary:focus {
+.phpcm-btn-primary:hover,
+.phpcm-btn-primary:focus {
     background: #005a87;
     color: #fff;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3);
 }
 
-.pcm-btn-secondary {
+.phpcm-btn-secondary {
     background: #f6f7f7;
     color: #646970;
     border: 1px solid #ddd;
 }
 
-.pcm-btn-secondary:hover,
-.pcm-btn-secondary:focus {
+.phpcm-btn-secondary:hover,
+.phpcm-btn-secondary:focus {
     background: #f0f0f1;
     color: #1e1e1e;
     border-color: #999;
     text-decoration: none;
 }
 
-.pcm-btn-icon {
+.phpcm-btn-icon {
     font-size: 14px;
 }
 
 /* Responsive design for modern form */
 @media screen and (max-width: 782px) {
-    .pcm-form-grid {
+    .phpcm-form-grid {
         grid-template-columns: 1fr;
         gap: 20px;
     }
     
-    .pcm-form-group-full {
+    .phpcm-form-group-full {
         grid-column: 1;
     }
     
-    .pcm-modern-form {
+    .phpcm-modern-form {
         padding: 16px;
         margin: 12px 0;
     }
     
-    .pcm-form-actions {
+    .phpcm-form-actions {
         flex-direction: column;
         margin-top: 24px;
     }
     
-    .pcm-btn {
+    .phpcm-btn {
         justify-content: center;
         padding: 14px 20px;
     }
 }
 
 /* Legacy Form styles */
-.pcm-form .form-table th {
+.phpcm-form .form-table th {
     width: 200px;
 }
 
 /* Status indicators */
-.pcm-status-active {
+.phpcm-status-active {
     color: #00a32a;
     font-weight: 600;
 }
 
-.pcm-status-inactive {
+.phpcm-status-inactive {
     color: #d63638;
     font-weight: 600;
 }
 
-.pcm-status-predefined {
+.phpcm-status-predefined {
     color: #996800;
     font-weight: 600;
     cursor: help;
 }
 
 /* Enhanced predefined badge styling */
-.pcm-predefined-badge {
+.phpcm-predefined-badge {
     display: inline-flex;
     align-items: center;
     padding: 4px 10px;
@@ -301,12 +301,12 @@
     gap: 4px;
 }
 
-.pcm-predefined-badge::before {
+.phpcm-predefined-badge::before {
     content: "⚠️";
     font-size: 12px;
 }
 
-.pcm-predefined-badge-text {
+.phpcm-predefined-badge-text {
     white-space: nowrap;
 }
 
@@ -321,7 +321,7 @@
 }
 
 /* Toggle switch styles */
-.pcm-toggle-switch {
+.phpcm-toggle-switch {
     position: relative;
     display: inline-block;
     width: 44px;
@@ -329,13 +329,13 @@
     cursor: pointer;
 }
 
-.pcm-toggle-switch input[type="checkbox"] {
+.phpcm-toggle-switch input[type="checkbox"] {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-.pcm-toggle-slider {
+.phpcm-toggle-slider {
     position: absolute;
     top: 0;
     left: 0;
@@ -346,7 +346,7 @@
     border-radius: 24px;
 }
 
-.pcm-toggle-slider:before {
+.phpcm-toggle-slider:before {
     position: absolute;
     content: "";
     height: 18px;
@@ -358,24 +358,24 @@
     border-radius: 50%;
 }
 
-.pcm-toggle-switch input:checked + .pcm-toggle-slider {
+.phpcm-toggle-switch input:checked + .phpcm-toggle-slider {
     background-color: #00a32a;
 }
 
-.pcm-toggle-switch input:checked + .pcm-toggle-slider:before {
+.phpcm-toggle-switch input:checked + .phpcm-toggle-slider:before {
     transform: translateX(20px);
 }
 
-.pcm-toggle-switch input:disabled + .pcm-toggle-slider {
+.phpcm-toggle-switch input:disabled + .phpcm-toggle-slider {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.pcm-toggle-loading .pcm-toggle-slider {
+.phpcm-toggle-loading .phpcm-toggle-slider {
     opacity: 0.6;
 }
 
-.pcm-toggle-success .pcm-toggle-slider {
+.phpcm-toggle-success .phpcm-toggle-slider {
     box-shadow: 0 0 8px rgba(0, 163, 42, 0.5);
 }
 
@@ -417,13 +417,13 @@
 }
 
 /* Status count */
-.pcm-status-count {
+.phpcm-status-count {
     color: #646970;
     font-weight: normal;
 }
 
 /* Notices */
-.notice.pcm-notice {
+.notice.phpcm-notice {
     margin: 5px 0 15px;
 }
 
@@ -433,66 +433,66 @@
 }
 
 /* Category styles for All Defines */
-.pcm-category-core,
-.pcm-category-php-core {
+.phpcm-category-core,
+.phpcm-category-php-core {
     color: #0073aa;
     font-weight: 600;
 }
 
-.pcm-category-user-defined {
+.phpcm-category-user-defined {
     color: #00a32a;
     font-weight: 600;
 }
 
-.pcm-category-wordpress-core,
-.pcm-category-wordpress-config {
+.phpcm-category-wordpress-core,
+.phpcm-category-wordpress-config {
     color: #135e96;
     font-weight: 600;
 }
 
-.pcm-category-php {
+.phpcm-category-php {
     color: #8892bf;
     font-weight: 600;
 }
 
-.pcm-category-date-time,
-.pcm-category-math,
-.pcm-category-string,
-.pcm-category-file {
+.phpcm-category-date-time,
+.phpcm-category-math,
+.phpcm-category-string,
+.phpcm-category-file {
     color: #d63638;
     font-weight: 600;
 }
 
-.pcm-category-network,
-.pcm-category-database,
-.pcm-category-curl {
+.phpcm-category-network,
+.phpcm-category-database,
+.phpcm-category-curl {
     color: #996800;
     font-weight: 600;
 }
 
-.pcm-category-image,
-.pcm-category-json,
-.pcm-category-xml,
-.pcm-category-filter,
-.pcm-category-pcre,
-.pcm-category-hash,
-.pcm-category-openssl,
-.pcm-category-soap {
+.phpcm-category-image,
+.phpcm-category-json,
+.phpcm-category-xml,
+.phpcm-category-filter,
+.phpcm-category-pcre,
+.phpcm-category-hash,
+.phpcm-category-openssl,
+.phpcm-category-soap {
     color: #7b2cbf;
     font-weight: 600;
 }
 
-.pcm-category-error {
+.phpcm-category-error {
     color: #cc1818;
     font-weight: 600;
 }
 
-.pcm-category-directory {
+.phpcm-category-directory {
     color: #2d4a23;
     font-weight: 600;
 }
 
-.pcm-category-other {
+.phpcm-category-other {
     color: #646970;
     font-weight: 600;
 }
@@ -616,17 +616,17 @@
 }
 
 /* Import/Export Styles */
-.pcm-import-export-container {
+.phpcm-import-export-container {
     margin-top: 20px;
 }
 
-.pcm-import-export-grid {
+.phpcm-import-export-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
 }
 
-.pcm-card {
+.phpcm-card {
     background: #fff;
     border: 1px solid #e1e1e1;
     border-radius: 8px;
@@ -634,72 +634,72 @@
     overflow: hidden;
 }
 
-.pcm-card-header {
+.phpcm-card-header {
     padding: 20px 24px;
     border-bottom: 1px solid #e1e1e1;
     background: #f9f9f9;
 }
 
-.pcm-card-header h2 {
+.phpcm-card-header h2 {
     margin: 0 0 8px 0;
     font-size: 18px;
     color: #1e1e1e;
 }
 
-.pcm-card-header .description {
+.phpcm-card-header .description {
     margin: 0;
     color: #646970;
     font-size: 14px;
 }
 
-.pcm-card-body {
+.phpcm-card-body {
     padding: 24px;
 }
 
-.pcm-export-info {
+.phpcm-export-info {
     margin-bottom: 20px;
 }
 
-.pcm-info-item {
+.phpcm-info-item {
     display: flex;
     align-items: center;
     margin-bottom: 12px;
 }
 
-.pcm-info-icon {
+.phpcm-info-icon {
     font-size: 18px;
     margin-right: 12px;
     width: 24px;
     text-align: center;
 }
 
-.pcm-info-content {
+.phpcm-info-content {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.pcm-info-content strong {
+.phpcm-info-content strong {
     font-weight: 600;
     color: #1e1e1e;
     font-size: 14px;
 }
 
-.pcm-info-content span {
+.phpcm-info-content span {
     color: #646970;
     font-size: 13px;
 }
 
-.pcm-file-upload-area {
+.phpcm-file-upload-area {
     position: relative;
     margin-bottom: 20px;
 }
 
-.pcm-file-input {
+.phpcm-file-input {
     display: none;
 }
 
-.pcm-file-label {
+.phpcm-file-label {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -712,35 +712,35 @@
     background: #fafafa;
 }
 
-.pcm-file-label:hover,
-.pcm-file-label.drag-over {
+.phpcm-file-label:hover,
+.phpcm-file-label.drag-over {
     border-color: #0073aa;
     background: #f0f8ff;
 }
 
-.pcm-file-icon {
+.phpcm-file-icon {
     font-size: 48px;
     margin-bottom: 12px;
     opacity: 0.6;
 }
 
-.pcm-file-text {
+.phpcm-file-text {
     text-align: center;
 }
 
-.pcm-file-text strong {
+.phpcm-file-text strong {
     display: block;
     font-size: 16px;
     color: #1e1e1e;
     margin-bottom: 4px;
 }
 
-.pcm-file-text span {
+.phpcm-file-text span {
     color: #646970;
     font-size: 14px;
 }
 
-.pcm-file-selected {
+.phpcm-file-selected {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -751,12 +751,12 @@
     margin-top: 12px;
 }
 
-.pcm-file-name {
+.phpcm-file-name {
     color: #1e1e1e;
     font-weight: 500;
 }
 
-.pcm-file-remove {
+.phpcm-file-remove {
     background: none;
     border: none;
     color: #d63638;
@@ -771,12 +771,12 @@
     justify-content: center;
 }
 
-.pcm-file-remove:hover {
+.phpcm-file-remove:hover {
     background: #d63638;
     color: white;
 }
 
-.pcm-import-requirements {
+.phpcm-import-requirements {
     margin-bottom: 20px;
     padding: 16px;
     background: #f0f8ff;
@@ -784,18 +784,18 @@
     border-radius: 6px;
 }
 
-.pcm-import-requirements h4 {
+.phpcm-import-requirements h4 {
     margin: 0 0 12px 0;
     font-size: 14px;
     color: #1e1e1e;
 }
 
-.pcm-import-requirements ul {
+.phpcm-import-requirements ul {
     margin: 0;
     padding-left: 20px;
 }
 
-.pcm-import-requirements li {
+.phpcm-import-requirements li {
     margin-bottom: 6px;
     font-size: 13px;
     color: #646970;
@@ -804,28 +804,28 @@
 
 /* Responsive design for import/export */
 @media screen and (max-width: 782px) {
-    .pcm-import-export-grid {
+    .phpcm-import-export-grid {
         grid-template-columns: 1fr;
         gap: 16px;
     }
     
-    .pcm-card-header,
-    .pcm-card-body {
+    .phpcm-card-header,
+    .phpcm-card-body {
         padding: 16px;
     }
     
-    .pcm-file-label {
+    .phpcm-file-label {
         padding: 30px 16px;
     }
     
-    .pcm-file-icon {
+    .phpcm-file-icon {
         font-size: 36px;
     }
 }
 
 /* Responsive styles */
 @media screen and (max-width: 782px) {
-    .pcm-form .form-table th {
+    .phpcm-form .form-table th {
         width: auto;
         padding-bottom: 0;
     }
@@ -837,19 +837,19 @@
         display: none;
     }
     
-    .pcm-toggle-switch {
+    .phpcm-toggle-switch {
         width: 36px;
         height: 20px;
     }
     
-    .pcm-toggle-slider:before {
+    .phpcm-toggle-slider:before {
         height: 14px;
         width: 14px;
         left: 3px;
         bottom: 3px;
     }
     
-    .pcm-toggle-switch input:checked + .pcm-toggle-slider:before {
+    .phpcm-toggle-switch input:checked + .phpcm-toggle-slider:before {
         transform: translateX(16px);
     }
 }
@@ -872,7 +872,7 @@
 }
 
 /* Import options styling */
-.pcm-import-options {
+.phpcm-import-options {
     margin: 20px 0;
     padding: 16px;
     background: #f8f9fa;
@@ -880,7 +880,7 @@
     border-radius: 6px;
 }
 
-.pcm-import-options .pcm-checkbox-label {
+.phpcm-import-options .phpcm-checkbox-label {
     display: flex;
     align-items: flex-start;
     gap: 12px;
@@ -888,17 +888,17 @@
     cursor: pointer;
 }
 
-.pcm-import-options .pcm-checkbox-text {
+.phpcm-import-options .phpcm-checkbox-text {
     flex: 1;
 }
 
-.pcm-import-options .pcm-checkbox-text strong {
+.phpcm-import-options .phpcm-checkbox-text strong {
     display: block;
     color: #1d2327;
     margin-bottom: 4px;
 }
 
-.pcm-import-options .description {
+.phpcm-import-options .description {
     color: #646970;
     font-size: 13px;
     line-height: 1.4;
@@ -930,4 +930,257 @@
 /* Search form spacing */
 form.search-form {
     margin-bottom: 8px;
+}
+
+/* Help Page Styles */
+
+/* Table of Contents Styles */
+.phpcm-toc-container {
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 20px 0 40px 0;
+}
+
+.phpcm-toc-container h2 {
+    margin-top: 0 !important;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 8px;
+    color: #0073aa;
+}
+
+.phpcm-toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.phpcm-toc-column h3 {
+    font-size: 16px;
+    color: #1d2327;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+.phpcm-toc-column ul {
+    margin: 0 0 25px 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+.phpcm-toc-column li {
+    margin-bottom: 6px;
+}
+
+.phpcm-toc-column a {
+    color: #0073aa;
+    text-decoration: none;
+    padding: 4px 8px;
+    display: block;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.phpcm-toc-column a:hover {
+    background: #e1f4ff;
+    color: #005a87;
+    text-decoration: none;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Content sections */
+.phpcm-help-content h2 {
+    border-bottom: 1px solid #ccd0d4;
+    padding-bottom: 10px;
+    margin-top: 40px;
+    scroll-margin-top: 20px;
+}
+
+.phpcm-help-content h2:first-of-type {
+    margin-top: 20px;
+}
+
+.phpcm-help-content h3 {
+    color: #1d2327;
+    margin-top: 20px;
+    scroll-margin-top: 20px;
+}
+
+.phpcm-help-content code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+}
+
+.phpcm-help-content pre {
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    padding: 15px;
+    overflow-x: auto;
+    margin: 15px 0;
+}
+
+.phpcm-help-content pre code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.phpcm-help-content ul, .phpcm-help-content ol {
+    margin-left: 20px;
+}
+
+.phpcm-help-content li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.phpcm-help-content .wp-list-table {
+    margin: 20px 0;
+}
+
+.phpcm-help-content .wp-list-table td {
+    padding: 12px;
+    vertical-align: top;
+}
+
+.phpcm-help-content .wp-list-table code {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+/* Import warning box */
+.phpcm-import-warning {
+    background: #fff8e1;
+    border: 1px solid #f0c674;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.phpcm-import-warning p {
+    margin: 0;
+    color: #8b6914;
+}
+
+.phpcm-import-warning a {
+    color: #8b6914;
+    text-decoration: underline;
+}
+
+/* Responsive design for help page */
+@media screen and (max-width: 782px) {
+    .phpcm-toc-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .phpcm-toc-container {
+        padding: 16px;
+    }
+    
+    .phpcm-help-content h2 {
+        margin-top: 30px;
+    }
+}
+
+/* Settings Page Styles */
+.phpcm-settings-content {
+    max-width: 1000px;
+}
+
+.phpcm-status-info {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: #f0f0f1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.phpcm-status-info .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.phpcm-status-info code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+}
+
+.phpcm-info-section {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #dcdcde;
+}
+
+.phpcm-info-section h2 {
+    color: #1d2327;
+    border-bottom: 1px solid #ccd0d4;
+    padding-bottom: 10px;
+}
+
+.phpcm-info-section h3 {
+    color: #1d2327;
+    margin-top: 25px;
+}
+
+.phpcm-info-section h4 {
+    color: #1d2327;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.phpcm-info-section code {
+    background: #f0f0f1;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 13px;
+}
+
+.phpcm-info-section ul, .phpcm-info-section ol {
+    margin-left: 20px;
+}
+
+.phpcm-info-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.phpcm-info-box {
+    background: #f8f9fa;
+    border: 1px solid #e1e1e1;
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.phpcm-info-box h4 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.phpcm-info-box ul {
+    margin-bottom: 15px;
+}
+
+.phpcm-info-box p:last-child {
+    margin-bottom: 0;
 }

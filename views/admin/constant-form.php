@@ -19,9 +19,9 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display transient notices
-    $transient_notice = get_transient('pcm_admin_notice');
+    $transient_notice = get_transient('phpcm_admin_notice');
     if ($transient_notice) {
-        delete_transient('pcm_admin_notice');
+        delete_transient('phpcm_admin_notice');
         $notice_class = $transient_notice['type'] === 'error' ? 'notice-error' : 'notice-warning';
         ?>
         <div class="notice <?php echo esc_attr($notice_class); ?> is-dismissible">
@@ -49,7 +49,7 @@ if (!defined('ABSPATH')) {
                             /* translators: 1: constant name, 2: current value of the constant */
                             __('Note: The constant "%1$s" is currently defined with value: %2$s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
                             esc_html($data['constant']->name),
-                            '<code>' . pcm_format_constant_value($predefined_check['existing_value']) . '</code>'
+                            '<code>' . phpcm_format_constant_value($predefined_check['existing_value']) . '</code>'
                         ),
                         array('code' => array())
                     ); 
@@ -60,54 +60,54 @@ if (!defined('ABSPATH')) {
     }
     ?>
     
-    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="pcm-form pcm-modern-form">
-        <input type="hidden" name="action" value="pcm_save_constant" />
+    <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="phpcm-form phpcm-modern-form">
+        <input type="hidden" name="action" value="phpcm_save_constant" />
         <?php if ($data['is_edit']): ?>
             <input type="hidden" name="id" value="<?php echo esc_attr($data['constant']->id); ?>" />
         <?php endif; ?>
-        <?php wp_nonce_field('pcm_save_constant', 'pcm_nonce'); ?>
+        <?php wp_nonce_field('phpcm_save_constant', 'phpcm_nonce'); ?>
         
-        <div class="pcm-form-container">
-            <div class="pcm-form-grid">
-                <div class="pcm-form-group pcm-form-group-full">
-                    <label for="constant-name" class="pcm-form-label">
-                        <span class="pcm-label-text"><?php esc_html_e('Constant Name', 'php-constants-manager'); ?></span>
-                        <span class="pcm-required">*</span>
+        <div class="phpcm-form-container">
+            <div class="phpcm-form-grid">
+                <div class="phpcm-form-group phpcm-form-group-full">
+                    <label for="constant-name" class="phpcm-form-label">
+                        <span class="phpcm-label-text"><?php esc_html_e('Constant Name', 'php-constants-manager'); ?></span>
+                        <span class="phpcm-required">*</span>
                     </label>
-                    <div class="pcm-input-wrapper">
-                        <input type="text" id="constant-name" name="constant_name" class="pcm-input" 
+                    <div class="phpcm-input-wrapper">
+                        <input type="text" id="constant-name" name="constant_name" class="phpcm-input" 
                                value="<?php echo $data['is_edit'] ? esc_attr($data['constant']->name) : ''; ?>" 
                                required pattern="[A-Z][A-Z0-9_]*" 
                                placeholder="MY_CONSTANT_NAME"
                                <?php echo $data['is_edit'] ? 'readonly' : ''; ?> />
                         <?php if ($data['is_edit']): ?>
-                            <div class="pcm-input-icon">🔒</div>
+                            <div class="phpcm-input-icon">🔒</div>
                         <?php endif; ?>
                     </div>
-                    <p class="pcm-help-text"><?php esc_html_e('Use uppercase letters, numbers, and underscores only. Must start with a letter.', 'php-constants-manager'); ?></p>
+                    <p class="phpcm-help-text"><?php esc_html_e('Use uppercase letters, numbers, and underscores only. Must start with a letter.', 'php-constants-manager'); ?></p>
                     <?php if ($data['is_edit']): ?>
-                        <p class="pcm-help-text pcm-help-warning"><?php esc_html_e('Note: Constant names cannot be changed after creation.', 'php-constants-manager'); ?></p>
+                        <p class="phpcm-help-text phpcm-help-warning"><?php esc_html_e('Note: Constant names cannot be changed after creation.', 'php-constants-manager'); ?></p>
                     <?php endif; ?>
                     <div id="constant-name-feedback"></div>
                 </div>
 
-                <div class="pcm-form-group pcm-form-group-full">
-                    <label for="constant-value" class="pcm-form-label">
-                        <span class="pcm-label-text"><?php esc_html_e('Value', 'php-constants-manager'); ?></span>
+                <div class="phpcm-form-group phpcm-form-group-full">
+                    <label for="constant-value" class="phpcm-form-label">
+                        <span class="phpcm-label-text"><?php esc_html_e('Value', 'php-constants-manager'); ?></span>
                     </label>
-                    <div class="pcm-input-wrapper">
-                        <input type="text" id="constant-value" name="constant_value" class="pcm-input" 
+                    <div class="phpcm-input-wrapper">
+                        <input type="text" id="constant-value" name="constant_value" class="phpcm-input" 
                                value="<?php echo $data['is_edit'] ? esc_attr($data['constant']->value) : ''; ?>" 
                                placeholder="Enter constant value" />
                     </div>
                 </div>
 
-                <div class="pcm-form-group pcm-form-group-full">
-                    <label for="constant-type" class="pcm-form-label">
-                        <span class="pcm-label-text"><?php esc_html_e('Type', 'php-constants-manager'); ?></span>
+                <div class="phpcm-form-group phpcm-form-group-full">
+                    <label for="constant-type" class="phpcm-form-label">
+                        <span class="phpcm-label-text"><?php esc_html_e('Type', 'php-constants-manager'); ?></span>
                     </label>
-                    <div class="pcm-select-wrapper">
-                        <select id="constant-type" name="constant_type" class="pcm-select">
+                    <div class="phpcm-select-wrapper">
+                        <select id="constant-type" name="constant_type" class="phpcm-select">
                             <option value="string" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'string'); ?>><?php esc_html_e('String', 'php-constants-manager'); ?></option>
                             <option value="integer" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'integer'); ?>><?php esc_html_e('Integer', 'php-constants-manager'); ?></option>
                             <option value="float" <?php selected($data['is_edit'] ? $data['constant']->type : '', 'float'); ?>><?php esc_html_e('Float', 'php-constants-manager'); ?></option>
@@ -117,49 +117,49 @@ if (!defined('ABSPATH')) {
                     </div>
                 </div>
 
-                <div class="pcm-form-group pcm-form-group-full">
-                    <label for="constant-active" class="pcm-form-label">
-                        <span class="pcm-label-text"><?php esc_html_e('Status', 'php-constants-manager'); ?></span>
+                <div class="phpcm-form-group phpcm-form-group-full">
+                    <label for="constant-active" class="phpcm-form-label">
+                        <span class="phpcm-label-text"><?php esc_html_e('Status', 'php-constants-manager'); ?></span>
                     </label>
-                    <div class="pcm-checkbox-wrapper">
-                        <label class="pcm-checkbox-label">
+                    <div class="phpcm-checkbox-wrapper">
+                        <label class="phpcm-checkbox-label">
                             <input type="checkbox" id="constant-active" name="constant_active" value="1" 
-                                   class="pcm-checkbox"
+                                   class="phpcm-checkbox"
                                    <?php checked($data['is_edit'] ? $data['constant']->is_active : true, true); ?> />
-                            <span class="pcm-checkbox-custom"></span>
-                            <span class="pcm-checkbox-text"><?php esc_html_e('Active', 'php-constants-manager'); ?></span>
+                            <span class="phpcm-checkbox-custom"></span>
+                            <span class="phpcm-checkbox-text"><?php esc_html_e('Active', 'php-constants-manager'); ?></span>
                         </label>
-                        <p class="pcm-help-text"><?php esc_html_e('Only active constants are loaded.', 'php-constants-manager'); ?></p>
+                        <p class="phpcm-help-text"><?php esc_html_e('Only active constants are loaded.', 'php-constants-manager'); ?></p>
                     </div>
                 </div>
 
-                <div class="pcm-form-group pcm-form-group-full">
-                    <label for="constant-description" class="pcm-form-label">
-                        <span class="pcm-label-text"><?php esc_html_e('Description', 'php-constants-manager'); ?></span>
+                <div class="phpcm-form-group phpcm-form-group-full">
+                    <label for="constant-description" class="phpcm-form-label">
+                        <span class="phpcm-label-text"><?php esc_html_e('Description', 'php-constants-manager'); ?></span>
                     </label>
-                    <div class="pcm-textarea-wrapper">
-                        <textarea id="constant-description" name="constant_description" rows="3" class="pcm-textarea" 
+                    <div class="phpcm-textarea-wrapper">
+                        <textarea id="constant-description" name="constant_description" rows="3" class="phpcm-textarea" 
                                   placeholder="Optional: Describe what this constant is used for"><?php 
                             echo $data['is_edit'] ? esc_textarea($data['constant']->description) : ''; 
                         ?></textarea>
                     </div>
-                    <p class="pcm-help-text"><?php esc_html_e('Optional: Describe what this constant is used for.', 'php-constants-manager'); ?></p>
+                    <p class="phpcm-help-text"><?php esc_html_e('Optional: Describe what this constant is used for.', 'php-constants-manager'); ?></p>
                 </div>
             </div>
         </div>
         
-        <div class="pcm-form-actions">
-            <button type="submit" class="pcm-btn pcm-btn-primary">
+        <div class="phpcm-form-actions">
+            <button type="submit" class="phpcm-btn phpcm-btn-primary">
                 <?php if ($data['is_edit']): ?>
-                    <span class="pcm-btn-icon">💾</span>
+                    <span class="phpcm-btn-icon">💾</span>
                     <?php esc_html_e('Update Constant', 'php-constants-manager'); ?>
                 <?php else: ?>
-                    <span class="pcm-btn-icon">➕</span>
+                    <span class="phpcm-btn-icon">➕</span>
                     <?php esc_html_e('Add Constant', 'php-constants-manager'); ?>
                 <?php endif; ?>
             </button>
-            <a href="<?php echo esc_url(admin_url('admin.php?page=php-constants-manager')); ?>" class="pcm-btn pcm-btn-secondary">
-                <span class="pcm-btn-icon">✖️</span>
+            <a href="<?php echo esc_url(admin_url('admin.php?page=php-constants-manager')); ?>" class="phpcm-btn phpcm-btn-secondary">
+                <span class="phpcm-btn-icon">✖️</span>
                 <?php esc_html_e('Cancel', 'php-constants-manager'); ?>
             </a>
         </div>

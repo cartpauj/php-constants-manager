@@ -3,7 +3,7 @@
  * All Defines page view
  * 
  * Data available via $data array:
- * - list_table: PCM_All_Defines_Table
+ * - list_table: PHPCM_All_Defines_Table
  */
 
 // Prevent direct access

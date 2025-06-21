@@ -13,7 +13,7 @@ if (!class_exists('WP_List_Table')) {
     require_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
 }
 
-class PCM_List_Table extends WP_List_Table {
+class PHPCM_List_Table extends WP_List_Table {
     
     /**
      * Database handler
@@ -30,7 +30,7 @@ class PCM_List_Table extends WP_List_Table {
             'ajax' => false
         ));
         
-        $this->db = new PCM_DB();
+        $this->db = new PHPCM_DB();
     }
     
     /**
@@ -137,9 +137,9 @@ class PCM_List_Table extends WP_List_Table {
     public function column_name($item) {
         $edit_url = admin_url('admin.php?page=php-constants-manager&action=edit&id=' . $item->id);
         $delete_url = wp_nonce_url(
-            admin_url('admin-post.php?action=pcm_delete_constant&id=' . $item->id),
-            'pcm_delete_constant',
-            'pcm_nonce'
+            admin_url('admin-post.php?action=phpcm_delete_constant&id=' . $item->id),
+            'phpcm_delete_constant',
+            'phpcm_nonce'
         );
         
         $actions = array(
@@ -165,10 +165,10 @@ class PCM_List_Table extends WP_List_Table {
      * Column status
      */
     public function column_is_active($item) {
-        $nonce = wp_create_nonce('pcm_toggle_constant');
+        $nonce = wp_create_nonce('phpcm_toggle_constant');
         
         return sprintf(
-            '<label class="pcm-toggle-switch" data-id="%d" data-nonce="%s"><input type="checkbox" %s><span class="pcm-toggle-slider"></span></label>',
+            '<label class="phpcm-toggle-switch" data-id="%d" data-nonce="%s"><input type="checkbox" %s><span class="phpcm-toggle-slider"></span></label>',
             $item->id,
             $nonce,
             checked($item->is_active, true, false)
@@ -189,18 +189,18 @@ class PCM_List_Table extends WP_List_Table {
         
         if ($predefined_check['is_predefined']) {
             return sprintf(
-                '<div class="pcm-predefined-badge" title="%s"><span class="pcm-predefined-badge-text">%s</span></div>',
+                '<div class="phpcm-predefined-badge" title="%s"><span class="phpcm-predefined-badge-text">%s</span></div>',
                 esc_attr(sprintf(
                     /* translators: %s: the current value of the predefined constant */
                     __('Already defined by PHP/WordPress with value: %s. Your custom value will only apply when the system constant is not available.', 'php-constants-manager'), 
-                    pcm_format_constant_value($predefined_check['existing_value'])
+                    phpcm_format_constant_value($predefined_check['existing_value'])
                 )),
                 esc_html__('Overridden', 'php-constants-manager')
             );
         }
         
         return sprintf(
-            '<span class="pcm-predefined-no">%s</span>',
+            '<span class="phpcm-predefined-no">%s</span>',
             esc_html__('No', 'php-constants-manager')
         );
     }

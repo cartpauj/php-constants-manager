@@ -14,7 +14,7 @@ jQuery(document).ready(function($) {
             var checked = $form.find('input[name="constant[]"]:checked').length;
             
             if (checked > 0) {
-                if (!confirm(pcm_ajax.confirm_bulk_delete)) {
+                if (!confirm(phpcm_ajax.confirm_bulk_delete)) {
                     e.preventDefault();
                     return false;
                 }
@@ -75,12 +75,12 @@ jQuery(document).ready(function($) {
         // Debounce the AJAX request
         checkConstantTimer = setTimeout(function() {
             $.ajax({
-                url: pcm_ajax.ajax_url,
+                url: phpcm_ajax.ajax_url,
                 type: 'POST',
                 data: {
-                    action: 'pcm_check_constant',
+                    action: 'phpcm_check_constant',
                     constant_name: name,
-                    nonce: pcm_ajax.nonce
+                    nonce: phpcm_ajax.nonce
                 },
                 success: function(response) {
                     if (response.success) {
@@ -106,23 +106,23 @@ jQuery(document).ready(function($) {
     $('#constant-type').on('change', function() {
         var type = $(this).val();
         var $valueField = $('#constant-value');
-        var $valueWrapper = $valueField.closest('.pcm-input-wrapper');
-        var $lockIcon = $valueWrapper.find('.pcm-input-icon');
+        var $valueWrapper = $valueField.closest('.phpcm-input-wrapper');
+        var $lockIcon = $valueWrapper.find('.phpcm-input-icon');
         
         if (type === 'null') {
             // Clear and disable the value field
-            $valueField.val('').prop('disabled', true).addClass('pcm-input-disabled');
+            $valueField.val('').prop('disabled', true).addClass('phpcm-input-disabled');
             
             // Add lock icon if it doesn't exist
             if ($lockIcon.length === 0) {
-                $valueWrapper.append('<div class="pcm-input-icon">🔒</div>');
+                $valueWrapper.append('<div class="phpcm-input-icon">🔒</div>');
             }
             
             // Update placeholder
             $valueField.attr('placeholder', 'NULL values cannot be edited');
         } else {
             // Enable the value field
-            $valueField.prop('disabled', false).removeClass('pcm-input-disabled');
+            $valueField.prop('disabled', false).removeClass('phpcm-input-disabled');
             
             // Remove lock icon
             $lockIcon.remove();
@@ -200,9 +200,9 @@ jQuery(document).ready(function($) {
         
         // Visual feedback
         if (errorMessage) {
-            $valueField.addClass('pcm-input-error');
+            $valueField.addClass('phpcm-input-error');
         } else {
-            $valueField.removeClass('pcm-input-error');
+            $valueField.removeClass('phpcm-input-error');
         }
     });
     
@@ -212,7 +212,7 @@ jQuery(document).ready(function($) {
     });
     
     // Add visual feedback for form submission
-    $('.pcm-form').on('submit', function() {
+    $('.phpcm-form').on('submit', function() {
         var $submitBtn = $(this).find('button[type="submit"]');
         $submitBtn.prop('disabled', true).addClass('updating-message');
     });
@@ -220,8 +220,8 @@ jQuery(document).ready(function($) {
     // Import/Export functionality
     $('#csv_file').on('change', function() {
         var $input = $(this);
-        var $label = $input.siblings('.pcm-file-label');
-        var $selected = $input.siblings('.pcm-file-selected');
+        var $label = $input.siblings('.phpcm-file-label');
+        var $selected = $input.siblings('.phpcm-file-selected');
         var $submitBtn = $('#import-submit-btn');
         
         if (this.files && this.files[0]) {
@@ -237,7 +237,7 @@ jQuery(document).ready(function($) {
             
             // Show selected file
             $label.hide();
-            $selected.find('.pcm-file-name').text(fileName);
+            $selected.find('.phpcm-file-name').text(fileName);
             $selected.show();
             $submitBtn.prop('disabled', false);
         } else {
@@ -249,10 +249,10 @@ jQuery(document).ready(function($) {
     });
     
     // Remove selected file
-    $('.pcm-file-remove').on('click', function() {
+    $('.phpcm-file-remove').on('click', function() {
         var $input = $('#csv_file');
-        var $label = $input.siblings('.pcm-file-label');
-        var $selected = $input.siblings('.pcm-file-selected');
+        var $label = $input.siblings('.phpcm-file-label');
+        var $selected = $input.siblings('.phpcm-file-selected');
         var $submitBtn = $('#import-submit-btn');
         
         $input.val('');
@@ -262,19 +262,19 @@ jQuery(document).ready(function($) {
     });
     
     // Drag and drop functionality
-    $('.pcm-file-label').on('dragover dragenter', function(e) {
+    $('.phpcm-file-label').on('dragover dragenter', function(e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).addClass('drag-over');
     });
     
-    $('.pcm-file-label').on('dragleave dragend', function(e) {
+    $('.phpcm-file-label').on('dragleave dragend', function(e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).removeClass('drag-over');
     });
     
-    $('.pcm-file-label').on('drop', function(e) {
+    $('.phpcm-file-label').on('drop', function(e) {
         e.preventDefault();
         e.stopPropagation();
         $(this).removeClass('drag-over');
@@ -320,21 +320,21 @@ jQuery(document).ready(function($) {
     });
     
     // Handle toggle switch changes
-    $(document).on('change', '.pcm-toggle-switch input[type="checkbox"]', function() {
-        var $toggle = $(this).closest('.pcm-toggle-switch');
+    $(document).on('change', '.phpcm-toggle-switch input[type="checkbox"]', function() {
+        var $toggle = $(this).closest('.phpcm-toggle-switch');
         var id = $toggle.data('id');
         var nonce = $toggle.data('nonce');
         var $checkbox = $(this);
         
         // Disable the toggle while processing
         $checkbox.prop('disabled', true);
-        $toggle.addClass('pcm-toggle-loading');
+        $toggle.addClass('phpcm-toggle-loading');
         
         $.ajax({
-            url: pcm_ajax.ajax_url,
+            url: phpcm_ajax.ajax_url,
             type: 'POST',
             data: {
-                action: 'pcm_toggle_constant',
+                action: 'phpcm_toggle_constant',
                 id: id,
                 nonce: nonce
             },
@@ -344,9 +344,9 @@ jQuery(document).ready(function($) {
                     $checkbox.prop('checked', response.data.new_status);
                     
                     // Show brief success feedback
-                    $toggle.removeClass('pcm-toggle-loading').addClass('pcm-toggle-success');
+                    $toggle.removeClass('phpcm-toggle-loading').addClass('phpcm-toggle-success');
                     setTimeout(function() {
-                        $toggle.removeClass('pcm-toggle-success');
+                        $toggle.removeClass('phpcm-toggle-success');
                     }, 1000);
                 } else {
                     // Revert checkbox state on error
@@ -362,8 +362,11 @@ jQuery(document).ready(function($) {
             complete: function() {
                 // Re-enable the toggle
                 $checkbox.prop('disabled', false);
-                $toggle.removeClass('pcm-toggle-loading');
+                $toggle.removeClass('phpcm-toggle-loading');
             }
         });
     });
+    
+    // Add CSS class to the table for better column management (constants-list.php)
+    $('.constants-table-wrapper .wp-list-table').addClass('constants-table');
 });
