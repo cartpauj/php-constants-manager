@@ -299,6 +299,57 @@
     font-size: 12px;
     font-weight: 600;
     gap: 4px;
+    cursor: help;
+    position: relative;
+}
+
+/* Tooltip styles */
+.phpcm-tooltip {
+    position: relative;
+}
+
+.phpcm-tooltip::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: normal;
+    white-space: nowrap;
+    max-width: 300px;
+    white-space: normal;
+    line-height: 1.4;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    margin-bottom: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.phpcm-tooltip::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #333;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.phpcm-tooltip:hover::after,
+.phpcm-tooltip:hover::before {
+    opacity: 1;
+    visibility: visible;
 }
 
 .phpcm-predefined-badge::before {

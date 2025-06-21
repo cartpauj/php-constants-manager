@@ -189,13 +189,9 @@ class PHPCM_List_Table extends WP_List_Table {
         
         if ($predefined_check['is_predefined']) {
             return sprintf(
-                '<div class="phpcm-predefined-badge" title="%s"><span class="phpcm-predefined-badge-text">%s</span></div>',
-                esc_attr(sprintf(
-                    /* translators: %s: the current value of the predefined constant */
-                    __('Already defined by PHP/WordPress with value: %s. Your custom value will only apply when the system constant is not available.', 'php-constants-manager'), 
-                    phpcm_format_constant_value($predefined_check['existing_value'])
-                )),
-                esc_html__('Overridden', 'php-constants-manager')
+                '<div class="phpcm-predefined-badge phpcm-tooltip" title="%s"><span class="phpcm-predefined-badge-text">%s</span></div>',
+                esc_attr(__('This constant is likely not taking effect because something else has already defined it before this plugin could. Try enabling the Early Loading setting to see if that helps. If that doesn\'t work, it may be a PHP or WordPress constant that cannot be altered by this plugin.', 'php-constants-manager')),
+                esc_html__('Yes', 'php-constants-manager')
             );
         }
         
