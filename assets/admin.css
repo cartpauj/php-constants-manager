@@ -292,10 +292,10 @@
     display: inline-flex;
     align-items: center;
     padding: 4px 10px;
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: #ffe6e6;
+    border: 1px solid #ffb3b3;
     border-radius: 16px;
-    color: #856404;
+    color: #cc0000;
     font-size: 12px;
     font-weight: 600;
     gap: 4px;
@@ -312,8 +312,8 @@
 
 /* Visual row distinction for predefined constants */
 .wp-list-table tr.predefined-constant {
-    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 10%);
-    border-left: 3px solid #ffc107;
+    background: linear-gradient(90deg, #ffe6e6 0%, #ffffff 10%);
+    border-left: 3px solid #dc3545;
 }
 
 .wp-list-table tr.predefined-constant td {
