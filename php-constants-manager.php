@@ -1255,7 +1255,8 @@ class PHP_Constants_Manager {
                 }
             }
             
-            echo esc_html(implode(',', $escaped_row)) . "\r\n";
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV data is already properly escaped for CSV format above
+            echo implode(',', $escaped_row) . "\r\n";
         }
         exit;
     }
@@ -1282,7 +1283,8 @@ class PHP_Constants_Manager {
         $file = array(
             'name' => isset($_FILES['csv_file']['name']) ? sanitize_text_field($_FILES['csv_file']['name']) : '',
             'type' => isset($_FILES['csv_file']['type']) ? sanitize_text_field($_FILES['csv_file']['type']) : '',
-            'tmp_name' => isset($_FILES['csv_file']['tmp_name']) ? sanitize_text_field($_FILES['csv_file']['tmp_name']) : '',
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- tmp_name is validated via is_uploaded_file() below
+            'tmp_name' => isset($_FILES['csv_file']['tmp_name']) ? $_FILES['csv_file']['tmp_name'] : '',
             'error' => isset($_FILES['csv_file']['error']) ? intval($_FILES['csv_file']['error']) : UPLOAD_ERR_NO_FILE,
             'size' => isset($_FILES['csv_file']['size']) ? intval($_FILES['csv_file']['size']) : 0
         );

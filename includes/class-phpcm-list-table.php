@@ -143,10 +143,10 @@ class PHPCM_List_Table extends WP_List_Table {
         );
         
         $actions = array(
-            'edit' => sprintf('<a href="%s">%s</a>', $edit_url, esc_html__('Edit', 'php-constants-manager')),
+            'edit' => sprintf('<a href="%s">%s</a>', esc_url($edit_url), esc_html__('Edit', 'php-constants-manager')),
             'delete' => sprintf(
                 '<a href="%s" onclick="return confirm(\'%s\');">%s</a>',
-                $delete_url,
+                esc_url($delete_url),
                 /* translators: JavaScript confirmation message when deleting a constant */
                 esc_js(__('Are you sure you want to delete this constant?', 'php-constants-manager')),
                 esc_html__('Delete', 'php-constants-manager')
@@ -155,7 +155,7 @@ class PHPCM_List_Table extends WP_List_Table {
         
         return sprintf(
             '<strong><a href="%s">%s</a></strong>%s',
-            $edit_url,
+            esc_url($edit_url),
             esc_html($item->name),
             $this->row_actions($actions)
         );

@@ -79,7 +79,7 @@ if (!defined('ABSPATH')) {
                                value="<?php echo $data['is_edit'] ? esc_attr($data['constant']->name) : ''; ?>" 
                                required pattern="[A-Z][A-Z0-9_]*" 
                                placeholder="MY_CONSTANT_NAME"
-                               <?php echo $data['is_edit'] ? 'readonly' : ''; ?> />
+                               <?php echo $data['is_edit'] ? esc_attr('readonly') : ''; ?> />
                         <?php if ($data['is_edit']): ?>
                             <div class="phpcm-input-icon">🔒</div>
                         <?php endif; ?>

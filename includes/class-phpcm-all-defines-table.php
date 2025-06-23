@@ -94,7 +94,7 @@ class PHPCM_All_Defines_Table extends WP_List_Table {
                 
             case 'category':
                 $category_class = sanitize_html_class(strtolower(str_replace('/', '-', $item['category'])));
-                return '<span class="phpcm-category-' . $category_class . '">' . esc_html($item['category']) . '</span>';
+                return '<span class="phpcm-category-' . esc_attr($category_class) . '">' . esc_html($item['category']) . '</span>';
                 
             default:
                 return esc_html($item[$column_name]);
