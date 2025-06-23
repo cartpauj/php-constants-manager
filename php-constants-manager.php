@@ -230,7 +230,7 @@ class PHP_Constants_Manager {
             'manage_options',
             'php-constants-manager',
             array($this, 'render_admin_page'),
-            'dashicons-admin-generic',
+            'dashicons-editor-code',
             80
         );
         
