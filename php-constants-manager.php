@@ -3,7 +3,7 @@
  * Plugin Name: PHP Constants Manager
  * Plugin URI: https://github.com/cartpauj/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: cartpauj
  * Author URI: https://github.com/cartpauj/
  * License: GPL v2 or later

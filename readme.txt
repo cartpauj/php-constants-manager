@@ -3,7 +3,7 @@ Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -175,6 +175,9 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.1.4 =
+* Security hardening
+
 = 1.1.3 =
 * Enhanced file upload validation with proper isset() checks for $_FILES array indices
 * Improved input sanitization for file upload security
