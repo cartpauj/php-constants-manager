@@ -3,7 +3,7 @@ Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.1.4
+Stable tag: 1.1.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -175,6 +175,9 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.1.5 =
+* Renamed must-use plugin to attempt to get it to load earlier than other must-use plugins
+
 = 1.1.4 =
 * Security hardening
 

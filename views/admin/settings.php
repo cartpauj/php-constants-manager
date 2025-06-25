@@ -52,7 +52,7 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                         esc_html_e('Failed to create the must-use plugin file. Please check that the mu-plugins directory is writable or contact your hosting provider.', 'php-constants-manager');
                         break;
                     case 'mu_plugin_remove_failed':
-                        esc_html_e('Failed to remove the must-use plugin file. Please manually delete the file at wp-content/mu-plugins/php-constants-manager-early.php', 'php-constants-manager');
+                        esc_html_e('Failed to remove the must-use plugin file. Please manually delete the file at wp-content/mu-plugins/0001-php-constants-manager-early.php', 'php-constants-manager');
                         break;
                     default:
                         echo esc_html($error);
@@ -90,7 +90,7 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                                     <p class="phpcm-status-info">
                                         <span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
                                         <?php esc_html_e('Must-use plugin file exists:', 'php-constants-manager'); ?>
-                                        <code><?php echo esc_html(WPMU_PLUGIN_DIR . '/php-constants-manager-early.php'); ?></code>
+                                        <code><?php echo esc_html(WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php'); ?></code>
                                     </p>
                                 <?php else: ?>
                                     <p class="phpcm-status-info">

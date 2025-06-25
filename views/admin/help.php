@@ -513,6 +513,127 @@ if (defined('MY_CONSTANT')) {
 ) DEFAULT CHARSET=utf8mb4;</code></pre>
         <p><strong><?php esc_html_e('Note:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Replace "wp_" with your actual WordPress table prefix if different.', 'php-constants-manager'); ?></p>
         
+        <h3><?php esc_html_e('Early Loading Setup Failed', 'php-constants-manager'); ?></h3>
+        <p><?php esc_html_e('If the automatic Early Loading setup fails in Settings, you can manually create the must-use plugin file:', 'php-constants-manager'); ?></p>
+        
+        <h4><?php esc_html_e('Manual Must-Use Plugin Creation', 'php-constants-manager'); ?></h4>
+        <ol>
+            <li><strong><?php esc_html_e('Create Directory:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Ensure the mu-plugins directory exists:', 'php-constants-manager'); ?> <code>wp-content/mu-plugins/</code></li>
+            <li><strong><?php esc_html_e('Create File:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Create a new file named:', 'php-constants-manager'); ?> <code>0001-php-constants-manager-early.php</code></li>
+            <li><strong><?php esc_html_e('Add Content:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Copy the following code into the file:', 'php-constants-manager'); ?></li>
+        </ol>
+        
+        <h4><?php esc_html_e('Must-Use Plugin Code', 'php-constants-manager'); ?></h4>
+        <p><strong><?php esc_html_e('File:', 'php-constants-manager'); ?></strong> <code>wp-content/mu-plugins/0001-php-constants-manager-early.php</code></p>
+        <pre><code>&lt;?php
+/**
+ * PHP Constants Manager - Early Loading
+ * This file loads constants from PHP Constants Manager before other plugins
+ * DO NOT EDIT - Managed by PHP Constants Manager plugin
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Load PHP Constants Manager constants early
+function phpcm_load_early_constants() {
+    global $wpdb;
+    
+    // Initialize the global array
+    $GLOBALS['phpcm_early_defined_constants'] = array();
+    
+    // Get the table name
+    $table_name = $wpdb->prefix . 'phpcm_constants';
+    
+    // Check if table exists
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
+        return;
+    }
+    
+    // Get active constants
+    $constants = $wpdb->get_results(
+        "SELECT name, value, type FROM $table_name WHERE is_active = 1"
+    );
+    
+    if (empty($constants)) {
+        return;
+    }
+    
+    // Track which constants we successfully define
+    $phpcm_early_defined = array();
+    
+    foreach ($constants as $constant) {
+        if (!defined($constant->name)) {
+            $value = $constant->value;
+            
+            switch ($constant->type) {
+                case 'boolean':
+                    if (is_string($value)) {
+                        $lower_value = strtolower(trim($value));
+                        if (in_array($lower_value, ['true', '1', 'yes', 'on'], true)) {
+                            $value = true;
+                        } elseif (in_array($lower_value, ['false', '0', 'no', 'off', ''], true)) {
+                            $value = false;
+                        } else {
+                            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                            if ($value === null) {
+                                $value = false;
+                            }
+                        }
+                    } elseif (is_numeric($value)) {
+                        $value = (bool)intval($value);
+                    } else {
+                        $value = (bool)$value;
+                    }
+                    break;
+                case 'integer':
+                    if (is_numeric($value)) {
+                        $value = intval($value);
+                    } else {
+                        $value = 0;
+                    }
+                    break;
+                case 'float':
+                    if (is_numeric($value)) {
+                        $value = floatval($value);
+                    } else {
+                        $value = 0.0;
+                    }
+                    break;
+                case 'null':
+                    $value = null;
+                    break;
+            }
+            
+            define($constant->name, $value);
+            $phpcm_early_defined[] = $constant->name;
+        }
+    }
+    
+    // Store the list for the main plugin to check
+    $GLOBALS['phpcm_early_defined_constants'] = $phpcm_early_defined;
+}
+
+// Load constants
+phpcm_load_early_constants();</code></pre>
+        
+        <h4><?php esc_html_e('Important Notes', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><strong><?php esc_html_e('Filename Format:', 'php-constants-manager'); ?></strong> <?php esc_html_e('The "0001-" prefix ensures this file loads before other must-use plugins', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('File Permissions:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Ensure the file is readable by your web server (typically 644)', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('Table Prefix:', 'php-constants-manager'); ?></strong> <?php esc_html_e('The code automatically uses your WordPress table prefix', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('Settings Integration:', 'php-constants-manager'); ?></strong> <?php esc_html_e('After manual creation, visit Settings and check "Enable early loading" to sync the plugin state with the file', 'php-constants-manager'); ?></li>
+        </ul>
+        
+        <h4><?php esc_html_e('Common Issues', 'php-constants-manager'); ?></h4>
+        <ul>
+            <li><strong><?php esc_html_e('Permission Denied:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Contact your hosting provider to create the mu-plugins directory and set proper permissions', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('File Not Loading:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Verify the filename is exactly: 0001-php-constants-manager-early.php', 'php-constants-manager'); ?></li>
+            <li><strong><?php esc_html_e('PHP Errors:', 'php-constants-manager'); ?></strong> <?php esc_html_e('Check that the file content was copied correctly without any extra characters', 'php-constants-manager'); ?></li>
+        </ul>
+
         <h3><?php esc_html_e('Need More Help?', 'php-constants-manager'); ?></h3>
         <p><?php esc_html_e('Use the "All Constants" page to see every constant currently defined in your WordPress installation. This can help you understand what\'s already taken and avoid conflicts.', 'php-constants-manager'); ?></p>
         

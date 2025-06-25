@@ -3,7 +3,7 @@
  * Plugin Name: PHP Constants Manager
  * Plugin URI: https://github.com/cartpauj/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: cartpauj
  * Author URI: https://github.com/cartpauj/
  * License: GPL v2 or later
@@ -74,6 +74,7 @@ class PHP_Constants_Manager {
         // Hook into WordPress
         //add_action('init', array($this, 'init'));
         add_action('admin_init', array($this, 'handle_admin_actions'));
+        add_action('admin_init', array($this, 'migrate_mu_plugin_filename'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('admin_notices', array($this, 'show_admin_notices'));
@@ -824,7 +825,7 @@ class PHP_Constants_Manager {
      * Check if must-use plugin exists
      */
     private function mu_plugin_exists() {
-        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php';
         return file_exists($mu_plugin_path);
     }
     
@@ -837,7 +838,7 @@ class PHP_Constants_Manager {
             return false;
         }
         
-        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php';
         
         // Generate static must-use plugin content that queries the database
         $content = "<?php\n";
@@ -945,7 +946,7 @@ class PHP_Constants_Manager {
      * Remove must-use plugin file
      */
     private function remove_mu_plugin() {
-        $mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        $mu_plugin_path = WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php';
         
         if (!file_exists($mu_plugin_path)) {
             return true;
@@ -958,6 +959,31 @@ class PHP_Constants_Manager {
         }
         
         return $wp_filesystem->delete($mu_plugin_path);
+    }
+    
+    /**
+     * Migrate old must-use plugin filename to new naming convention
+     */
+    public function migrate_mu_plugin_filename() {
+        // Only run for admin users
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+        
+        $old_mu_plugin_path = WPMU_PLUGIN_DIR . '/php-constants-manager-early.php';
+        $new_mu_plugin_path = WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php';
+        
+        // Check if old file exists and new file doesn't exist
+        if (file_exists($old_mu_plugin_path) && !file_exists($new_mu_plugin_path)) {
+            global $wp_filesystem;
+            if (empty($wp_filesystem)) {
+                require_once(ABSPATH . '/wp-admin/includes/file.php');
+                WP_Filesystem();
+            }
+            
+            // Rename the file quietly
+            $wp_filesystem->move($old_mu_plugin_path, $new_mu_plugin_path);
+        }
     }
     
     /**
