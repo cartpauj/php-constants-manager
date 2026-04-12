@@ -1,6 +1,11 @@
-/.git
-/.github
+.git
+.github
 .gitignore
 .distignore
-/.wordpress-org
-/script
+.DS_Store
+Thumbs.db
+build
+.wordpress-org
+README.md
+RELEASE.md
+*.log
