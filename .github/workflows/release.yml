@@ -39,7 +39,7 @@ jobs:
         if: steps.check.outputs.exists == 'false'
         run: |
           mkdir -p build/php-constants-manager
-          rsync -a --exclude='.git' --exclude='.github' --exclude='build' --exclude='.gitignore' ./ build/php-constants-manager/
+          rsync -a --exclude-from='.distignore' --exclude='build' ./ build/php-constants-manager/
           cd build
           zip -r php-constants-manager.zip php-constants-manager/
 
