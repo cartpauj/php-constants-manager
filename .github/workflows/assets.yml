@@ -1,0 +1,66 @@
+name: Update wp.org assets
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.wordpress-org/**'
+      - 'readme.txt'
+
+concurrency:
+  group: wporg-assets-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-assets:
+    name: Push .wordpress-org to SVN
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if anything outside assets/readme changed
+        id: guard
+        run: |
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          # Force-push, branch creation, or missing before-SHA: bail safely.
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "No valid previous SHA; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # If the before-SHA is not reachable (history rewrite), bail safely.
+          if ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "Before SHA $BEFORE not reachable locally; skipping."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
+          echo "Files changed in push:"
+          echo "$CHANGED"
+
+          # Proceed only if every changed path is under .wordpress-org/ or is readme.txt.
+          # Source edits, plugin header bumps, etc. are left to the release workflow.
+          if echo "$CHANGED" | grep -qvE '^(\.wordpress-org/|readme\.txt$)'; then
+            echo "Non-asset files were part of this push — letting the release workflow handle it."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Only assets / readme.txt changed — proceeding."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: WordPress.org plugin asset update
+        if: steps.guard.outputs.skip == 'false'
+        uses: 10up/action-wordpress-plugin-asset-update@stable
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: php-constants-manager
