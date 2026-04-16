@@ -3,7 +3,7 @@
  * Plugin Name: PHP Constants Manager
  * Plugin URI: https://github.com/cartpauj/php-constants-manager
  * Description: Safely manage PHP constants (defines) through the WordPress admin interface
- * Version: 1.1.5
+ * Version: 1.2.0
  * Author: cartpauj
  * Author URI: https://github.com/cartpauj/
  * License: GPL v2 or later
@@ -17,16 +17,21 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-$plugin_header = get_file_data(__FILE__, array('Version' => 'Version'));
-define('PHPCM_VERSION', $plugin_header['Version']);
+define('PHPCM_VERSION', get_file_data(__FILE__, array('Version' => 'Version'))['Version']);
 define('PHPCM_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('PHPCM_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('PHPCM_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
 // Include required files
+require_once PHPCM_PLUGIN_DIR . 'includes/phpcm-helpers.php';
 require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-list-table.php';
 require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-all-defines-table.php';
 require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-db.php';
+require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-import-export.php';
+
+if (defined('WP_CLI') && WP_CLI) {
+    require_once PHPCM_PLUGIN_DIR . 'includes/class-phpcm-cli.php';
+}
 
 /**
  * Main plugin class
@@ -171,51 +176,10 @@ class PHP_Constants_Manager {
         
         foreach ($constants as $constant) {
             if (!defined($constant->name)) {
-                $value = $constant->value;
-                
-                switch ($constant->type) {
-                    case 'boolean':
-                        if (is_string($value)) {
-                            $lower_value = strtolower(trim($value));
-                            // Handle various string representations of boolean values
-                            if (in_array($lower_value, ['true', '1', 'yes', 'on'], true)) {
-                                $value = true;
-                            } elseif (in_array($lower_value, ['false', '0', 'no', 'off', ''], true)) {
-                                $value = false;
-                            } else {
-                                // Fallback to filter_var for other cases
-                                $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                                if ($value === null) {
-                                    $value = false; // Default to false for invalid boolean strings
-                                }
-                            }
-                        } elseif (is_numeric($value)) {
-                            $value = (bool)intval($value);
-                        } else {
-                            $value = (bool)$value;
-                        }
-                        break;
-                    case 'integer':
-                        if (is_numeric($value)) {
-                            $value = intval($value);
-                        } else {
-                            $value = 0;
-                        }
-                        break;
-                    case 'float':
-                        if (is_numeric($value)) {
-                            $value = floatval($value);
-                        } else {
-                            $value = 0.0;
-                        }
-                        break;
-                    case 'null':
-                        $value = null;
-                        break;
-                }
-                
-                define($constant->name, $value);
-                // Track that we successfully defined this constant
+                // Defining user-supplied constant names is this plugin's entire purpose;
+                // the PrefixAllGlobals rule does not apply to admin-managed data.
+                // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.VariableConstantNameFound
+                define($constant->name, phpcm_cast_value($constant->value, $constant->type));
                 $this->defined_by_plugin[] = $constant->name;
             }
         }
@@ -404,8 +368,7 @@ class PHP_Constants_Manager {
         
         $id = isset($_POST['id']) ? intval($_POST['id']) : 0;
         $name = isset($_POST['constant_name']) ? sanitize_text_field(wp_unslash($_POST['constant_name'])) : '';
-        // Handle value properly - sanitize but preserve quotes and special characters for strings
-        // Validation occurs later via validate_constant_value() method
+        // Value is sanitized here; type validation runs below via phpcm_validate_constant_value().
         $value = isset($_POST['constant_value']) ? sanitize_textarea_field(wp_unslash($_POST['constant_value'])) : '';
         $type = isset($_POST['constant_type']) ? sanitize_text_field(wp_unslash($_POST['constant_type'])) : 'string';
         $is_active = !empty($_POST['constant_active']);
@@ -413,12 +376,12 @@ class PHP_Constants_Manager {
         $description = isset($_POST['constant_description']) ? sanitize_textarea_field(wp_unslash($_POST['constant_description'])) : '';
         
         // Validate constant name
-        if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
+        if (!phpcm_validate_constant_name($name)) {
             wp_die(esc_html__('Invalid constant name', 'php-constants-manager'));
         }
-        
+
         // Validate and normalize value based on type
-        $validation_result = $this->validate_constant_value($value, $type);
+        $validation_result = phpcm_validate_constant_value($value, $type);
         if ($validation_result['error']) {
             // Store error message in transient
             set_transient('phpcm_admin_notice', array(
@@ -430,7 +393,7 @@ class PHP_Constants_Manager {
             $redirect_url = $id ? 
                 admin_url('admin.php?page=php-constants-manager&action=edit&id=' . $id) :
                 admin_url('admin.php?page=php-constants-manager&action=add');
-            wp_redirect($redirect_url);
+            wp_safe_redirect($redirect_url);
             exit;
         }
         
@@ -467,7 +430,7 @@ class PHP_Constants_Manager {
             ));
             
             if ($result !== false) {
-                wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
+                wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
                 exit;
             } else {
                 wp_die(esc_html__('Failed to update constant.', 'php-constants-manager'));
@@ -487,7 +450,7 @@ class PHP_Constants_Manager {
                     )
                 ), 30);
                 
-                wp_redirect(admin_url('admin.php?page=php-constants-manager&action=add'));
+                wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&action=add'));
                 exit;
             }
             
@@ -500,7 +463,7 @@ class PHP_Constants_Manager {
             ));
             
             if ($result !== false) {
-                wp_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
+                wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&message=saved'));
                 exit;
             } else {
                 wp_die(esc_html__('Failed to save constant.', 'php-constants-manager'));
@@ -526,7 +489,7 @@ class PHP_Constants_Manager {
             $this->db->delete_constant($id);
             }
         
-        wp_redirect(admin_url('admin.php?page=php-constants-manager&message=deleted'));
+        wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&message=deleted'));
         exit;
     }
     
@@ -548,7 +511,7 @@ class PHP_Constants_Manager {
             $this->db->toggle_constant($id);
             }
         
-        wp_redirect(admin_url('admin.php?page=php-constants-manager&message=toggled'));
+        wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&message=toggled'));
         exit;
     }
     
@@ -630,7 +593,7 @@ class PHP_Constants_Manager {
                 ), 30);
             }
             
-            wp_redirect(admin_url('admin.php?page=php-constants-manager'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager'));
             exit;
         }
     }
@@ -655,7 +618,7 @@ class PHP_Constants_Manager {
         $ids = isset($_POST['constant']) ? array_map('intval', (array) $_POST['constant']) : array();
         
         if (empty($ids) || empty($action)) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager'));
             exit;
         }
         
@@ -684,7 +647,7 @@ class PHP_Constants_Manager {
                 break;
         }
         
-        wp_redirect(admin_url('admin.php?page=php-constants-manager&message=' . $message));
+        wp_safe_redirect(admin_url('admin.php?page=php-constants-manager&message=' . $message));
         exit;
     }
     
@@ -831,114 +794,55 @@ class PHP_Constants_Manager {
     
     /**
      * Create must-use plugin file
+     *
+     * The generated MU plugin pulls in the main plugin's helpers file for
+     * value casting, so the casting contract lives in one place. If the
+     * main plugin is deleted the MU plugin bails silently.
      */
     private function create_mu_plugin() {
-        // Check if mu-plugins directory exists
         if (!wp_mkdir_p(WPMU_PLUGIN_DIR)) {
             return false;
         }
-        
+
         $mu_plugin_path = WPMU_PLUGIN_DIR . '/0001-php-constants-manager-early.php';
-        
-        // Generate static must-use plugin content that queries the database
-        $content = "<?php\n";
+        $helpers_path   = PHPCM_PLUGIN_DIR . 'includes/phpcm-helpers.php';
+
+        $content  = "<?php\n";
         $content .= "/**\n";
         $content .= " * PHP Constants Manager - Early Loading\n";
-        $content .= " * This file loads constants from PHP Constants Manager before other plugins\n";
-        $content .= " * DO NOT EDIT - Managed by PHP Constants Manager plugin\n";
+        $content .= " * Loads active constants from the plugin's table before other plugins.\n";
+        $content .= " * DO NOT EDIT - regenerated by PHP Constants Manager when the\n";
+        $content .= " * 'Early Loading' setting is toggled.\n";
         $content .= " */\n\n";
-        $content .= "// Prevent direct access\n";
-        $content .= "if (!defined('ABSPATH')) {\n";
-        $content .= "    exit;\n";
-        $content .= "}\n\n";
-        $content .= "// Load PHP Constants Manager constants early\n";
-        $content .= "function phpcm_load_early_constants() {\n";
+        $content .= "if (!defined('ABSPATH')) { exit; }\n\n";
+        // Emit the helper path as a safely-escaped single-quoted PHP string literal.
+        $quoted_path = "'" . str_replace(array('\\', "'"), array('\\\\', "\\'"), $helpers_path) . "'";
+        $content .= "\$phpcm_helpers = {$quoted_path};\n";
+        $content .= "if (!file_exists(\$phpcm_helpers)) { return; }\n";
+        $content .= "require_once \$phpcm_helpers;\n\n";
+        $content .= "(function () {\n";
         $content .= "    global \$wpdb;\n";
-        $content .= "    \n";
-        $content .= "    // Initialize the global array\n";
         $content .= "    \$GLOBALS['phpcm_early_defined_constants'] = array();\n";
-        $content .= "    \n";
-        $content .= "    // Get the table name\n";
-        $content .= "    \$table_name = \$wpdb->prefix . 'phpcm_constants';\n";
-        $content .= "    \n";
-        $content .= "    // Check if table exists\n";
-        $content .= "    if (\$wpdb->get_var(\"SHOW TABLES LIKE '\$table_name'\") !== \$table_name) {\n";
-        $content .= "        return;\n";
-        $content .= "    }\n";
-        $content .= "    \n";
-        $content .= "    // Get active constants\n";
-        $content .= "    \$constants = \$wpdb->get_results(\n";
-        $content .= "        \"SELECT name, value, type FROM \$table_name WHERE is_active = 1\"\n";
-        $content .= "    );\n";
-        $content .= "    \n";
-        $content .= "    if (empty(\$constants)) {\n";
-        $content .= "        return;\n";
-        $content .= "    }\n";
-        $content .= "    \n";
-        $content .= "    // Track which constants we successfully define\n";
-        $content .= "    \$phpcm_early_defined = array();\n";
-        $content .= "    \n";
-        $content .= "    foreach (\$constants as \$constant) {\n";
-        $content .= "        if (!defined(\$constant->name)) {\n";
-        $content .= "            \$value = \$constant->value;\n";
-        $content .= "            \n";
-        $content .= "            switch (\$constant->type) {\n";
-        $content .= "                case 'boolean':\n";
-        $content .= "                    if (is_string(\$value)) {\n";
-        $content .= "                        \$lower_value = strtolower(trim(\$value));\n";
-        $content .= "                        if (in_array(\$lower_value, ['true', '1', 'yes', 'on'], true)) {\n";
-        $content .= "                            \$value = true;\n";
-        $content .= "                        } elseif (in_array(\$lower_value, ['false', '0', 'no', 'off', ''], true)) {\n";
-        $content .= "                            \$value = false;\n";
-        $content .= "                        } else {\n";
-        $content .= "                            \$value = filter_var(\$value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);\n";
-        $content .= "                            if (\$value === null) {\n";
-        $content .= "                                \$value = false;\n";
-        $content .= "                            }\n";
-        $content .= "                        }\n";
-        $content .= "                    } elseif (is_numeric(\$value)) {\n";
-        $content .= "                        \$value = (bool)intval(\$value);\n";
-        $content .= "                    } else {\n";
-        $content .= "                        \$value = (bool)\$value;\n";
-        $content .= "                    }\n";
-        $content .= "                    break;\n";
-        $content .= "                case 'integer':\n";
-        $content .= "                    if (is_numeric(\$value)) {\n";
-        $content .= "                        \$value = intval(\$value);\n";
-        $content .= "                    } else {\n";
-        $content .= "                        \$value = 0;\n";
-        $content .= "                    }\n";
-        $content .= "                    break;\n";
-        $content .= "                case 'float':\n";
-        $content .= "                    if (is_numeric(\$value)) {\n";
-        $content .= "                        \$value = floatval(\$value);\n";
-        $content .= "                    } else {\n";
-        $content .= "                        \$value = 0.0;\n";
-        $content .= "                    }\n";
-        $content .= "                    break;\n";
-        $content .= "                case 'null':\n";
-        $content .= "                    \$value = null;\n";
-        $content .= "                    break;\n";
-        $content .= "            }\n";
-        $content .= "            \n";
-        $content .= "            define(\$constant->name, \$value);\n";
-        $content .= "            \$phpcm_early_defined[] = \$constant->name;\n";
+        $content .= "    \$table = \$wpdb->prefix . 'phpcm_constants';\n";
+        $content .= "    if (\$wpdb->get_var(\$wpdb->prepare('SHOW TABLES LIKE %s', \$table)) !== \$table) { return; }\n";
+        $content .= "    \$constants = \$wpdb->get_results(\"SELECT name, value, type FROM {\$table} WHERE is_active = 1\");\n";
+        $content .= "    if (empty(\$constants)) { return; }\n";
+        $content .= "    \$defined = array();\n";
+        $content .= "    foreach (\$constants as \$c) {\n";
+        $content .= "        if (!defined(\$c->name)) {\n";
+        $content .= "            define(\$c->name, phpcm_cast_value(\$c->value, \$c->type));\n";
+        $content .= "            \$defined[] = \$c->name;\n";
         $content .= "        }\n";
         $content .= "    }\n";
-        $content .= "    \n";
-        $content .= "    // Store the list for the main plugin to check\n";
-        $content .= "    \$GLOBALS['phpcm_early_defined_constants'] = \$phpcm_early_defined;\n";
-        $content .= "}\n\n";
-        $content .= "// Load constants\n";
-        $content .= "phpcm_load_early_constants();\n";
-        
-        // Write the file
+        $content .= "    \$GLOBALS['phpcm_early_defined_constants'] = \$defined;\n";
+        $content .= "})();\n";
+
         global $wp_filesystem;
         if (empty($wp_filesystem)) {
             require_once(ABSPATH . '/wp-admin/includes/file.php');
             WP_Filesystem();
         }
-        
+
         return $wp_filesystem->put_contents($mu_plugin_path, $content, FS_CHMOD_FILE);
     }
     
@@ -986,6 +890,60 @@ class PHP_Constants_Manager {
         }
     }
     
+    /**
+     * Get the database handler (used by WP-CLI and other consumers).
+     */
+    public function get_db() {
+        return $this->db;
+    }
+
+    /**
+     * Enable or disable the early-loading MU plugin.
+     *
+     * @param bool $enabled Desired state.
+     * @return true|WP_Error True on success, WP_Error on failure.
+     */
+    public function set_early_loading($enabled) {
+        $enabled = (bool) $enabled;
+        $previous = (bool) get_option('phpcm_early_loading_enabled', false);
+
+        update_option('phpcm_early_loading_enabled', $enabled);
+
+        if ($enabled && !$previous) {
+            if (!$this->create_mu_plugin()) {
+                update_option('phpcm_early_loading_enabled', false);
+                return new WP_Error('mu_plugin_create_failed', __('Could not write MU plugin file.', 'php-constants-manager'));
+            }
+        } elseif (!$enabled && $previous) {
+            if (!$this->remove_mu_plugin()) {
+                update_option('phpcm_early_loading_enabled', true);
+                return new WP_Error('mu_plugin_remove_failed', __('Could not remove MU plugin file.', 'php-constants-manager'));
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Identify what defined a constant, if it is currently defined.
+     *
+     * @param string $name Constant name.
+     * @return string|null One of 'early-load', 'plugin', 'elsewhere', or null if not defined.
+     */
+    public function get_constant_source($name) {
+        if (!defined($name)) {
+            return null;
+        }
+        if (isset($GLOBALS['phpcm_early_defined_constants']) &&
+            in_array($name, $GLOBALS['phpcm_early_defined_constants'], true)) {
+            return 'early-load';
+        }
+        if (in_array($name, $this->defined_by_plugin, true)) {
+            return 'plugin';
+        }
+        return 'elsewhere';
+    }
+
     /**
      * Check if a constant is truly predefined (not defined by this plugin)
      * 
@@ -1139,86 +1097,6 @@ class PHP_Constants_Manager {
     }
     
     /**
-     * Validate constant value based on its type
-     * 
-     * @param string $value The value to validate
-     * @param string $type The expected type
-     * @return array Array with 'error' boolean, 'message' string, and 'value' (normalized)
-     */
-    private function validate_constant_value($value, $type) {
-        $result = array(
-            'error' => false,
-            'message' => '',
-            'value' => $value
-        );
-        
-        switch ($type) {
-            case 'string':
-                // Strings are always valid, no validation needed
-                break;
-                
-            case 'integer':
-                if (!is_numeric($value) || (string)(int)$value !== (string)$value) {
-                    $result['error'] = true;
-                    $result['message'] = sprintf(
-                        /* translators: %s: the invalid value entered by user */
-                        __('Invalid integer value "%s". Please enter a whole number (e.g., 42, -10, 0).', 'php-constants-manager'),
-                        esc_html($value)
-                    );
-                } else {
-                    $result['value'] = (string)(int)$value; // Normalize
-                }
-                break;
-                
-            case 'float':
-                if (!is_numeric($value)) {
-                    $result['error'] = true;
-                    $result['message'] = sprintf(
-                        /* translators: %s: the invalid value entered by user */
-                        __('Invalid float value "%s". Please enter a number (e.g., 3.14, -2.5, 10).', 'php-constants-manager'),
-                        esc_html($value)
-                    );
-                } else {
-                    $result['value'] = (string)(float)$value; // Normalize
-                }
-                break;
-                
-            case 'boolean':
-                $lower_value = strtolower(trim($value));
-                $valid_true = array('true', '1', 'yes', 'on');
-                $valid_false = array('false', '0', 'no', 'off', '');
-                
-                if (!in_array($lower_value, array_merge($valid_true, $valid_false), true)) {
-                    $result['error'] = true;
-                    $result['message'] = sprintf(
-                        /* translators: %s: the invalid value entered by user */
-                        __('Invalid boolean value "%s". Please enter one of: true, false, 1, 0, yes, no, on, off (or leave empty for false).', 'php-constants-manager'),
-                        esc_html($value)
-                    );
-                } else {
-                    // Normalize to true/false string
-                    $result['value'] = in_array($lower_value, $valid_true, true) ? 'true' : 'false';
-                }
-                break;
-                
-            case 'null':
-                // For null type, value should be empty
-                $result['value'] = '';
-                break;
-                
-            default:
-                $result['error'] = true;
-                $result['message'] = sprintf(
-                    /* translators: %s: the invalid constant type */
-                    __('Invalid constant type "%s".', 'php-constants-manager'),
-                    esc_html($type)
-                );
-        }
-        
-        return $result;
-    }
-    
-    /**
      * Add settings link to plugins page
      */
     public function add_settings_link($links) {
@@ -1239,51 +1117,23 @@ class PHP_Constants_Manager {
             wp_die(esc_html__('Security check failed', 'php-constants-manager'));
         }
         
-        // Get all constants
         $constants = $this->db->get_all_constants();
-        
         if (empty($constants)) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_constants'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_constants'));
             exit;
         }
-        
-        // Set headers for CSV download
+
         $filename = 'php-constants-' . gmdate('Y-m-d-H-i-s') . '.csv';
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=' . $filename);
         header('Pragma: no-cache');
         header('Expires: 0');
-        
-        // Create CSV output using WordPress filesystem API
-        // Add UTF-8 BOM for proper Excel/spreadsheet compatibility
+
+        // UTF-8 BOM for Excel compatibility.
         echo "\xEF\xBB\xBF";
-        
-        // Output CSV headers
-        echo "Name,Value,Type,Active,Description\r\n";
-        
-        // Add data rows
-        foreach ($constants as $constant) {
-            $row = array(
-                $constant->name,
-                $constant->value,
-                $constant->type,
-                $constant->is_active ? '1' : '0',
-                $constant->description
-            );
-            
-            // Properly escape CSV values
-            $escaped_row = array();
-            foreach ($row as $field) {
-                if (strpos($field, ',') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false) {
-                    $escaped_row[] = '"' . str_replace('"', '""', $field) . '"';
-                } else {
-                    $escaped_row[] = $field;
-                }
-            }
-            
-            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV data is already properly escaped for CSV format above
-            echo implode(',', $escaped_row) . "\r\n";
-        }
+        $service = new PHPCM_Import_Export($this->db);
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSV fields are already CSV-escaped by the service.
+        echo $service->export_to_string();
         exit;
     }
     
@@ -1301,7 +1151,7 @@ class PHP_Constants_Manager {
         
         // Check if file was uploaded
         if (!isset($_FILES['csv_file']) || !isset($_FILES['csv_file']['error']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_file'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=no_file'));
             exit;
         }
         
@@ -1317,14 +1167,14 @@ class PHP_Constants_Manager {
         
         // Additional upload error checks
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=upload_error'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=upload_error'));
             exit;
         }
         
         // Validate file size (limit to 10MB)
         $max_file_size = 10 * 1024 * 1024; // 10MB
         if ($file['size'] > $max_file_size) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=file_too_large'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=file_too_large'));
             exit;
         }
         
@@ -1332,7 +1182,7 @@ class PHP_Constants_Manager {
         $sanitized_filename = sanitize_file_name($file['name']);
         $file_info = pathinfo($sanitized_filename);
         if (!isset($file_info['extension']) || strtolower($file_info['extension']) !== 'csv') {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_file'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_file'));
             exit;
         }
         
@@ -1340,13 +1190,13 @@ class PHP_Constants_Manager {
         $allowed_mime_types = array('text/csv', 'text/plain', 'application/csv');
         $file_mime_type = mime_content_type($file['tmp_name']);
         if (!in_array($file_mime_type, $allowed_mime_types, true)) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_mime'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_mime'));
             exit;
         }
         
         // Validate temporary file path
         if (!is_uploaded_file($file['tmp_name'])) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_upload'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_upload'));
             exit;
         }
         
@@ -1359,202 +1209,46 @@ class PHP_Constants_Manager {
         
         $file_contents = $wp_filesystem->get_contents($file['tmp_name']);
         if ($file_contents === false) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=read_error'));
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=read_error'));
             exit;
         }
-        
-        // Remove UTF-8 BOM if present (common with files exported from Excel/Google Sheets)
-        $bom = pack('H*','EFBBBF'); // UTF-8 BOM bytes: 0xEF 0xBB 0xBF
-        if (substr($file_contents, 0, 3) === $bom) {
-            $file_contents = substr($file_contents, 3);
-        }
-        
-        // Parse CSV data
-        $csv_lines = explode("\n", $file_contents);
-        $csv_data = array();
-        foreach ($csv_lines as $line) {
-            if (trim($line) === '') {
-                continue;
-            }
-            $csv_data[] = str_getcsv($line);
-        }
-        
-        $imported = 0;
-        $skipped = 0;
-        $errors = 0;
-        $updated = 0; // Track updated constants
-        $error_details = array(); // Track specific errors
-        $line = 0;
-        
-        // Check if overwrite existing constants is enabled
+
         $overwrite_existing = !empty($_POST['overwrite_existing']);
-        
-        // Validate and skip header row (required)
-        if (empty($csv_data) || !isset($csv_data[0][0])) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=empty_file'));
+
+        $service = new PHPCM_Import_Export($this->db);
+        $stats   = $service->import_from_string($file_contents, array('overwrite' => $overwrite_existing));
+
+        if (!$stats['ok']) {
+            wp_safe_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=' . $stats['error']));
             exit;
         }
-        
-        $first_row = $csv_data[0];
-        $first_cell = strtolower(trim($first_row[0]));
-        
-        // Require header row
-        if ($first_cell !== 'name' && $first_cell !== 'constant name') {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=missing_header'));
-            exit;
-        }
-        
-        // Validate minimum required headers
-        if (count($first_row) < 3) {
-            wp_redirect(admin_url('admin.php?page=php-constants-manager-import-export&error=invalid_header'));
-            exit;
-        }
-        
-        // Start processing from row 2 (skip header)
-        $data_start_index = 1;
-        
-        for ($i = $data_start_index; $i < count($csv_data); $i++) {
-            $data = $csv_data[$i];
-            $csv_line_number = $i + 1; // Actual line number in CSV file
-            $line++; // Processing counter
-            
-            // Skip empty rows
-            if (empty(array_filter($data))) {
-                continue;
-            }
-            
-            // Validate minimum required columns
-            if (count($data) < 3) {
-                $errors++;
-                $error_details[] = sprintf(
-                    /* translators: %d: line number in CSV file */
-                    __('Line %d: Missing required columns (need at least Name, Value, Type)', 'php-constants-manager'),
-                    $csv_line_number
-                );
-                continue;
-            }
-            
-            $name = trim($data[0]);
-            $value = isset($data[1]) ? trim($data[1]) : '';
-            $type = isset($data[2]) ? trim($data[2]) : 'string';
-            $is_active = isset($data[3]) ? (bool)$data[3] : true;
-            $description = isset($data[4]) ? trim($data[4]) : '';
-            
-            // Validate constant name
-            if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $name)) {
-                $errors++;
-                $error_details[] = sprintf(
-                    /* translators: 1: line number in CSV file, 2: invalid constant name */
-                    __('Line %1$d: Invalid constant name "%2$s" (must be uppercase letters, numbers, and underscores only)', 'php-constants-manager'),
-                    $csv_line_number,
-                    esc_html($name)
-                );
-                continue;
-            }
-            
-            // Validate type
-            if (!in_array($type, array('string', 'integer', 'float', 'boolean', 'null'))) {
-                $type = 'string';
-            }
-            
-            // Validate value matches type
-            $validation_result = $this->validate_constant_value($value, $type);
-            if ($validation_result['error']) {
-                $errors++;
-                $error_details[] = sprintf(
-                    /* translators: 1: line number in CSV file, 2: validation error message, 3: constant name */
-                    __('Line %1$d: %2$s (Constant: %3$s)', 'php-constants-manager'),
-                    $csv_line_number,
-                    $validation_result['message'],
-                    esc_html($name)
-                );
-                continue;
-            }
-            
-            // Use normalized value
-            $value = $validation_result['value'];
-            
-            // Check if constant already exists in our database
-            $existing = $this->db->get_constant_by_name($name);
-            if ($existing) {
-                if ($overwrite_existing) {
-                    // Update existing constant
-                    $result = $this->db->update_constant($existing->id, array(
-                        'value' => $value,
-                        'type' => $type,
-                        'is_active' => $is_active,
-                        'description' => $description
-                    ));
-                    
-                    if ($result !== false) {
-                        $updated++;
-                            } else {
-                        $errors++;
-                        $error_details[] = sprintf(
-                            /* translators: 1: line number in CSV file, 2: constant name */
-                            __('Line %1$d: Database error updating constant \"%2$s\"', 'php-constants-manager'),
-                            $csv_line_number,
-                            esc_html($name)
-                        );
-                    }
-                } else {
-                    // Skip existing constant
-                    $skipped++;
-                }
-                continue;
-            }
-            
-            // Insert new constant
-            $result = $this->db->insert_constant(array(
-                'name' => $name,
-                'value' => $value,
-                'type' => $type,
-                'is_active' => $is_active,
-                'description' => $description
-            ));
-            
-            if ($result) {
-                $imported++;
-            } else {
-                $errors++;
-                $error_details[] = sprintf(
-                    /* translators: 1: line number in CSV file, 2: constant name */
-                    __('Line %1$d: Database error saving constant \"%2$s\"', 'php-constants-manager'),
-                    $csv_line_number,
-                    esc_html($name)
-                );
-            }
-        }
-        
-        // Build success message
+
         $message_parts = array();
-        if ($imported > 0) {
+        if ($stats['imported'] > 0) {
             /* translators: %d: number of constants imported */
-            $message_parts[] = sprintf(_n('%d constant imported', '%d constants imported', $imported, 'php-constants-manager'), $imported);
+            $message_parts[] = sprintf(_n('%d constant imported', '%d constants imported', $stats['imported'], 'php-constants-manager'), $stats['imported']);
         }
-        if ($updated > 0) {
+        if ($stats['updated'] > 0) {
             /* translators: %d: number of constants updated */
-            $message_parts[] = sprintf(_n('%d constant updated', '%d constants updated', $updated, 'php-constants-manager'), $updated);
+            $message_parts[] = sprintf(_n('%d constant updated', '%d constants updated', $stats['updated'], 'php-constants-manager'), $stats['updated']);
         }
-        if ($skipped > 0) {
+        if ($stats['skipped'] > 0) {
             /* translators: %d: number of constants skipped */
-            $message_parts[] = sprintf(_n('%d constant skipped (already exists)', '%d constants skipped (already exist)', $skipped, 'php-constants-manager'), $skipped);
+            $message_parts[] = sprintf(_n('%d constant skipped (already exists)', '%d constants skipped (already exist)', $stats['skipped'], 'php-constants-manager'), $stats['skipped']);
         }
-        if ($errors > 0) {
+        if ($stats['errors'] > 0) {
             /* translators: %d: number of errors that occurred */
-            $message_parts[] = sprintf(_n('%d error occurred', '%d errors occurred', $errors, 'php-constants-manager'), $errors);
+            $message_parts[] = sprintf(_n('%d error occurred', '%d errors occurred', $stats['errors'], 'php-constants-manager'), $stats['errors']);
         }
-        
+
         $message = implode(', ', $message_parts);
-        
-        // Store error details in transient if there are errors
-        if (!empty($error_details)) {
-            set_transient('phpcm_import_errors', $error_details, 300); // 5 minutes
+
+        if (!empty($stats['error_details'])) {
+            set_transient('phpcm_import_errors', $stats['error_details'], 300);
         }
-        
+
         $redirect_url = admin_url('admin.php?page=php-constants-manager-import-export&message=' . urlencode($message));
-        
-        wp_redirect($redirect_url);
+        wp_safe_redirect($redirect_url);
         exit;
     }
     
@@ -1571,32 +1265,18 @@ class PHP_Constants_Manager {
         }
         
         $early_loading_enabled = !empty($_POST['early_loading_enabled']);
-        $previous_setting = get_option('phpcm_early_loading_enabled', false);
-        
-        // Update the option
-        update_option('phpcm_early_loading_enabled', $early_loading_enabled);
-        
+        $previous_setting      = (bool) get_option('phpcm_early_loading_enabled', false);
+
         $message = '';
-        $error = '';
-        
-        if ($early_loading_enabled && !$previous_setting) {
-            // Enable early loading - create MU plugin
-            if ($this->create_mu_plugin()) {
-                $message = 'early_loading_enabled';
-            } else {
-                $error = 'mu_plugin_create_failed';
-                // Revert the option
-                update_option('phpcm_early_loading_enabled', false);
-            }
+        $error   = '';
+
+        $result = $this->set_early_loading($early_loading_enabled);
+        if (is_wp_error($result)) {
+            $error = $result->get_error_code();
+        } elseif ($early_loading_enabled && !$previous_setting) {
+            $message = 'early_loading_enabled';
         } elseif (!$early_loading_enabled && $previous_setting) {
-            // Disable early loading - remove MU plugin
-            if ($this->remove_mu_plugin()) {
-                $message = 'early_loading_disabled';
-            } else {
-                $error = 'mu_plugin_remove_failed';
-                // Revert the option
-                update_option('phpcm_early_loading_enabled', true);
-            }
+            $message = 'early_loading_disabled';
         } else {
             $message = 'settings_saved';
         }
@@ -1609,7 +1289,7 @@ class PHP_Constants_Manager {
             $redirect_url .= '&error=' . $error;
         }
         
-        wp_redirect($redirect_url);
+        wp_safe_redirect($redirect_url);
         exit;
     }
 }
@@ -1619,28 +1299,6 @@ add_action('plugins_loaded', array('PHP_Constants_Manager', 'get_instance'), 0);
 
 // Activation hook
 register_activation_hook(__FILE__, 'phpcm_activation_hook');
-
-/**
- * Format constant value for safe display
- * Production-safe alternative to var_export()
- */
-function phpcm_format_constant_value($value) {
-    if (is_null($value)) {
-        return 'null';
-    } elseif (is_bool($value)) {
-        return $value ? 'true' : 'false';
-    } elseif (is_string($value)) {
-        return '"' . esc_html($value) . '"';
-    } elseif (is_numeric($value)) {
-        return esc_html((string)$value);
-    } elseif (is_array($value)) {
-        return 'Array(' . count($value) . ')';
-    } elseif (is_object($value)) {
-        return 'Object(' . get_class($value) . ')';
-    } else {
-        return esc_html((string)$value);
-    }
-}
 
 /**
  * Plugin activation hook

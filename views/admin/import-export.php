@@ -58,26 +58,26 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display import error details if available
-    $import_errors = get_transient('phpcm_import_errors');
-    if ($import_errors && !empty($import_errors)) {
+    $phpcm_import_errors = get_transient('phpcm_import_errors');
+    if ($phpcm_import_errors && !empty($phpcm_import_errors)) {
         delete_transient('phpcm_import_errors');
         ?>
         <div class="notice notice-error">
             <p><strong><?php esc_html_e('Import Errors:', 'php-constants-manager'); ?></strong></p>
             <p><?php esc_html_e('The following rows had errors and were not imported:', 'php-constants-manager'); ?></p>
             <ul style="margin-left: 20px; margin-top: 10px;">
-                <?php 
+                <?php
                 // Limit to first 10 errors to avoid overwhelming display
-                $display_errors = array_slice($import_errors, 0, 10);
-                foreach ($display_errors as $error): 
+                $phpcm_display_errors = array_slice($phpcm_import_errors, 0, 10);
+                foreach ($phpcm_display_errors as $error):
                 ?>
                     <li><?php echo esc_html($error); ?></li>
                 <?php endforeach; ?>
             </ul>
-            <?php if (count($import_errors) > 10): ?>
+            <?php if (count($phpcm_import_errors) > 10): ?>
                 <p><em><?php
                     /* translators: %d: number of additional errors beyond the displayed 10 */
-                    printf(esc_html__('... and %d more errors.', 'php-constants-manager'), count($import_errors) - 10);
+                    printf(esc_html__('... and %d more errors.', 'php-constants-manager'), count($phpcm_import_errors) - 10);
                 ?></em></p>
             <?php endif; ?>
         </div>

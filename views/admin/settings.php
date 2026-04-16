@@ -9,10 +9,10 @@ if (!defined('ABSPATH')) {
 }
 
 // Extract data array for use in template
-$message = isset($data['message']) ? $data['message'] : '';
-$error = isset($data['error']) ? $data['error'] : '';
-$mu_plugin_exists = isset($data['mu_plugin_exists']) ? $data['mu_plugin_exists'] : false;
-$early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_loading_enabled'] : false;
+$phpcm_message               = isset($data['message']) ? $data['message'] : '';
+$phpcm_error                 = isset($data['error']) ? $data['error'] : '';
+$phpcm_mu_plugin_exists      = isset($data['mu_plugin_exists']) ? $data['mu_plugin_exists'] : false;
+$phpcm_early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_loading_enabled'] : false;
 ?>
 
 <div class="wrap">
@@ -21,11 +21,11 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
     <hr class="wp-header-end">
     
     <!-- Show success/error messages -->
-    <?php if ($message): ?>
+    <?php if ($phpcm_message): ?>
         <div class="notice notice-success is-dismissible">
             <p>
                 <?php
-                switch ($message) {
+                switch ($phpcm_message) {
                     case 'early_loading_enabled':
                         esc_html_e('Early loading has been enabled. A must-use plugin file has been created to load your constants before other plugins.', 'php-constants-manager');
                         break;
@@ -36,18 +36,18 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                         esc_html_e('Settings have been saved successfully.', 'php-constants-manager');
                         break;
                     default:
-                        echo esc_html($message);
+                        echo esc_html($phpcm_message);
                 }
                 ?>
             </p>
         </div>
     <?php endif; ?>
-    
-    <?php if ($error): ?>
+
+    <?php if ($phpcm_error): ?>
         <div class="notice notice-error is-dismissible">
             <p>
                 <?php
-                switch ($error) {
+                switch ($phpcm_error) {
                     case 'mu_plugin_create_failed':
                         esc_html_e('Failed to create the must-use plugin file. Please check that the mu-plugins directory is writable or contact your hosting provider.', 'php-constants-manager');
                         break;
@@ -55,7 +55,7 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                         esc_html_e('Failed to remove the must-use plugin file. Please manually delete the file at wp-content/mu-plugins/0001-php-constants-manager-early.php', 'php-constants-manager');
                         break;
                     default:
-                        echo esc_html($error);
+                        echo esc_html($phpcm_error);
                 }
                 ?>
             </p>
@@ -78,15 +78,15 @@ $early_loading_enabled = isset($data['early_loading_enabled']) ? $data['early_lo
                                 <legend class="screen-reader-text"><?php esc_html_e('Early Loading Options', 'php-constants-manager'); ?></legend>
                                 
                                 <label for="early_loading_enabled">
-                                    <input type="checkbox" name="early_loading_enabled" id="early_loading_enabled" value="1" <?php checked($early_loading_enabled); ?>>
+                                    <input type="checkbox" name="early_loading_enabled" id="early_loading_enabled" value="1" <?php checked($phpcm_early_loading_enabled); ?>>
                                     <?php esc_html_e('Enable early loading of constants before other plugins', 'php-constants-manager'); ?>
                                 </label>
-                                
+
                                 <p class="description">
                                     <?php esc_html_e('When enabled, this plugin will create a must-use plugin file that loads your constants before other regular plugins. This helps ensure your constants are available to other plugins that may need them. Note: If downstream code tries to define the same constant without checking if it already exists, PHP warnings may occur.', 'php-constants-manager'); ?>
                                 </p>
-                                
-                                <?php if ($mu_plugin_exists): ?>
+
+                                <?php if ($phpcm_mu_plugin_exists): ?>
                                     <p class="phpcm-status-info">
                                         <span class="dashicons dashicons-yes-alt" style="color: #46b450;"></span>
                                         <?php esc_html_e('Must-use plugin file exists:', 'php-constants-manager'); ?>

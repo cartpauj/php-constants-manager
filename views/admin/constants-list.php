@@ -33,33 +33,33 @@ if (!defined('ABSPATH')) {
     
     <?php if (isset($data['message']) && $data['message']): ?>
         <?php
-        $messages = array(
-            'saved' => __('Constant saved successfully.', 'php-constants-manager'),
-            'deleted' => __('Constant deleted successfully.', 'php-constants-manager'),
-            'toggled' => __('Constant status updated successfully.', 'php-constants-manager'),
-            'bulk_deleted' => __('Selected constants deleted successfully.', 'php-constants-manager'),
-            'bulk_activated' => __('Selected constants activated successfully.', 'php-constants-manager'),
+        $phpcm_messages = array(
+            'saved'            => __('Constant saved successfully.', 'php-constants-manager'),
+            'deleted'          => __('Constant deleted successfully.', 'php-constants-manager'),
+            'toggled'          => __('Constant status updated successfully.', 'php-constants-manager'),
+            'bulk_deleted'     => __('Selected constants deleted successfully.', 'php-constants-manager'),
+            'bulk_activated'   => __('Selected constants activated successfully.', 'php-constants-manager'),
             'bulk_deactivated' => __('Selected constants deactivated successfully.', 'php-constants-manager'),
         );
-        $message_text = isset($messages[$data['message']]) ? $messages[$data['message']] : '';
-        if ($message_text):
+        $phpcm_message_text = isset($phpcm_messages[$data['message']]) ? $phpcm_messages[$data['message']] : '';
+        if ($phpcm_message_text):
         ?>
             <div class="notice notice-success is-dismissible">
-                <p><?php echo esc_html($message_text); ?></p>
+                <p><?php echo esc_html($phpcm_message_text); ?></p>
             </div>
         <?php endif; ?>
     <?php endif; ?>
-    
+
     <?php
     // Display type filter links
-    $views = $data['list_table']->get_views();
-    if (!empty($views)) {
+    $phpcm_views = $data['list_table']->get_views();
+    if (!empty($phpcm_views)) {
         echo '<ul class="subsubsub">';
-        $view_links = array();
-        foreach ($views as $class => $view) {
-            $view_links[] = '<li class="' . esc_attr($class) . '">' . wp_kses_post($view) . '</li>';
+        $phpcm_view_links = array();
+        foreach ($phpcm_views as $phpcm_class => $phpcm_view) {
+            $phpcm_view_links[] = '<li class="' . esc_attr($phpcm_class) . '">' . wp_kses_post($phpcm_view) . '</li>';
         }
-        echo wp_kses_post(implode('', $view_links));
+        echo wp_kses_post(implode('', $phpcm_view_links));
         echo '</ul>';
         echo '<div class="clear"></div>';
     }

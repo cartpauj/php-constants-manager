@@ -19,40 +19,40 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display transient notices
-    $transient_notice = get_transient('phpcm_admin_notice');
-    if ($transient_notice) {
+    $phpcm_transient_notice = get_transient('phpcm_admin_notice');
+    if ($phpcm_transient_notice) {
         delete_transient('phpcm_admin_notice');
-        $notice_class = $transient_notice['type'] === 'error' ? 'notice-error' : 'notice-warning';
+        $phpcm_notice_class = $phpcm_transient_notice['type'] === 'error' ? 'notice-error' : 'notice-warning';
         ?>
-        <div class="notice <?php echo esc_attr($notice_class); ?> is-dismissible">
-            <p><?php echo wp_kses($transient_notice['message'], array('a' => array('href' => array()), 'code' => array())); ?></p>
+        <div class="notice <?php echo esc_attr($phpcm_notice_class); ?> is-dismissible">
+            <p><?php echo wp_kses($phpcm_transient_notice['message'], array('a' => array('href' => array()), 'code' => array())); ?></p>
         </div>
         <?php
     }
-    
+
     // Check if constant is already defined (for edit mode)
     if ($data['is_edit']) {
-        $plugin_instance = PHP_Constants_Manager::get_instance();
-        $predefined_check = $plugin_instance->is_constant_predefined(
-            $data['constant']->name, 
-            $data['constant']->value, 
-            $data['constant']->type, 
+        $phpcm_plugin_instance  = PHP_Constants_Manager::get_instance();
+        $phpcm_predefined_check = $phpcm_plugin_instance->is_constant_predefined(
+            $data['constant']->name,
+            $data['constant']->value,
+            $data['constant']->type,
             $data['constant']->is_active
         );
-        
-        if ($predefined_check['is_predefined']) {
+
+        if ($phpcm_predefined_check['is_predefined']) {
             ?>
             <div class="notice notice-warning">
-                <p><?php 
+                <p><?php
                     echo wp_kses(
                         sprintf(
                             /* translators: 1: constant name, 2: current value of the constant */
                             __('Note: The constant "%1$s" is currently defined with value: %2$s. Changes will only take effect if this predefined constant is removed.', 'php-constants-manager'),
                             esc_html($data['constant']->name),
-                            '<code>' . phpcm_format_constant_value($predefined_check['existing_value']) . '</code>'
+                            '<code>' . phpcm_format_constant_value($phpcm_predefined_check['existing_value']) . '</code>'
                         ),
                         array('code' => array())
-                    ); 
+                    );
                 ?></p>
             </div>
             <?php

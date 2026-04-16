@@ -21,14 +21,14 @@ if (!defined('ABSPATH')) {
     
     <?php
     // Display category filter links
-    $views = $data['list_table']->get_views();
-    if (!empty($views)) {
+    $phpcm_views = $data['list_table']->get_views();
+    if (!empty($phpcm_views)) {
         echo '<ul class="subsubsub">';
-        $view_links = array();
-        foreach ($views as $class => $view) {
-            $view_links[] = '<li class="' . esc_attr($class) . '">' . wp_kses_post($view) . '</li>';
+        $phpcm_view_links = array();
+        foreach ($phpcm_views as $phpcm_class => $phpcm_view) {
+            $phpcm_view_links[] = '<li class="' . esc_attr($phpcm_class) . '">' . wp_kses_post($phpcm_view) . '</li>';
         }
-        echo wp_kses_post(implode('', $view_links));
+        echo wp_kses_post(implode('', $phpcm_view_links));
         echo '</ul>';
         echo '<div class="clear"></div>';
     }

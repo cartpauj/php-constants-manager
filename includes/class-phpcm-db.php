@@ -145,49 +145,47 @@ class PHPCM_DB {
         $args = wp_parse_args($args, $defaults);
         
         $where = '1=1';
-        $where_values = array();
-        
-        // Add search condition
+        $prepare_values = array();
+
         if (!empty($args['search'])) {
             $where .= ' AND (name LIKE %s OR value LIKE %s OR description LIKE %s)';
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where_values[] = $search_term;
-            $where_values[] = $search_term;
-            $where_values[] = $search_term;
+            $prepare_values[] = $search_term;
+            $prepare_values[] = $search_term;
+            $prepare_values[] = $search_term;
         }
-        
-        // Add active condition
+
         if ($args['is_active'] !== null) {
             $where .= ' AND is_active = %d';
-            $where_values[] = $args['is_active'] ? 1 : 0;
+            $prepare_values[] = $args['is_active'] ? 1 : 0;
         }
-        
-        // Add type condition
-        if (isset($args['type']) && !empty($args['type'])) {
+
+        if (!empty($args['type'])) {
             $where .= ' AND type = %s';
-            $where_values[] = $args['type'];
+            $prepare_values[] = $args['type'];
         }
-        
-        // Build order by clause
-        $orderby = in_array($args['orderby'], array('name', 'value', 'type', 'is_active', 'created_at')) ? $args['orderby'] : 'name';
-        $order = strtoupper($args['order']) === 'DESC' ? 'DESC' : 'ASC';
-        $order_clause = " ORDER BY {$orderby} {$order}";
-        
-        // Build limit clause
+
+        // Order-by uses a whitelist, so interpolation is safe.
+        $orderby = in_array($args['orderby'], array('name', 'value', 'type', 'is_active', 'created_at'), true) ? $args['orderby'] : 'name';
+        $order   = strtoupper($args['order']) === 'DESC' ? 'DESC' : 'ASC';
+
         $limit_clause = '';
         if ($args['limit'] > 0) {
-            $limit_clause = $wpdb->prepare(" LIMIT %d OFFSET %d", $args['limit'], $args['offset']);
+            $limit_clause     = ' LIMIT %d OFFSET %d';
+            $prepare_values[] = (int) $args['limit'];
+            $prepare_values[] = (int) $args['offset'];
         }
-        
-        // Build complete query
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        $sql = "SELECT * FROM {$this->table_name} WHERE {$where}{$order_clause}{$limit_clause}";
-        
-        if (!empty($where_values)) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
-            $results = $wpdb->get_results($wpdb->prepare($sql, $where_values));
+
+        // Table name is hard-coded (prefix + literal); column names come from a
+        // whitelist above; all runtime values flow through $wpdb->prepare() placeholders.
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter
+        $sql = "SELECT * FROM {$this->table_name} WHERE {$where} ORDER BY {$orderby} {$order}{$limit_clause}";
+
+        if (!empty($prepare_values)) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.UnescapedDBParameter
+            $results = $wpdb->get_results($wpdb->prepare($sql, $prepare_values));
         } else {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.UnescapedDBParameter
             $results = $wpdb->get_results($sql);
         }
         
@@ -303,37 +301,35 @@ class PHPCM_DB {
         }
         
         $where = '1=1';
-        $where_values = array();
-        
-        // Add search condition
+        $prepare_values = array();
+
         if (!empty($args['search'])) {
             $where .= ' AND (name LIKE %s OR value LIKE %s OR description LIKE %s)';
             $search_term = '%' . $wpdb->esc_like($args['search']) . '%';
-            $where_values[] = $search_term;
-            $where_values[] = $search_term;
-            $where_values[] = $search_term;
+            $prepare_values[] = $search_term;
+            $prepare_values[] = $search_term;
+            $prepare_values[] = $search_term;
         }
-        
-        // Add active condition
+
         if ($args['is_active'] !== null) {
             $where .= ' AND is_active = %d';
-            $where_values[] = $args['is_active'] ? 1 : 0;
+            $prepare_values[] = $args['is_active'] ? 1 : 0;
         }
-        
-        // Add type condition
-        if (isset($args['type']) && !empty($args['type'])) {
+
+        if (!empty($args['type'])) {
             $where .= ' AND type = %s';
-            $where_values[] = $args['type'];
+            $prepare_values[] = $args['type'];
         }
-        
-        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+        // Table name is hard-coded (prefix + literal); all runtime values flow through prepare() placeholders.
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter
         $sql = "SELECT COUNT(*) FROM {$this->table_name} WHERE {$where}";
-        
-        if (!empty($where_values)) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
-            $result = $wpdb->get_var($wpdb->prepare($sql, $where_values));
+
+        if (!empty($prepare_values)) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.UnescapedDBParameter
+            $result = $wpdb->get_var($wpdb->prepare($sql, $prepare_values));
         } else {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,PluginCheck.Security.DirectDB.UnescapedDBParameter
             $result = $wpdb->get_var($sql);
         }
         

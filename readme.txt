@@ -2,8 +2,8 @@
 Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
-Tested up to: 6.8
-Stable tag: 1.1.5
+Tested up to: 6.9
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -30,6 +30,7 @@ PHP Constants Manager provides a secure and user-friendly interface for managing
 * **Administrator Only**: Secure access restricted to users with manage_options capability
 * **Database Storage**: Constants stored safely in a custom database table with full audit trail
 * **Import/Export**: Backup and migrate constants using CSV files with detailed error reporting
+* **WP-CLI Integration**: Manage constants, import/export CSV, and toggle early loading from the terminal via `wp phpcm ...` — ideal for automation, CI/CD, and multi-site provisioning
 
 = Understanding Predefined Constants =
 
@@ -47,6 +48,26 @@ The plugin intelligently detects when constants are already defined by WordPress
 * Audit all constants in your WordPress installation
 * Backup constants to CSV files for migration between sites
 * Import constants in bulk from properly formatted CSV files
+* Automate site setup and deployment pipelines with WP-CLI (`wp phpcm add MY_KEY ...`)
+
+= WP-CLI Commands =
+
+When WP-CLI is available, the plugin registers a `phpcm` command suite that mirrors the admin UI:
+
+* `wp phpcm list [--active] [--inactive] [--type=<type>] [--search=<term>] [--format=<format>]` — list managed constants
+* `wp phpcm get <name>` — show a single constant (supports `--field=<field>`)
+* `wp phpcm add <name> [<value>] [--type=<type>] [--description=<text>] [--inactive] [--porcelain]` — create a constant (value can be `-` to read from stdin)
+* `wp phpcm update <name> [--value=<value>] [--type=<type>] [--description=<text>] [--active|--inactive]` — update fields
+* `wp phpcm delete <name>... [--yes]` — delete one or more by name
+* `wp phpcm activate|deactivate|toggle <name>...` — flip active state
+* `wp phpcm defined <name>` — report whether the constant is currently defined and by whom (this plugin, early-load, or elsewhere like wp-config.php)
+* `wp phpcm all-defines [--user-defined] [--search=<term>]` — inspect every PHP constant present in the process
+* `wp phpcm status` — plugin health summary (table, row counts, early-loading state)
+* `wp phpcm import <file|-> [--overwrite]` — import CSV (file path or stdin)
+* `wp phpcm export [<file>] [--active] [--inactive] [--type=<type>]` — write CSV to a file or stdout
+* `wp phpcm early-loading enable|disable|status` — manage the must-use plugin that loads constants before all other plugins
+
+Run `wp help phpcm <subcommand>` for detailed usage, flags, and examples.
 
 == Installation ==
 
@@ -148,6 +169,19 @@ The import will show exactly what went wrong with specific line numbers and erro
 
 This helps you fix your CSV file and re-import successfully.
 
+= Can I manage constants from WP-CLI? =
+
+Yes. When WP-CLI is installed the plugin registers a `wp phpcm` command suite that covers every operation available in the admin UI — create/read/update/delete, toggle active state, CSV import/export, and the early-loading toggle. A few quick examples:
+
+`wp phpcm add MY_API_KEY "abc123" --description="External API key"`
+`wp phpcm list --active --type=boolean --format=json`
+`wp phpcm defined WP_DEBUG` (reports whether it's defined by this plugin, early-load, or wp-config.php)
+`wp phpcm export backup.csv --active`
+`cat constants.csv | wp phpcm import - --overwrite`
+`wp phpcm early-loading enable`
+
+Commands accept stdin via `-` for `add`/`update`/`import`. The full list and per-command help is available via `wp help phpcm` and `wp help phpcm <subcommand>`.
+
 = What is Early Loading and when should I use it? =
 
 Early Loading creates a must-use plugin file that loads your constants before any regular plugins. This ensures maximum compatibility when other plugins need your constants during their initialization.
@@ -175,6 +209,11 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.2.0 =
+* **WP-CLI support**: manage constants from the terminal with `wp phpcm list|get|add|update|delete|activate|deactivate|toggle|defined|all-defines|status|import|export|early-loading`
+* Refactored shared casting, validation, and formatting helpers into `includes/phpcm-helpers.php` — the generated must-use loader now reuses them instead of duplicating logic
+* Extracted CSV import/export into `PHPCM_Import_Export` so the admin UI and CLI share the same parser and writer
+
 = 1.1.5 =
 * Renamed must-use plugin to attempt to get it to load earlier than other must-use plugins
 
@@ -225,7 +264,7 @@ The Early Loading option is available in the Settings page and automatically man
 
 = Database Schema =
 
-The plugin creates a custom table `{prefix}pcm_constants` with the following structure:
+The plugin creates a custom table `{prefix}phpcm_constants` with the following structure:
 * `id` - Primary key (auto-increment)
 * `name` - Constant name (unique, varchar 191)
 * `value` - Constant value (longtext)
@@ -241,6 +280,7 @@ The plugin creates a custom table `{prefix}pcm_constants` with the following str
 * `admin_menu` - Menu registration
 * `admin_post_*` - Form submission handling
 * `wp_ajax_*` - AJAX operations
+* `WP_CLI::add_command('phpcm', ...)` - Registers the CLI command when WP-CLI is available
 
 = Load Order & Compatibility =
 
