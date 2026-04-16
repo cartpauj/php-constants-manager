@@ -54,15 +54,17 @@ wp phpcm export backup.csv
 
 ## Install
 
-**WordPress.org (recommended):** search "PHP Constants Manager" under *Plugins → Add New*, or [install from wp.org](https://wordpress.org/plugins/php-constants-manager/).
+Pick whichever is easier:
 
-**From source:**
+- **From your WordPress admin:** *Plugins → Add New → search "PHP Constants Manager" → Install → Activate.*
+- **From WordPress.org:** download the ZIP at <https://wordpress.org/plugins/php-constants-manager/> and upload it under *Plugins → Add New → Upload Plugin.*
+- **From source:**
 
-```bash
-cd wp-content/plugins
-git clone https://github.com/cartpauj/php-constants-manager.git
-wp plugin activate php-constants-manager
-```
+  ```bash
+  cd wp-content/plugins
+  git clone https://github.com/cartpauj/php-constants-manager.git
+  wp plugin activate php-constants-manager
+  ```
 
 The database table (`{prefix}phpcm_constants`) is created automatically on activation.
 
