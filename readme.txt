@@ -8,7 +8,7 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Safely manage PHP constants (defines) through the WordPress admin interface with full CRUD functionality and comprehensive viewing capabilities.
+Safely manage PHP constants (defines) through the WordPress admin or WP-CLI with full CRUD functionality and comprehensive viewing capabilities.
 
 == Description ==
 
