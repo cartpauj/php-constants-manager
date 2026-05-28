@@ -2,8 +2,8 @@
 Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 1.2.0
+Tested up to: 7.0
+Stable tag: 1.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -209,6 +209,9 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.2.1 =
+* Ensure WP 7.0 Compat
+
 = 1.2.0 =
 * **WP-CLI support**: manage constants from the terminal with `wp phpcm list|get|add|update|delete|activate|deactivate|toggle|defined|all-defines|status|import|export|early-loading`
 * Refactored shared casting, validation, and formatting helpers into `includes/phpcm-helpers.php` — the generated must-use loader now reuses them instead of duplicating logic
