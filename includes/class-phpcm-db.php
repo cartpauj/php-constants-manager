@@ -473,7 +473,11 @@ class PHPCM_DB {
      * Clear all cache for constants
      */
     private function clear_cache() {
-        // Clear the entire cache group
-        wp_cache_flush_group('phpcm_constants');
+        // Clear the entire cache group (WP 6.1+); otherwise flush everything.
+        if (function_exists('wp_cache_flush_group')) {
+            wp_cache_flush_group('phpcm_constants');
+        } else {
+            wp_cache_flush();
+        }
     }
 }

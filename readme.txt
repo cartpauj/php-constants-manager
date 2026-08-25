@@ -2,8 +2,8 @@
 Contributors: cartpauj
 Tags: constants, php, configuration, admin, defines
 Requires at least: 5.0
-Tested up to: 7.0
-Stable tag: 1.2.1
+Tested up to: 7.1
+Stable tag: 1.2.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -209,6 +209,10 @@ The Early Loading option is available in the Settings page and automatically man
 7. Help page with comprehensive documentation and best practices
 
 == Changelog ==
+= 1.2.2 =
+* Bumped WordPress compatibility to 7.1
+* Guard `wp_cache_flush_group()` behind a function check so caching works on WordPress 5.0–6.0
+
 = 1.2.1 =
 * Ensure WP 7.0 Compat
 
